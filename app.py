@@ -7,8 +7,8 @@ import base64
 # =========================================================
 
 st.set_page_config(
-    page_title="Study with Miku 🩵",
-    page_icon="🎀",
+    page_title="Study with Miku",
+    page_icon="୨୧",
     layout="centered"
 )
 
@@ -23,7 +23,7 @@ if "xp" not in st.session_state:
     st.session_state.xp = 0
 
 if "page" not in st.session_state:
-    st.session_state.page = "🏠 الرئيسية"
+    st.session_state.page = "home"
 
 # =========================================================
 # LOAD MIKU IMAGE
@@ -40,80 +40,276 @@ except FileNotFoundError:
     st.stop()
 
 # =========================================================
-# APP STYLE
+# CUTE STYLE
 # =========================================================
 
 st.markdown(
     """
     <style>
 
+    @import url(
+        'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap'
+    );
+
+    html,
+    body,
+    [class*="css"],
+    .stApp,
+    button,
+    input,
+    textarea,
+    select {
+        font-family: 'Baloo 2', sans-serif !important;
+    }
+
     .stApp {
         background:
             radial-gradient(
-                circle at top,
+                circle at 10% 5%,
                 #e8fbff 0%,
-                #ffffff 48%
-            );
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 90% 20%,
+                #eafcff 0%,
+                transparent 30%
+            ),
+            #ffffff;
     }
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
 
     .main-title {
         text-align: center;
-        padding: 20px;
-        border-radius: 28px;
-        background: linear-gradient(
-            135deg,
-            #e8fbff,
-            #ffffff
-        );
+        padding: 24px 18px;
+        border-radius: 30px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #e8fbff,
+                #ffffff
+            );
+
         border: 2px solid #c8f2f7;
+
         box-shadow:
-            0 10px 30px rgba(83, 205, 220, 0.12);
-        margin-bottom: 15px;
+            0 12px 35px
+            rgba(83, 205, 220, 0.13);
+
+        margin-bottom: 18px;
+
+        position: relative;
+        overflow: hidden;
+    }
+
+    .main-title::before {
+        content: "୨୧ ✦ ♡ ✦ ୨୧";
+
+        position: absolute;
+        top: 6px;
+        left: 0;
+        right: 0;
+
+        color: #8bdde5;
+        font-size: 15px;
+        letter-spacing: 5px;
     }
 
     .main-title h1 {
-        color: #39b8c7;
-        margin-bottom: 8px;
+        color: #35b4c4;
+        margin: 12px 0 5px 0;
         font-size: 42px;
+        font-weight: 700;
     }
 
     .main-title p {
-        color: #4b909a;
+        color: #579ba4;
         font-size: 18px;
         margin: 0;
+        font-weight: 500;
     }
+
+    /* =====================================================
+       TITLES
+       ===================================================== */
 
     .section-title {
-        color: #39aebb;
+        color: #35aebb;
+        font-weight: 700;
+        margin-top: 8px;
     }
 
-    /* SIDEBAR */
+    .cute-subtitle {
+        text-align: center;
+        color: #70aeb5;
+        font-size: 17px;
+        padding: 5px;
+    }
+
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
 
     [data-testid="stSidebar"] {
         background:
             linear-gradient(
                 180deg,
-                #e8fbff,
-                #ffffff
+                #e7fbff 0%,
+                #f9feff 55%,
+                #ffffff 100%
             );
+
+        border-right: 2px solid #d7f5f8;
     }
 
     .sidebar-title {
         text-align: center;
-        color: #39aebb;
-        font-size: 25px;
-        font-weight: bold;
-        padding: 10px;
+        color: #35adbb;
+        font-size: 27px;
+        font-weight: 700;
+        padding: 10px 5px 3px;
+    }
+
+    .sidebar-decoration {
+        text-align: center;
+        color: #75cbd4;
+        font-size: 18px;
+        letter-spacing: 4px;
+        margin-bottom: 12px;
     }
 
     .welcome-box {
-        background: white;
+        background: rgba(255,255,255,0.88);
+
         border: 2px solid #c8f2f7;
-        border-radius: 20px;
+
+        border-radius: 22px;
+
         padding: 15px;
+
         text-align: center;
-        color: #4b909a;
-        margin-bottom: 15px;
+
+        color: #579ba4;
+
+        margin-bottom: 18px;
+
+        box-shadow:
+            0 8px 22px
+            rgba(83,205,220,0.08);
+    }
+
+    /* =====================================================
+       BUTTONS
+       ===================================================== */
+
+    .stButton > button {
+        border-radius: 18px !important;
+
+        border: 1.5px solid #c8f2f7 !important;
+
+        background:
+            linear-gradient(
+                135deg,
+                #ffffff,
+                #f0fcff
+            ) !important;
+
+        color: #429eaa !important;
+
+        font-family:
+            'Baloo 2',
+            sans-serif !important;
+
+        font-weight: 600 !important;
+
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 8px 20px
+            rgba(70,190,205,0.15);
+
+        border-color: #8bdde5 !important;
+    }
+
+    /* =====================================================
+       CARDS
+       ===================================================== */
+
+    .cute-card {
+        background:
+            rgba(255,255,255,0.92);
+
+        border: 2px solid #d4f4f7;
+
+        border-radius: 25px;
+
+        padding: 20px;
+
+        margin: 12px 0;
+
+        box-shadow:
+            0 8px 25px
+            rgba(80,190,205,0.08);
+    }
+
+    .cute-card-title {
+        color: #36adbb;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .cute-card-text {
+        color: #669fa6;
+        font-size: 16px;
+    }
+
+    /* =====================================================
+       METRICS
+       ===================================================== */
+
+    [data-testid="stMetric"] {
+        background: white;
+
+        border: 2px solid #d5f4f7;
+
+        padding: 15px;
+
+        border-radius: 22px;
+
+        box-shadow:
+            0 8px 20px
+            rgba(70,190,205,0.07);
+    }
+
+    /* =====================================================
+       INPUTS
+       ===================================================== */
+
+    input,
+    textarea {
+        border-radius: 17px !important;
+        border: 2px solid #d7f4f7 !important;
+    }
+
+    /* =====================================================
+       DECORATION
+       ===================================================== */
+
+    .tiny-decoration {
+        text-align: center;
+        color: #82d2da;
+        font-size: 16px;
+        letter-spacing: 6px;
+        margin: 10px 0;
     }
 
     </style>
@@ -130,35 +326,50 @@ with st.sidebar:
     st.markdown(
         """
         <div class="sidebar-title">
-            🎀 Study with Miku 🩵
+            Study with Miku
+        </div>
+
+        <div class="sidebar-decoration">
+            ୨୧ ✦ ♡ ✦ ୨୧
         </div>
 
         <div class="welcome-box">
-            ✨ أهلاً بكِ في عالم ميكو! ✨<br>
-            خلينا نذاكر مع بعض 🩵
+            こんにちは ♡<br>
+            أهلاً بكِ في عالم ميكو ✦<br>
+            خلينا نذاكر مع بعض ୨୧
         </div>
         """,
         unsafe_allow_html=True
     )
 
     pages = [
-        "🏠 الرئيسية",
-        "📚 دراسة مع ميكو",
-        "🧠 حل الواجبات",
-        "💬 اسألي ميكو",
-        "⏱️ جلسة مذاكرة",
-        "⭐ إنجازاتي"
+        ("home", "⌂  الرئيسية"),
+        ("study", "♡  دراسة مع ميكو"),
+        ("homework", "✦  حل الواجبات"),
+        ("ask", "୨୧  اسألي ميكو"),
+        ("timer", "◷  جلسة مذاكرة"),
+        ("achievements", "☆  إنجازاتي")
     ]
 
-    for page in pages:
+    for page_id, page_name in pages:
 
         if st.button(
-            page,
+            page_name,
             use_container_width=True,
-            key=f"page_{page}"
+            key=f"page_{page_id}"
         ):
-            st.session_state.page = page
+
+            st.session_state.page = page_id
             st.rerun()
+
+    st.markdown(
+        """
+        <div class="tiny-decoration">
+            ♡ ୨୧ ✦ ୨୧ ♡
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # =========================================================
 # HEADER
@@ -167,27 +378,40 @@ with st.sidebar:
 st.markdown(
     """
     <div class="main-title">
-        <h1>🎀 Study with Miku 🩵</h1>
-        <p>✨ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم</p>
+
+        <h1>Study with Miku</h1>
+
+        <p>
+            ୨୧ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ୨୧
+        </p>
+
     </div>
     """,
     unsafe_allow_html=True
 )
 
 # =========================================================
-# PAGE: HOME
+# HOME
 # =========================================================
 
-if st.session_state.page == "🏠 الرئيسية":
+if st.session_state.page == "home":
 
     st.markdown(
-        "<h2 class='section-title'>🌸 أهلاً بكِ!</h2>",
-        unsafe_allow_html=True
-    )
+        """
+        <div class="cute-card">
 
-    st.write(
-        "أنا ميكو 🩵 وأنا مستعدة أذاكر معكِ "
-        "وأساعدكِ في رحلتك الدراسية! 🎀"
+            <div class="cute-card-title">
+                ♡ أهلاً بكِ!
+            </div>
+
+            <div class="cute-card-text">
+                أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
+                وأساعدكِ في رحلتك الدراسية ୨୧
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     # =====================================================
@@ -196,7 +420,9 @@ if st.session_state.page == "🏠 الرئيسية":
 
     miku_html = f"""
     <!DOCTYPE html>
+
     <html lang="ar">
+
     <head>
 
     <meta charset="UTF-8">
@@ -238,8 +464,8 @@ if st.session_state.page == "🏠 الرئيسية":
         background:
             radial-gradient(
                 circle,
-                rgba(73, 220, 238, 0.28),
-                rgba(73, 220, 238, 0.05),
+                rgba(73,220,238,0.28),
+                rgba(73,220,238,0.05),
                 transparent
             );
 
@@ -251,9 +477,9 @@ if st.session_state.page == "🏠 الرئيسية":
 
     @keyframes glow {{
 
-        0%, 100% {{
+        0%,100% {{
             transform: scale(1);
-            opacity: 0.75;
+            opacity: .75;
         }}
 
         50% {{
@@ -265,7 +491,8 @@ if st.session_state.page == "🏠 الرئيسية":
 
     .character {{
 
-        width: min(320px, 75vw);
+        width: min(320px,75vw);
+
         max-height: 390px;
 
         object-fit: cover;
@@ -279,15 +506,16 @@ if st.session_state.page == "🏠 الرئيسية":
         cursor: pointer;
 
         user-select: none;
+
         -webkit-user-drag: none;
 
         box-shadow:
             0 20px 45px
-            rgba(0, 190, 220, 0.25);
+            rgba(0,190,220,.25);
 
         transition:
-            transform 0.15s ease-out,
-            box-shadow 0.2s ease;
+            transform .15s ease-out,
+            box-shadow .2s ease;
 
         animation:
             float 3.5s ease-in-out infinite;
@@ -295,7 +523,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
     @keyframes float {{
 
-        0%, 100% {{
+        0%,100% {{
             margin-top: 0;
         }}
 
@@ -309,13 +537,13 @@ if st.session_state.page == "🏠 الرئيسية":
 
         box-shadow:
             0 25px 55px
-            rgba(0, 200, 230, 0.40);
+            rgba(0,200,230,.40);
     }}
 
     .character.clicked {{
 
         animation:
-            happyBounce 0.65s ease,
+            happyBounce .65s ease,
             float 3.5s ease-in-out infinite;
     }}
 
@@ -333,7 +561,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
         55% {{
             transform:
-                scale(0.97)
+                scale(.97)
                 rotate(3deg);
         }}
 
@@ -354,6 +582,7 @@ if st.session_state.page == "🏠 الرئيسية":
         position: absolute;
 
         top: 18px;
+
         right: 8%;
 
         z-index: 10;
@@ -368,7 +597,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
         box-shadow:
             0 8px 22px
-            rgba(0, 180, 210, 0.16);
+            rgba(0,180,210,.16);
 
         font-size: 16px;
 
@@ -376,11 +605,11 @@ if st.session_state.page == "🏠 الرئيسية":
 
         opacity: 0;
 
-        transform: scale(0.7);
+        transform: scale(.7);
 
         transition:
-            opacity 0.25s ease,
-            transform 0.25s ease;
+            opacity .25s ease,
+            transform .25s ease;
     }}
 
     .speech.show {{
@@ -397,9 +626,11 @@ if st.session_state.page == "🏠 الرئيسية":
         position: absolute;
 
         bottom: -10px;
+
         left: 25px;
 
         width: 20px;
+
         height: 20px;
 
         background: white;
@@ -442,7 +673,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
             transform:
                 translateY(-80px)
-                scale(0.3)
+                scale(.3)
                 rotate(180deg);
         }}
 
@@ -455,6 +686,7 @@ if st.session_state.page == "🏠 الرئيسية":
         bottom: 8px;
 
         left: 0;
+
         right: 0;
 
         text-align: center;
@@ -477,7 +709,7 @@ if st.session_state.page == "🏠 الرئيسية":
         <div class="glow"></div>
 
         <div class="speech" id="speech">
-            🩵 هييي! ضغطتي عليّ! 🎀
+            ♡ هييي! ضغطتي عليّ! ୨୧
         </div>
 
         <img
@@ -488,7 +720,7 @@ if st.session_state.page == "🏠 الرئيسية":
         >
 
         <div class="hint">
-            🎀 اضغطي على ميكو أو حركي إصبعك عليها 🩵
+            ୨୧ اضغطي على ميكو أو حركي إصبعك عليها ୨୧
         </div>
 
     </div>
@@ -514,7 +746,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
             speech.classList.remove("show");
 
-        }}, 1800);
+        }},1800);
 
     }}
 
@@ -524,7 +756,7 @@ if st.session_state.page == "🏠 الرئيسية":
             document.createElement("div");
 
         const stars =
-            ["✨", "⭐", "🩵", "🎀"];
+            ["✦","♡","୨୧","✧"];
 
         star.className = "star";
 
@@ -537,10 +769,10 @@ if st.session_state.page == "🏠 الرئيسية":
             ];
 
         star.style.left =
-            (35 + Math.random() * 30) + "%";
+            (35 + Math.random()*30) + "%";
 
         star.style.top =
-            (40 + Math.random() * 20) + "%";
+            (40 + Math.random()*20) + "%";
 
         game.appendChild(star);
 
@@ -548,7 +780,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
             star.remove();
 
-        }}, 1000);
+        }},1000);
 
     }}
 
@@ -564,7 +796,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
         showMessage();
 
-        for (
+        for(
             let i = 0;
             i < 6;
             i++
@@ -581,7 +813,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
             isInteracting = false;
 
-        }}, 700);
+        }},700);
 
     }}
 
@@ -590,7 +822,7 @@ if st.session_state.page == "🏠 الرئيسية":
         clientY
     ) {{
 
-        if (isInteracting)
+        if(isInteracting)
             return;
 
         const rect =
@@ -605,10 +837,10 @@ if st.session_state.page == "🏠 الرئيسية":
             rect.height;
 
         const rotateY =
-            (x - 0.5) * 18;
+            (x-.5)*18;
 
         const rotateX =
-            (0.5 - y) * 18;
+            (.5-y)*18;
 
         miku.style.transform =
             `rotateX(${{rotateX}}deg)
@@ -618,7 +850,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
     game.addEventListener(
         "mousemove",
-        (event) => {{
+        event => {{
 
             moveCharacter(
                 event.clientX,
@@ -640,7 +872,7 @@ if st.session_state.page == "🏠 الرئيسية":
 
     game.addEventListener(
         "touchmove",
-        (event) => {{
+        event => {{
 
             const touch =
                 event.touches[0];
@@ -651,7 +883,7 @@ if st.session_state.page == "🏠 الرئيسية":
             );
 
         }},
-        {{ passive: true }}
+        {{passive:true}}
     );
 
     game.addEventListener(
@@ -666,16 +898,12 @@ if st.session_state.page == "🏠 الرئيسية":
 
     miku.addEventListener(
         "click",
-        () => {{
-            react();
-        }}
+        react
     );
 
     miku.addEventListener(
         "touchstart",
-        () => {{
-            react();
-        }}
+        react
     );
 
     </script>
@@ -699,7 +927,7 @@ if st.session_state.page == "🏠 الرئيسية":
     ) + 1
 
     st.markdown(
-        "<h2 class='section-title'>🌱 تقدمك</h2>",
+        "<h2 class='section-title'>✦ تقدمك ✦</h2>",
         unsafe_allow_html=True
     )
 
@@ -708,60 +936,83 @@ if st.session_state.page == "🏠 الرئيسية":
     with col1:
 
         st.metric(
-            "⭐ XP",
+            "♡ XP",
             st.session_state.xp
         )
 
     with col2:
 
         st.metric(
-            "🎀 المستوى",
+            "୨୧ المستوى",
             level
         )
 
 # =========================================================
-# PAGE: STUDY WITH MIKU
+# STUDY PAGE
 # =========================================================
 
-elif st.session_state.page == "📚 دراسة مع ميكو":
+elif st.session_state.page == "study":
 
     st.markdown(
-        "<h2 class='section-title'>📚 دراسة مع ميكو</h2>",
+        "<h2 class='section-title'>♡ دراسة مع ميكو</h2>",
         unsafe_allow_html=True
     )
 
-    st.info(
-        "🎀 هذه الصفحة ستكون مساحة الدراسة الخاصة بكِ مع ميكو."
-    )
+    st.markdown(
+        """
+        <div class="cute-card">
 
-    st.write(
-        "هنا لاحقًا سنضيف الشخصية ثلاثية الأبعاد "
-        "والأنيميشن والصوت والتفاعل معها 🩵✨"
+            <div class="cute-card-title">
+                ୨୧ مساحة الدراسة
+            </div>
+
+            <div class="cute-card-text">
+                هنا ستكون جلستك الخاصة مع ميكو ✦
+                وستكون الشخصية ثلاثية الأبعاد
+                وتتحرك وتتفاعل معكِ.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     st.button(
-        "▶️ ابدئي الدراسة",
+        "✦ ابدئي الدراسة ✦",
         use_container_width=True
     )
 
 # =========================================================
-# PAGE: HOMEWORK
+# HOMEWORK PAGE
 # =========================================================
 
-elif st.session_state.page == "🧠 حل الواجبات":
+elif st.session_state.page == "homework":
 
     st.markdown(
-        "<h2 class='section-title'>🧠 حل الواجبات</h2>",
+        "<h2 class='section-title'>✦ حل الواجبات</h2>",
         unsafe_allow_html=True
     )
 
-    st.info(
-        "📸 لاحقًا تقدرين ترسلين صورة السؤال "
-        "وميـكو تساعدكِ في الحل."
+    st.markdown(
+        """
+        <div class="cute-card">
+
+            <div class="cute-card-title">
+                ♡ أرسلي السؤال لميكو
+            </div>
+
+            <div class="cute-card-text">
+                ارفعي صورة السؤال وسنضيف
+                تحليل الذكاء الاصطناعي هنا لاحقًا ୨୧
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     uploaded = st.file_uploader(
-        "📷 ارفعي صورة السؤال",
+        "୨୧ ارفعي صورة السؤال",
         type=[
             "png",
             "jpg",
@@ -773,84 +1024,98 @@ elif st.session_state.page == "🧠 حل الواجبات":
 
         st.image(
             uploaded,
-            caption="السؤال الذي أرسلتيه 🩵",
+            caption="السؤال الذي أرسلتيه ♡",
             use_container_width=True
         )
 
         st.success(
-            "✨ وصلت الصورة! ميكو جاهزة لتحليلها."
+            "✦ وصلت الصورة! ميكو جاهزة لتحليلها."
         )
 
 # =========================================================
-# PAGE: ASK MIKU
+# ASK MIKU PAGE
 # =========================================================
 
-elif st.session_state.page == "💬 اسألي ميكو":
+elif st.session_state.page == "ask":
 
     st.markdown(
-        "<h2 class='section-title'>💬 اسألي ميكو</h2>",
+        "<h2 class='section-title'>୨୧ اسألي ميكو</h2>",
         unsafe_allow_html=True
     )
 
     question = st.text_area(
-        "اكتبي سؤالك لميكو 🩵",
+        "♡ اكتبي سؤالك لميكو",
         placeholder=
         "مثال: اشرحي لي قانون السرعة بطريقة سهلة..."
     )
 
     if st.button(
-        "🎀 إرسال لميكو",
+        "✦ إرسال لميكو ✦",
         use_container_width=True
     ):
 
         if question.strip():
 
             st.success(
-                "🩵 ميكو استلمت سؤالك!"
+                "♡ ميكو استلمت سؤالك!"
             )
 
             st.write(
-                "🤖 هنا سنربط الذكاء الاصطناعي "
-                "بميكو لاحقًا."
+                "هنا سنربط الذكاء الاصطناعي "
+                "بميكو لاحقًا ୨୧"
             )
 
         else:
 
             st.warning(
-                "اكتبي سؤالك أولًا 🥹"
+                "اكتبي سؤالك أولًا ♡"
             )
 
 # =========================================================
-# PAGE: STUDY TIMER
+# TIMER PAGE
 # =========================================================
 
-elif st.session_state.page == "⏱️ جلسة مذاكرة":
+elif st.session_state.page == "timer":
 
     st.markdown(
-        "<h2 class='section-title'>⏱️ جلسة مذاكرة</h2>",
+        "<h2 class='section-title'>◷ جلسة مذاكرة</h2>",
         unsafe_allow_html=True
     )
 
-    st.write(
-        "اختاري مدة المذاكرة والبريك على كيفك 🩵"
+    st.markdown(
+        """
+        <div class="cute-card">
+
+            <div class="cute-card-title">
+                ♡ اختاري وقتك
+            </div>
+
+            <div class="cute-card-text">
+                أنتِ تحددين وقت الدراسة والبريك
+                وعدد الجولات على كيفك ୨୧
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     study_minutes = st.number_input(
-        "📚 مدة الدراسة بالدقائق",
+        "✦ مدة الدراسة بالدقائق",
         min_value=1,
         max_value=180,
         value=60
     )
 
     break_minutes = st.number_input(
-        "☕ مدة البريك بالدقائق",
+        "♡ مدة البريك بالدقائق",
         min_value=1,
         max_value=60,
         value=10
     )
 
     rounds = st.number_input(
-        "🔄 عدد الجولات",
+        "୨୧ عدد الجولات",
         min_value=1,
         max_value=10,
         value=1
@@ -859,39 +1124,39 @@ elif st.session_state.page == "⏱️ جلسة مذاكرة":
     st.divider()
 
     st.write(
-        f"📚 الدراسة: **{study_minutes} دقيقة**"
+        f"✦ الدراسة: **{study_minutes} دقيقة**"
     )
 
     st.write(
-        f"☕ البريك: **{break_minutes} دقيقة**"
+        f"♡ البريك: **{break_minutes} دقيقة**"
     )
 
     st.write(
-        f"🔄 الجولات: **{rounds}**"
+        f"୨୧ الجولات: **{rounds}**"
     )
 
     if st.button(
-        "▶️ ابدئي الجلسة",
+        "✦ ابدئي الجلسة ✦",
         use_container_width=True
     ):
 
         st.success(
-            "🎀 جلسة المذاكرة جاهزة!"
+            "♡ جلسة المذاكرة جاهزة!"
         )
 
         st.write(
-            "⏳ المؤقت التفاعلي وميكو التي تدرس معكِ "
-            "سنضيفهما في المرحلة القادمة."
+            "المؤقت التفاعلي وميكو التي تدرس معكِ "
+            "سنضيفهما في المرحلة القادمة ୨୧"
         )
 
 # =========================================================
-# PAGE: ACHIEVEMENTS
+# ACHIEVEMENTS PAGE
 # =========================================================
 
-elif st.session_state.page == "⭐ إنجازاتي":
+elif st.session_state.page == "achievements":
 
     st.markdown(
-        "<h2 class='section-title'>⭐ إنجازاتي</h2>",
+        "<h2 class='section-title'>☆ إنجازاتي ☆</h2>",
         unsafe_allow_html=True
     )
 
@@ -899,15 +1164,21 @@ elif st.session_state.page == "⭐ إنجازاتي":
         st.session_state.xp // 100
     ) + 1
 
-    st.metric(
-        "⭐ مجموع XP",
-        st.session_state.xp
-    )
+    col1, col2 = st.columns(2)
 
-    st.metric(
-        "🎀 المستوى",
-        level
-    )
+    with col1:
+
+        st.metric(
+            "♡ مجموع XP",
+            st.session_state.xp
+        )
+
+    with col2:
+
+        st.metric(
+            "୨୧ المستوى",
+            level
+        )
 
     completed = [
         task
@@ -915,25 +1186,37 @@ elif st.session_state.page == "⭐ إنجازاتي":
         if task["done"]
     ]
 
-    st.write(
-        f"🏆 المهام المكتملة: **{len(completed)}**"
+    st.markdown(
+        f"""
+        <div class="cute-card">
+
+            <div class="cute-card-title">
+                ✦ إنجازاتك
+            </div>
+
+            <div class="cute-card-text">
+                عدد المهام المكتملة:
+                <b>{len(completed)}</b>
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     if completed:
 
-        st.divider()
-
         for task in completed:
 
             st.write(
-                f"✅ {task['subject']} — "
+                f"♡ {task['subject']} — "
                 f"{task['name']}"
             )
 
     else:
 
         st.info(
-            "لسه ما عندك إنجازات مكتملة 🥹🩵"
+            "لسه ما عندك إنجازات مكتملة ♡"
         )
 
 # =========================================================
@@ -942,6 +1225,16 @@ elif st.session_state.page == "⭐ إنجازاتي":
 
 st.divider()
 
-st.caption(
-    "🩵 Study with Miku — your cute study companion 🎀"
+st.markdown(
+    """
+    <div style="
+        text-align:center;
+        color:#7ab8bf;
+        font-size:15px;
+        padding:10px;
+    ">
+        ୨୧ ✦ ♡ Study with Miku ♡ ✦ ୨୧
+    </div>
+    """,
+    unsafe_allow_html=True
 )
