@@ -8,7 +8,7 @@ import base64
 
 st.set_page_config(
     page_title="Study with Miku",
-    page_icon="୨୧",
+    page_icon="🎀",
     layout="centered"
 )
 
@@ -48,18 +48,25 @@ st.markdown(
     <style>
 
     @import url(
-        'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap'
+        'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap'
     );
+
+    /* =========================
+       GENERAL FONT
+       ========================= */
 
     html,
     body,
-    [class*="css"],
     .stApp,
     button,
     input,
     textarea,
-    select {
-        font-family: 'Baloo 2', sans-serif !important;
+    select,
+    label {
+        font-family:
+            'Tajawal',
+            'Baloo 2',
+            sans-serif !important;
     }
 
     .stApp {
@@ -77,9 +84,9 @@ st.markdown(
             #ffffff;
     }
 
-    /* =====================================================
+    /* =========================
        HEADER
-       ===================================================== */
+       ========================= */
 
     .main-title {
         text-align: center;
@@ -100,27 +107,15 @@ st.markdown(
             rgba(83, 205, 220, 0.13);
 
         margin-bottom: 18px;
-
-        position: relative;
-        overflow: hidden;
-    }
-
-    .main-title::before {
-        content: "୨୧ ✦ ♡ ✦ ୨୧";
-
-        position: absolute;
-        top: 6px;
-        left: 0;
-        right: 0;
-
-        color: #8bdde5;
-        font-size: 15px;
-        letter-spacing: 5px;
     }
 
     .main-title h1 {
         color: #35b4c4;
-        margin: 12px 0 5px 0;
+        margin: 0 0 7px 0;
+        font-family:
+            'Baloo 2',
+            'Tajawal',
+            sans-serif !important;
         font-size: 42px;
         font-weight: 700;
     }
@@ -132,26 +127,22 @@ st.markdown(
         font-weight: 500;
     }
 
-    /* =====================================================
+    /* =========================
        TITLES
-       ===================================================== */
+       ========================= */
 
     .section-title {
         color: #35aebb;
+        font-family:
+            'Tajawal',
+            sans-serif !important;
         font-weight: 700;
         margin-top: 8px;
     }
 
-    .cute-subtitle {
-        text-align: center;
-        color: #70aeb5;
-        font-size: 17px;
-        padding: 5px;
-    }
-
-    /* =====================================================
+    /* =========================
        SIDEBAR
-       ===================================================== */
+       ========================= */
 
     [data-testid="stSidebar"] {
         background:
@@ -168,7 +159,11 @@ st.markdown(
     .sidebar-title {
         text-align: center;
         color: #35adbb;
-        font-size: 27px;
+        font-family:
+            'Baloo 2',
+            'Tajawal',
+            sans-serif !important;
+        font-size: 28px;
         font-weight: 700;
         padding: 10px 5px 3px;
     }
@@ -178,22 +173,16 @@ st.markdown(
         color: #75cbd4;
         font-size: 18px;
         letter-spacing: 4px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
     .welcome-box {
-        background: rgba(255,255,255,0.88);
-
+        background: rgba(255,255,255,0.9);
         border: 2px solid #c8f2f7;
-
         border-radius: 22px;
-
         padding: 15px;
-
         text-align: center;
-
         color: #579ba4;
-
         margin-bottom: 18px;
 
         box-shadow:
@@ -201,9 +190,9 @@ st.markdown(
             rgba(83,205,220,0.08);
     }
 
-    /* =====================================================
+    /* =========================
        BUTTONS
-       ===================================================== */
+       ========================= */
 
     .stButton > button {
         border-radius: 18px !important;
@@ -220,6 +209,7 @@ st.markdown(
         color: #429eaa !important;
 
         font-family:
+            'Tajawal',
             'Baloo 2',
             sans-serif !important;
 
@@ -240,9 +230,9 @@ st.markdown(
         border-color: #8bdde5 !important;
     }
 
-    /* =====================================================
+    /* =========================
        CARDS
-       ===================================================== */
+       ========================= */
 
     .cute-card {
         background:
@@ -270,11 +260,12 @@ st.markdown(
     .cute-card-text {
         color: #669fa6;
         font-size: 16px;
+        line-height: 1.8;
     }
 
-    /* =====================================================
+    /* =========================
        METRICS
-       ===================================================== */
+       ========================= */
 
     [data-testid="stMetric"] {
         background: white;
@@ -290,26 +281,29 @@ st.markdown(
             rgba(70,190,205,0.07);
     }
 
-    /* =====================================================
+    /* =========================
        INPUTS
-       ===================================================== */
+       ========================= */
 
     input,
     textarea {
         border-radius: 17px !important;
         border: 2px solid #d7f4f7 !important;
+        font-family:
+            'Tajawal',
+            sans-serif !important;
     }
 
-    /* =====================================================
+    /* =========================
        DECORATION
-       ===================================================== */
+       ========================= */
 
     .tiny-decoration {
         text-align: center;
         color: #82d2da;
-        font-size: 16px;
-        letter-spacing: 6px;
-        margin: 10px 0;
+        font-size: 17px;
+        letter-spacing: 5px;
+        margin: 12px 0;
     }
 
     </style>
@@ -328,15 +322,21 @@ with st.sidebar:
         <div class="sidebar-title">
             Study with Miku
         </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        <div class="sidebar-decoration">
-            ୨୧ ✦ ♡ ✦ ୨୧
-        </div>
+    st.markdown(
+        "♡  ✦  ✧  🩵  ✧  ✦  ♡",
+        unsafe_allow_html=True
+    )
 
+    st.markdown(
+        """
         <div class="welcome-box">
             こんにちは ♡<br>
             أهلاً بكِ في عالم ميكو ✦<br>
-            خلينا نذاكر مع بعض ୨୧
+            خلينا نذاكر مع بعض 🩵
         </div>
         """,
         unsafe_allow_html=True
@@ -346,7 +346,7 @@ with st.sidebar:
         ("home", "⌂  الرئيسية"),
         ("study", "♡  دراسة مع ميكو"),
         ("homework", "✦  حل الواجبات"),
-        ("ask", "୨୧  اسألي ميكو"),
+        ("ask", "🩵  اسألي ميكو"),
         ("timer", "◷  جلسة مذاكرة"),
         ("achievements", "☆  إنجازاتي")
     ]
@@ -365,7 +365,7 @@ with st.sidebar:
     st.markdown(
         """
         <div class="tiny-decoration">
-            ♡ ୨୧ ✦ ୨୧ ♡
+            ♡  ✧  ✦  ✧  ♡
         </div>
         """,
         unsafe_allow_html=True
@@ -378,13 +378,8 @@ with st.sidebar:
 st.markdown(
     """
     <div class="main-title">
-
         <h1>Study with Miku</h1>
-
-        <p>
-            ୨୧ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ୨୧
-        </p>
-
+        <p>♡ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ♡</p>
     </div>
     """,
     unsafe_allow_html=True
@@ -399,16 +394,14 @@ if st.session_state.page == "home":
     st.markdown(
         """
         <div class="cute-card">
-
             <div class="cute-card-title">
                 ♡ أهلاً بكِ!
             </div>
 
             <div class="cute-card-text">
                 أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
-                وأساعدكِ في رحلتك الدراسية ୨୧
+                وأساعدكِ في رحلتك الدراسية 🩵
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
@@ -709,7 +702,7 @@ if st.session_state.page == "home":
         <div class="glow"></div>
 
         <div class="speech" id="speech">
-            ♡ هييي! ضغطتي عليّ! ୨୧
+            ♡ هييي! ضغطتي عليّ! ✦
         </div>
 
         <img
@@ -720,7 +713,7 @@ if st.session_state.page == "home":
         >
 
         <div class="hint">
-            ୨୧ اضغطي على ميكو أو حركي إصبعك عليها ୨୧
+            ♡ اضغطي على ميكو أو حركي إصبعك عليها ♡
         </div>
 
     </div>
@@ -756,7 +749,7 @@ if st.session_state.page == "home":
             document.createElement("div");
 
         const stars =
-            ["✦","♡","୨୧","✧"];
+            ["✦","♡","✧","🩵"];
 
         star.className = "star";
 
@@ -943,7 +936,7 @@ if st.session_state.page == "home":
     with col2:
 
         st.metric(
-            "୨୧ المستوى",
+            "✧ المستوى",
             level
         )
 
@@ -961,17 +954,15 @@ elif st.session_state.page == "study":
     st.markdown(
         """
         <div class="cute-card">
-
             <div class="cute-card-title">
-                ୨୧ مساحة الدراسة
+                ✦ مساحة الدراسة
             </div>
 
             <div class="cute-card-text">
-                هنا ستكون جلستك الخاصة مع ميكو ✦
+                هنا ستكون جلستك الخاصة مع ميكو 🩵
                 وستكون الشخصية ثلاثية الأبعاد
                 وتتحرك وتتفاعل معكِ.
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
@@ -996,23 +987,21 @@ elif st.session_state.page == "homework":
     st.markdown(
         """
         <div class="cute-card">
-
             <div class="cute-card-title">
                 ♡ أرسلي السؤال لميكو
             </div>
 
             <div class="cute-card-text">
                 ارفعي صورة السؤال وسنضيف
-                تحليل الذكاء الاصطناعي هنا لاحقًا ୨୧
+                تحليل الذكاء الاصطناعي هنا لاحقًا 🩵
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
     )
 
     uploaded = st.file_uploader(
-        "୨୧ ارفعي صورة السؤال",
+        "♡ ارفعي صورة السؤال",
         type=[
             "png",
             "jpg",
@@ -1039,7 +1028,7 @@ elif st.session_state.page == "homework":
 elif st.session_state.page == "ask":
 
     st.markdown(
-        "<h2 class='section-title'>୨୧ اسألي ميكو</h2>",
+        "<h2 class='section-title'>🩵 اسألي ميكو</h2>",
         unsafe_allow_html=True
     )
 
@@ -1062,7 +1051,7 @@ elif st.session_state.page == "ask":
 
             st.write(
                 "هنا سنربط الذكاء الاصطناعي "
-                "بميكو لاحقًا ୨୧"
+                "بميكو لاحقًا 🩵"
             )
 
         else:
@@ -1085,16 +1074,14 @@ elif st.session_state.page == "timer":
     st.markdown(
         """
         <div class="cute-card">
-
             <div class="cute-card-title">
                 ♡ اختاري وقتك
             </div>
 
             <div class="cute-card-text">
                 أنتِ تحددين وقت الدراسة والبريك
-                وعدد الجولات على كيفك ୨୧
+                وعدد الجولات على كيفك 🩵
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
@@ -1115,7 +1102,7 @@ elif st.session_state.page == "timer":
     )
 
     rounds = st.number_input(
-        "୨୧ عدد الجولات",
+        "✧ عدد الجولات",
         min_value=1,
         max_value=10,
         value=1
@@ -1132,7 +1119,7 @@ elif st.session_state.page == "timer":
     )
 
     st.write(
-        f"୨୧ الجولات: **{rounds}**"
+        f"✧ الجولات: **{rounds}**"
     )
 
     if st.button(
@@ -1146,7 +1133,7 @@ elif st.session_state.page == "timer":
 
         st.write(
             "المؤقت التفاعلي وميكو التي تدرس معكِ "
-            "سنضيفهما في المرحلة القادمة ୨୧"
+            "سنضيفهما في المرحلة القادمة 🩵"
         )
 
 # =========================================================
@@ -1176,7 +1163,7 @@ elif st.session_state.page == "achievements":
     with col2:
 
         st.metric(
-            "୨୧ المستوى",
+            "✧ المستوى",
             level
         )
 
@@ -1189,7 +1176,6 @@ elif st.session_state.page == "achievements":
     st.markdown(
         f"""
         <div class="cute-card">
-
             <div class="cute-card-title">
                 ✦ إنجازاتك
             </div>
@@ -1198,7 +1184,6 @@ elif st.session_state.page == "achievements":
                 عدد المهام المكتملة:
                 <b>{len(completed)}</b>
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
@@ -1233,7 +1218,7 @@ st.markdown(
         font-size:15px;
         padding:10px;
     ">
-        ୨୧ ✦ ♡ Study with Miku ♡ ✦ ୨୧
+        ♡  ✦  Study with Miku  ✦  ♡
     </div>
     """,
     unsafe_allow_html=True
