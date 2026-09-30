@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import base64
+import textwrap
 
 # =========================================================
 # PAGE SETTINGS
@@ -44,270 +45,273 @@ except FileNotFoundError:
 # =========================================================
 
 st.markdown(
-    """
-    <style>
+    textwrap.dedent(
+        """
+        <style>
 
-    @import url(
-        'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap'
-    );
+        @import url(
+            'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&family=Baloo+2:wght@400;500;600;700&display=swap'
+        );
 
-    /* =========================
-       GENERAL FONT
-       ========================= */
+        html,
+        body,
+        [class*="css"],
+        .stApp,
+        button,
+        input,
+        textarea,
+        select {
+            font-family: 'Tajawal', 'Baloo 2', sans-serif !important;
+        }
 
-    html,
-    body,
-    .stApp,
-    button,
-    input,
-    textarea,
-    select,
-    label {
-        font-family:
-            'Tajawal',
-            'Baloo 2',
-            sans-serif !important;
-    }
+        .stApp {
+            background:
+                radial-gradient(
+                    circle at 10% 5%,
+                    #e8fbff 0%,
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 20%,
+                    #eafcff 0%,
+                    transparent 30%
+                ),
+                #ffffff;
+        }
 
-    .stApp {
-        background:
-            radial-gradient(
-                circle at 10% 5%,
-                #e8fbff 0%,
-                transparent 28%
-            ),
-            radial-gradient(
-                circle at 90% 20%,
-                #eafcff 0%,
-                transparent 30%
-            ),
-            #ffffff;
-    }
+        /* =====================================================
+           HEADER
+        ===================================================== */
 
-    /* =========================
-       HEADER
-       ========================= */
+        .main-title {
+            text-align: center;
+            padding: 24px 18px;
+            border-radius: 30px;
 
-    .main-title {
-        text-align: center;
-        padding: 24px 18px;
-        border-radius: 30px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #e8fbff,
+                    #ffffff
+                );
 
-        background:
-            linear-gradient(
-                135deg,
-                #e8fbff,
-                #ffffff
-            );
+            border: 2px solid #c8f2f7;
 
-        border: 2px solid #c8f2f7;
+            box-shadow:
+                0 12px 35px
+                rgba(83, 205, 220, 0.13);
 
-        box-shadow:
-            0 12px 35px
-            rgba(83, 205, 220, 0.13);
+            margin-bottom: 18px;
 
-        margin-bottom: 18px;
-    }
+            position: relative;
+            overflow: hidden;
+        }
 
-    .main-title h1 {
-        color: #35b4c4;
-        margin: 0 0 7px 0;
-        font-family:
-            'Baloo 2',
-            'Tajawal',
-            sans-serif !important;
-        font-size: 42px;
-        font-weight: 700;
-    }
+        .main-title::before {
+            content: "୨୧ ✦ ♡ ✦ ୨୧";
 
-    .main-title p {
-        color: #579ba4;
-        font-size: 18px;
-        margin: 0;
-        font-weight: 500;
-    }
+            position: absolute;
+            top: 6px;
+            left: 0;
+            right: 0;
 
-    /* =========================
-       TITLES
-       ========================= */
+            color: #8bdde5;
+            font-size: 15px;
+            letter-spacing: 5px;
+        }
 
-    .section-title {
-        color: #35aebb;
-        font-family:
-            'Tajawal',
-            sans-serif !important;
-        font-weight: 700;
-        margin-top: 8px;
-    }
+        .main-title h1 {
+            color: #35b4c4;
+            margin: 12px 0 5px 0;
+            font-size: 42px;
+            font-weight: 800;
+        }
 
-    /* =========================
-       SIDEBAR
-       ========================= */
+        .main-title p {
+            color: #579ba4;
+            font-size: 18px;
+            margin: 0;
+            font-weight: 500;
+        }
 
-    [data-testid="stSidebar"] {
-        background:
-            linear-gradient(
-                180deg,
-                #e7fbff 0%,
-                #f9feff 55%,
-                #ffffff 100%
-            );
+        /* =====================================================
+           TITLES
+        ===================================================== */
 
-        border-right: 2px solid #d7f5f8;
-    }
+        .section-title {
+            color: #35aebb;
+            font-weight: 800;
+            margin-top: 8px;
+        }
 
-    .sidebar-title {
-        text-align: center;
-        color: #35adbb;
-        font-family:
-            'Baloo 2',
-            'Tajawal',
-            sans-serif !important;
-        font-size: 28px;
-        font-weight: 700;
-        padding: 10px 5px 3px;
-    }
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
 
-    .sidebar-decoration {
-        text-align: center;
-        color: #75cbd4;
-        font-size: 18px;
-        letter-spacing: 4px;
-        margin-bottom: 14px;
-    }
+        [data-testid="stSidebar"] {
+            background:
+                linear-gradient(
+                    180deg,
+                    #e7fbff 0%,
+                    #f9feff 55%,
+                    #ffffff 100%
+                );
 
-    .welcome-box {
-        background: rgba(255,255,255,0.9);
-        border: 2px solid #c8f2f7;
-        border-radius: 22px;
-        padding: 15px;
-        text-align: center;
-        color: #579ba4;
-        margin-bottom: 18px;
+            border-right: 2px solid #d7f5f8;
+        }
 
-        box-shadow:
-            0 8px 22px
-            rgba(83,205,220,0.08);
-    }
+        .sidebar-title {
+            text-align: center;
+            color: #35adbb;
+            font-size: 27px;
+            font-weight: 800;
+            padding: 10px 5px 3px;
+        }
 
-    /* =========================
-       BUTTONS
-       ========================= */
+        .sidebar-decoration {
+            text-align: center;
+            color: #75cbd4;
+            font-size: 18px;
+            letter-spacing: 4px;
+            margin-bottom: 12px;
+        }
 
-    .stButton > button {
-        border-radius: 18px !important;
+        .welcome-box {
+            background: rgba(255,255,255,0.88);
 
-        border: 1.5px solid #c8f2f7 !important;
+            border: 2px solid #c8f2f7;
 
-        background:
-            linear-gradient(
-                135deg,
-                #ffffff,
-                #f0fcff
-            ) !important;
+            border-radius: 22px;
 
-        color: #429eaa !important;
+            padding: 15px;
 
-        font-family:
-            'Tajawal',
-            'Baloo 2',
-            sans-serif !important;
+            text-align: center;
 
-        font-weight: 600 !important;
+            color: #579ba4;
 
-        transition:
-            transform 0.15s ease,
-            box-shadow 0.15s ease;
-    }
+            margin-bottom: 18px;
 
-    .stButton > button:hover {
-        transform: translateY(-2px);
+            box-shadow:
+                0 8px 22px
+                rgba(83,205,220,0.08);
+        }
 
-        box-shadow:
-            0 8px 20px
-            rgba(70,190,205,0.15);
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
 
-        border-color: #8bdde5 !important;
-    }
+        .stButton > button {
+            border-radius: 18px !important;
 
-    /* =========================
-       CARDS
-       ========================= */
+            border: 1.5px solid #c8f2f7 !important;
 
-    .cute-card {
-        background:
-            rgba(255,255,255,0.92);
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #f0fcff
+                ) !important;
 
-        border: 2px solid #d4f4f7;
+            color: #429eaa !important;
 
-        border-radius: 25px;
+            font-family:
+                'Tajawal',
+                sans-serif !important;
 
-        padding: 20px;
+            font-weight: 700 !important;
 
-        margin: 12px 0;
+            transition:
+                transform 0.15s ease,
+                box-shadow 0.15s ease;
+        }
 
-        box-shadow:
-            0 8px 25px
-            rgba(80,190,205,0.08);
-    }
+        .stButton > button:hover {
+            transform: translateY(-2px);
 
-    .cute-card-title {
-        color: #36adbb;
-        font-size: 22px;
-        font-weight: 700;
-    }
+            box-shadow:
+                0 8px 20px
+                rgba(70,190,205,0.15);
 
-    .cute-card-text {
-        color: #669fa6;
-        font-size: 16px;
-        line-height: 1.8;
-    }
+            border-color: #8bdde5 !important;
+        }
 
-    /* =========================
-       METRICS
-       ========================= */
+        /* =====================================================
+           CARDS
+        ===================================================== */
 
-    [data-testid="stMetric"] {
-        background: white;
+        .cute-card {
+            background:
+                rgba(255,255,255,0.92);
 
-        border: 2px solid #d5f4f7;
+            border: 2px solid #d4f4f7;
 
-        padding: 15px;
+            border-radius: 25px;
 
-        border-radius: 22px;
+            padding: 20px;
 
-        box-shadow:
-            0 8px 20px
-            rgba(70,190,205,0.07);
-    }
+            margin: 12px 0;
 
-    /* =========================
-       INPUTS
-       ========================= */
+            box-shadow:
+                0 8px 25px
+                rgba(80,190,205,0.08);
+        }
 
-    input,
-    textarea {
-        border-radius: 17px !important;
-        border: 2px solid #d7f4f7 !important;
-        font-family:
-            'Tajawal',
-            sans-serif !important;
-    }
+        .cute-card-title {
+            color: #36adbb;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
 
-    /* =========================
-       DECORATION
-       ========================= */
+        .cute-card-text {
+            color: #669fa6;
+            font-size: 16px;
+            line-height: 1.9;
+        }
 
-    .tiny-decoration {
-        text-align: center;
-        color: #82d2da;
-        font-size: 17px;
-        letter-spacing: 5px;
-        margin: 12px 0;
-    }
+        /* =====================================================
+           METRICS
+        ===================================================== */
 
-    </style>
-    """,
+        [data-testid="stMetric"] {
+            background: white;
+
+            border: 2px solid #d5f4f7;
+
+            padding: 15px;
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 8px 20px
+                rgba(70,190,205,0.07);
+        }
+
+        /* =====================================================
+           INPUTS
+        ===================================================== */
+
+        input,
+        textarea {
+            border-radius: 17px !important;
+            border: 2px solid #d7f4f7 !important;
+        }
+
+        /* =====================================================
+           DECORATION
+        ===================================================== */
+
+        .tiny-decoration {
+            text-align: center;
+            color: #82d2da;
+            font-size: 16px;
+            letter-spacing: 6px;
+            margin: 10px 0;
+        }
+
+        </style>
+        """
+    ),
     unsafe_allow_html=True
 )
 
@@ -318,27 +322,23 @@ st.markdown(
 with st.sidebar:
 
     st.markdown(
-        """
-        <div class="sidebar-title">
-            Study with Miku
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        textwrap.dedent(
+            """
+            <div class="sidebar-title">
+                Study with Miku
+            </div>
 
-    st.markdown(
-        "♡  ✦  ✧  🩵  ✧  ✦  ♡",
-        unsafe_allow_html=True
-    )
+            <div class="sidebar-decoration">
+                ୨୧ ✦ ♡ ✦ ୨୧
+            </div>
 
-    st.markdown(
-        """
-        <div class="welcome-box">
-            こんにちは ♡<br>
-            أهلاً بكِ في عالم ميكو ✦<br>
-            خلينا نذاكر مع بعض 🩵
-        </div>
-        """,
+            <div class="welcome-box">
+                こんにちは ♡<br>
+                أهلاً بكِ في عالم ميكو ✦<br>
+                خلينا نذاكر مع بعض ୨୧
+            </div>
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -346,7 +346,7 @@ with st.sidebar:
         ("home", "⌂  الرئيسية"),
         ("study", "♡  دراسة مع ميكو"),
         ("homework", "✦  حل الواجبات"),
-        ("ask", "🩵  اسألي ميكو"),
+        ("ask", "୨୧  اسألي ميكو"),
         ("timer", "◷  جلسة مذاكرة"),
         ("achievements", "☆  إنجازاتي")
     ]
@@ -358,16 +358,17 @@ with st.sidebar:
             use_container_width=True,
             key=f"page_{page_id}"
         ):
-
             st.session_state.page = page_id
             st.rerun()
 
     st.markdown(
-        """
-        <div class="tiny-decoration">
-            ♡  ✧  ✦  ✧  ♡
-        </div>
-        """,
+        textwrap.dedent(
+            """
+            <div class="tiny-decoration">
+                ♡ ୨୧ ✦ ୨୧ ♡
+            </div>
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -376,12 +377,19 @@ with st.sidebar:
 # =========================================================
 
 st.markdown(
-    """
-    <div class="main-title">
-        <h1>Study with Miku</h1>
-        <p>♡ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ♡</p>
-    </div>
-    """,
+    textwrap.dedent(
+        """
+        <div class="main-title">
+
+            <h1>Study with Miku</h1>
+
+            <p>
+                ୨୧ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ୨୧
+            </p>
+
+        </div>
+        """
+    ),
     unsafe_allow_html=True
 )
 
@@ -392,18 +400,22 @@ st.markdown(
 if st.session_state.page == "home":
 
     st.markdown(
-        """
-        <div class="cute-card">
-            <div class="cute-card-title">
-                ♡ أهلاً بكِ!
-            </div>
+        textwrap.dedent(
+            """
+            <div class="cute-card">
 
-            <div class="cute-card-text">
-                أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
-                وأساعدكِ في رحلتك الدراسية 🩵
+                <div class="cute-card-title">
+                    ♡ أهلاً بكِ!
+                </div>
+
+                <div class="cute-card-text">
+                    أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
+                    وأساعدكِ في رحلتك الدراسية ୨୧
+                </div>
+
             </div>
-        </div>
-        """,
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -702,7 +714,7 @@ if st.session_state.page == "home":
         <div class="glow"></div>
 
         <div class="speech" id="speech">
-            ♡ هييي! ضغطتي عليّ! ✦
+            ♡ هييي! ضغطتي عليّ! ୨୧
         </div>
 
         <img
@@ -713,7 +725,7 @@ if st.session_state.page == "home":
         >
 
         <div class="hint">
-            ♡ اضغطي على ميكو أو حركي إصبعك عليها ♡
+            ୨୧ اضغطي على ميكو أو حركي إصبعك عليها ୨୧
         </div>
 
     </div>
@@ -749,7 +761,7 @@ if st.session_state.page == "home":
             document.createElement("div");
 
         const stars =
-            ["✦","♡","✧","🩵"];
+            ["✦","♡","୨୧","✧"];
 
         star.className = "star";
 
@@ -936,7 +948,7 @@ if st.session_state.page == "home":
     with col2:
 
         st.metric(
-            "✧ المستوى",
+            "୨୧ المستوى",
             level
         )
 
@@ -952,19 +964,23 @@ elif st.session_state.page == "study":
     )
 
     st.markdown(
-        """
-        <div class="cute-card">
-            <div class="cute-card-title">
-                ✦ مساحة الدراسة
-            </div>
+        textwrap.dedent(
+            """
+            <div class="cute-card">
 
-            <div class="cute-card-text">
-                هنا ستكون جلستك الخاصة مع ميكو 🩵
-                وستكون الشخصية ثلاثية الأبعاد
-                وتتحرك وتتفاعل معكِ.
+                <div class="cute-card-title">
+                    ୨୧ مساحة الدراسة
+                </div>
+
+                <div class="cute-card-text">
+                    هنا ستكون جلستك الخاصة مع ميكو ✦
+                    وستكون الشخصية ثلاثية الأبعاد
+                    وتتحرك وتتفاعل معكِ.
+                </div>
+
             </div>
-        </div>
-        """,
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -985,23 +1001,27 @@ elif st.session_state.page == "homework":
     )
 
     st.markdown(
-        """
-        <div class="cute-card">
-            <div class="cute-card-title">
-                ♡ أرسلي السؤال لميكو
-            </div>
+        textwrap.dedent(
+            """
+            <div class="cute-card">
 
-            <div class="cute-card-text">
-                ارفعي صورة السؤال وسنضيف
-                تحليل الذكاء الاصطناعي هنا لاحقًا 🩵
+                <div class="cute-card-title">
+                    ♡ أرسلي السؤال لميكو
+                </div>
+
+                <div class="cute-card-text">
+                    ارفعي صورة السؤال وسنضيف
+                    تحليل الذكاء الاصطناعي هنا لاحقًا ୨୧
+                </div>
+
             </div>
-        </div>
-        """,
+            """
+        ),
         unsafe_allow_html=True
     )
 
     uploaded = st.file_uploader(
-        "♡ ارفعي صورة السؤال",
+        "୨୧ ارفعي صورة السؤال",
         type=[
             "png",
             "jpg",
@@ -1028,7 +1048,7 @@ elif st.session_state.page == "homework":
 elif st.session_state.page == "ask":
 
     st.markdown(
-        "<h2 class='section-title'>🩵 اسألي ميكو</h2>",
+        "<h2 class='section-title'>୨୧ اسألي ميكو</h2>",
         unsafe_allow_html=True
     )
 
@@ -1051,7 +1071,7 @@ elif st.session_state.page == "ask":
 
             st.write(
                 "هنا سنربط الذكاء الاصطناعي "
-                "بميكو لاحقًا 🩵"
+                "بميكو لاحقًا ୨୧"
             )
 
         else:
@@ -1072,18 +1092,22 @@ elif st.session_state.page == "timer":
     )
 
     st.markdown(
-        """
-        <div class="cute-card">
-            <div class="cute-card-title">
-                ♡ اختاري وقتك
-            </div>
+        textwrap.dedent(
+            """
+            <div class="cute-card">
 
-            <div class="cute-card-text">
-                أنتِ تحددين وقت الدراسة والبريك
-                وعدد الجولات على كيفك 🩵
+                <div class="cute-card-title">
+                    ♡ اختاري وقتك
+                </div>
+
+                <div class="cute-card-text">
+                    أنتِ تحددين وقت الدراسة والبريك
+                    وعدد الجولات على كيفك ୨୧
+                </div>
+
             </div>
-        </div>
-        """,
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -1102,7 +1126,7 @@ elif st.session_state.page == "timer":
     )
 
     rounds = st.number_input(
-        "✧ عدد الجولات",
+        "୨୧ عدد الجولات",
         min_value=1,
         max_value=10,
         value=1
@@ -1119,7 +1143,7 @@ elif st.session_state.page == "timer":
     )
 
     st.write(
-        f"✧ الجولات: **{rounds}**"
+        f"୨୧ الجولات: **{rounds}**"
     )
 
     if st.button(
@@ -1133,7 +1157,7 @@ elif st.session_state.page == "timer":
 
         st.write(
             "المؤقت التفاعلي وميكو التي تدرس معكِ "
-            "سنضيفهما في المرحلة القادمة 🩵"
+            "سنضيفهما في المرحلة القادمة ୨୧"
         )
 
 # =========================================================
@@ -1163,7 +1187,7 @@ elif st.session_state.page == "achievements":
     with col2:
 
         st.metric(
-            "✧ المستوى",
+            "୨୧ المستوى",
             level
         )
 
@@ -1174,18 +1198,22 @@ elif st.session_state.page == "achievements":
     ]
 
     st.markdown(
-        f"""
-        <div class="cute-card">
-            <div class="cute-card-title">
-                ✦ إنجازاتك
-            </div>
+        textwrap.dedent(
+            f"""
+            <div class="cute-card">
 
-            <div class="cute-card-text">
-                عدد المهام المكتملة:
-                <b>{len(completed)}</b>
+                <div class="cute-card-title">
+                    ✦ إنجازاتك
+                </div>
+
+                <div class="cute-card-text">
+                    عدد المهام المكتملة:
+                    <b>{len(completed)}</b>
+                </div>
+
             </div>
-        </div>
-        """,
+            """
+        ),
         unsafe_allow_html=True
     )
 
@@ -1211,15 +1239,17 @@ elif st.session_state.page == "achievements":
 st.divider()
 
 st.markdown(
-    """
-    <div style="
-        text-align:center;
-        color:#7ab8bf;
-        font-size:15px;
-        padding:10px;
-    ">
-        ♡  ✦  Study with Miku  ✦  ♡
-    </div>
-    """,
+    textwrap.dedent(
+        """
+        <div style="
+            text-align:center;
+            color:#7ab8bf;
+            font-size:15px;
+            padding:10px;
+        ">
+            ୨୧ ✦ ♡ Study with Miku ♡ ✦ ୨୧
+        </div>
+        """
+    ),
     unsafe_allow_html=True
 )
