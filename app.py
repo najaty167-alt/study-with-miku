@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import base64
-import textwrap
 
 # =========================================================
 # PAGE SETTINGS
@@ -45,274 +44,236 @@ except FileNotFoundError:
 # =========================================================
 
 st.markdown(
-    textwrap.dedent(
-        """
-        <style>
+"""
+<style>
 
-        @import url(
-            'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&family=Baloo+2:wght@400;500;600;700&display=swap'
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap');
+
+html,
+body,
+.stApp,
+button,
+input,
+textarea,
+select,
+[data-testid="stAppViewContainer"],
+[data-testid="stSidebar"] {
+    font-family: 'Cairo', 'Baloo 2', sans-serif !important;
+}
+
+.stApp {
+    background:
+        radial-gradient(
+            circle at 10% 5%,
+            #e8fbff 0%,
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 20%,
+            #eafcff 0%,
+            transparent 30%
+        ),
+        #ffffff;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.main-title {
+    text-align: center;
+    padding: 24px 18px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #e8fbff, #ffffff);
+    border: 2px solid #c8f2f7;
+    box-shadow: 0 12px 35px rgba(83, 205, 220, 0.13);
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.main-title::before {
+    content: "🎀 ✦ ♡ ✦ 🎀";
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    color: #8bdde5;
+    font-size: 15px;
+    letter-spacing: 4px;
+}
+
+.main-title h1 {
+    color: #35b4c4;
+    margin: 12px 0 5px 0;
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.main-title p {
+    color: #579ba4;
+    font-size: 18px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.section-title {
+    color: #35aebb;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.cute-subtitle {
+    text-align: center;
+    color: #70aeb5;
+    font-size: 17px;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+[data-testid="stSidebar"] {
+    background:
+        linear-gradient(
+            180deg,
+            #e7fbff 0%,
+            #f9feff 55%,
+            #ffffff 100%
         );
 
-        html,
-        body,
-        [class*="css"],
-        .stApp,
-        button,
-        input,
-        textarea,
-        select {
-            font-family: 'Tajawal', 'Baloo 2', sans-serif !important;
-        }
+    border-right: 2px solid #d7f5f8;
+}
 
-        .stApp {
-            background:
-                radial-gradient(
-                    circle at 10% 5%,
-                    #e8fbff 0%,
-                    transparent 28%
-                ),
-                radial-gradient(
-                    circle at 90% 20%,
-                    #eafcff 0%,
-                    transparent 30%
-                ),
-                #ffffff;
-        }
+.sidebar-title {
+    text-align: center;
+    color: #35adbb;
+    font-size: 27px;
+    font-weight: 700;
+    padding: 10px 5px 3px;
+}
 
-        /* =====================================================
-           HEADER
-        ===================================================== */
+.sidebar-decoration {
+    text-align: center;
+    color: #75cbd4;
+    font-size: 18px;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+}
 
-        .main-title {
-            text-align: center;
-            padding: 24px 18px;
-            border-radius: 30px;
+.welcome-box {
+    background: rgba(255,255,255,0.88);
+    border: 2px solid #c8f2f7;
+    border-radius: 22px;
+    padding: 15px;
+    text-align: center;
+    color: #579ba4;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 22px rgba(83,205,220,0.08);
+}
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #e8fbff,
-                    #ffffff
-                );
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
-            border: 2px solid #c8f2f7;
+.stButton > button {
+    border-radius: 18px !important;
+    border: 1.5px solid #c8f2f7 !important;
 
-            box-shadow:
-                0 12px 35px
-                rgba(83, 205, 220, 0.13);
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f0fcff
+        ) !important;
 
-            margin-bottom: 18px;
+    color: #429eaa !important;
 
-            position: relative;
-            overflow: hidden;
-        }
+    font-family:
+        'Cairo',
+        'Baloo 2',
+        sans-serif !important;
 
-        .main-title::before {
-            content: "୨୧ ✦ ♡ ✦ ୨୧";
+    font-weight: 600 !important;
 
-            position: absolute;
-            top: 6px;
-            left: 0;
-            right: 0;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
 
-            color: #8bdde5;
-            font-size: 15px;
-            letter-spacing: 5px;
-        }
+.stButton > button:hover {
+    transform: translateY(-2px);
 
-        .main-title h1 {
-            color: #35b4c4;
-            margin: 12px 0 5px 0;
-            font-size: 42px;
-            font-weight: 800;
-        }
+    box-shadow:
+        0 8px 20px
+        rgba(70,190,205,0.15);
 
-        .main-title p {
-            color: #579ba4;
-            font-size: 18px;
-            margin: 0;
-            font-weight: 500;
-        }
+    border-color: #8bdde5 !important;
+}
 
-        /* =====================================================
-           TITLES
-        ===================================================== */
+/* =========================================================
+   CARDS
+   ========================================================= */
 
-        .section-title {
-            color: #35aebb;
-            font-weight: 800;
-            margin-top: 8px;
-        }
+.cute-card {
+    background: rgba(255,255,255,0.92);
+    border: 2px solid #d4f4f7;
+    border-radius: 25px;
+    padding: 20px;
+    margin: 12px 0;
+    box-shadow: 0 8px 25px rgba(80,190,205,0.08);
+}
 
-        /* =====================================================
-           SIDEBAR
-        ===================================================== */
+.cute-card-title {
+    color: #36adbb;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
 
-        [data-testid="stSidebar"] {
-            background:
-                linear-gradient(
-                    180deg,
-                    #e7fbff 0%,
-                    #f9feff 55%,
-                    #ffffff 100%
-                );
+.cute-card-text {
+    color: #669fa6;
+    font-size: 16px;
+    line-height: 2;
+}
 
-            border-right: 2px solid #d7f5f8;
-        }
+/* =========================================================
+   METRICS
+   ========================================================= */
 
-        .sidebar-title {
-            text-align: center;
-            color: #35adbb;
-            font-size: 27px;
-            font-weight: 800;
-            padding: 10px 5px 3px;
-        }
+[data-testid="stMetric"] {
+    background: white;
+    border: 2px solid #d5f4f7;
+    padding: 15px;
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(70,190,205,0.07);
+}
 
-        .sidebar-decoration {
-            text-align: center;
-            color: #75cbd4;
-            font-size: 18px;
-            letter-spacing: 4px;
-            margin-bottom: 12px;
-        }
+/* =========================================================
+   INPUTS
+   ========================================================= */
 
-        .welcome-box {
-            background: rgba(255,255,255,0.88);
+input,
+textarea {
+    border-radius: 17px !important;
+    border: 2px solid #d7f4f7 !important;
+}
 
-            border: 2px solid #c8f2f7;
+/* =========================================================
+   DECORATION
+   ========================================================= */
 
-            border-radius: 22px;
+.tiny-decoration {
+    text-align: center;
+    color: #82d2da;
+    font-size: 16px;
+    letter-spacing: 5px;
+    margin: 10px 0;
+}
 
-            padding: 15px;
-
-            text-align: center;
-
-            color: #579ba4;
-
-            margin-bottom: 18px;
-
-            box-shadow:
-                0 8px 22px
-                rgba(83,205,220,0.08);
-        }
-
-        /* =====================================================
-           BUTTONS
-        ===================================================== */
-
-        .stButton > button {
-            border-radius: 18px !important;
-
-            border: 1.5px solid #c8f2f7 !important;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #ffffff,
-                    #f0fcff
-                ) !important;
-
-            color: #429eaa !important;
-
-            font-family:
-                'Tajawal',
-                sans-serif !important;
-
-            font-weight: 700 !important;
-
-            transition:
-                transform 0.15s ease,
-                box-shadow 0.15s ease;
-        }
-
-        .stButton > button:hover {
-            transform: translateY(-2px);
-
-            box-shadow:
-                0 8px 20px
-                rgba(70,190,205,0.15);
-
-            border-color: #8bdde5 !important;
-        }
-
-        /* =====================================================
-           CARDS
-        ===================================================== */
-
-        .cute-card {
-            background:
-                rgba(255,255,255,0.92);
-
-            border: 2px solid #d4f4f7;
-
-            border-radius: 25px;
-
-            padding: 20px;
-
-            margin: 12px 0;
-
-            box-shadow:
-                0 8px 25px
-                rgba(80,190,205,0.08);
-        }
-
-        .cute-card-title {
-            color: #36adbb;
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .cute-card-text {
-            color: #669fa6;
-            font-size: 16px;
-            line-height: 1.9;
-        }
-
-        /* =====================================================
-           METRICS
-        ===================================================== */
-
-        [data-testid="stMetric"] {
-            background: white;
-
-            border: 2px solid #d5f4f7;
-
-            padding: 15px;
-
-            border-radius: 22px;
-
-            box-shadow:
-                0 8px 20px
-                rgba(70,190,205,0.07);
-        }
-
-        /* =====================================================
-           INPUTS
-        ===================================================== */
-
-        input,
-        textarea {
-            border-radius: 17px !important;
-            border: 2px solid #d7f4f7 !important;
-        }
-
-        /* =====================================================
-           DECORATION
-        ===================================================== */
-
-        .tiny-decoration {
-            text-align: center;
-            color: #82d2da;
-            font-size: 16px;
-            letter-spacing: 6px;
-            margin: 10px 0;
-        }
-
-        </style>
-        """
-    ),
-    unsafe_allow_html=True
+</style>
+""",
+unsafe_allow_html=True
 )
 
 # =========================================================
@@ -322,31 +283,29 @@ st.markdown(
 with st.sidebar:
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="sidebar-title">
-                Study with Miku
-            </div>
+"""
+<div class="sidebar-title">
+    Study with Miku
+</div>
 
-            <div class="sidebar-decoration">
-                ୨୧ ✦ ♡ ✦ ୨୧
-            </div>
+<div class="sidebar-decoration">
+    🎀 ✦ ♡ ✦ 🎀
+</div>
 
-            <div class="welcome-box">
-                こんにちは ♡<br>
-                أهلاً بكِ في عالم ميكو ✦<br>
-                خلينا نذاكر مع بعض ୨୧
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+<div class="welcome-box">
+    こんにちは ♡<br>
+    أهلاً بكِ في عالم ميكو ✦<br>
+    خلينا نذاكر مع بعض 🎀
+</div>
+""",
+unsafe_allow_html=True
     )
 
     pages = [
         ("home", "⌂  الرئيسية"),
         ("study", "♡  دراسة مع ميكو"),
         ("homework", "✦  حل الواجبات"),
-        ("ask", "୨୧  اسألي ميكو"),
+        ("ask", "🎀  اسألي ميكو"),
         ("timer", "◷  جلسة مذاكرة"),
         ("achievements", "☆  إنجازاتي")
     ]
@@ -362,14 +321,12 @@ with st.sidebar:
             st.rerun()
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="tiny-decoration">
-                ♡ ୨୧ ✦ ୨୧ ♡
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+"""
+<div class="tiny-decoration">
+    ♡ ✦ 🎀 ✦ ♡
+</div>
+""",
+unsafe_allow_html=True
     )
 
 # =========================================================
@@ -377,20 +334,18 @@ with st.sidebar:
 # =========================================================
 
 st.markdown(
-    textwrap.dedent(
-        """
-        <div class="main-title">
+"""
+<div class="main-title">
 
-            <h1>Study with Miku</h1>
+    <h1>Study with Miku</h1>
 
-            <p>
-                ୨୧ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم ୨୧
-            </p>
+    <p>
+        🎀 ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم 🎀
+    </p>
 
-        </div>
-        """
-    ),
-    unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
 )
 
 # =========================================================
@@ -400,23 +355,21 @@ st.markdown(
 if st.session_state.page == "home":
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="cute-card">
+"""
+<div class="cute-card">
 
-                <div class="cute-card-title">
-                    ♡ أهلاً بكِ!
-                </div>
+    <div class="cute-card-title">
+        ♡ أهلاً بكِ!
+    </div>
 
-                <div class="cute-card-text">
-                    أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
-                    وأساعدكِ في رحلتك الدراسية ୨୧
-                </div>
+    <div class="cute-card-text">
+        أنا ميكو ✦ وأنا مستعدة أذاكر معكِ
+        وأساعدكِ في رحلتك الدراسية 🎀
+    </div>
 
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
     )
 
     # =====================================================
@@ -424,498 +377,497 @@ if st.session_state.page == "home":
     # =====================================================
 
     miku_html = f"""
-    <!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="ar">
 
-    <html lang="ar">
+<head>
 
-    <head>
+<meta charset="UTF-8">
 
-    <meta charset="UTF-8">
+<style>
 
-    <style>
+* {{
+    box-sizing: border-box;
+}}
 
-    * {{
-        box-sizing: border-box;
+body {{
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    font-family: sans-serif;
+}}
+
+.game-area {{
+    width: 100%;
+    height: 500px;
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    perspective: 1000px;
+}}
+
+.glow {{
+    position: absolute;
+
+    width: 330px;
+    height: 330px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(73,220,238,0.28),
+            rgba(73,220,238,0.05),
+            transparent
+        );
+
+    filter: blur(12px);
+
+    animation:
+        glow 3s ease-in-out infinite;
+}}
+
+@keyframes glow {{
+
+    0%,100% {{
+        transform: scale(1);
+        opacity: .75;
     }}
 
-    body {{
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: transparent;
-        font-family: sans-serif;
-    }}
-
-    .game-area {{
-        width: 100%;
-        height: 500px;
-        position: relative;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        perspective: 1000px;
-    }}
-
-    .glow {{
-        position: absolute;
-
-        width: 330px;
-        height: 330px;
-
-        border-radius: 50%;
-
-        background:
-            radial-gradient(
-                circle,
-                rgba(73,220,238,0.28),
-                rgba(73,220,238,0.05),
-                transparent
-            );
-
-        filter: blur(12px);
-
-        animation:
-            glow 3s ease-in-out infinite;
-    }}
-
-    @keyframes glow {{
-
-        0%,100% {{
-            transform: scale(1);
-            opacity: .75;
-        }}
-
-        50% {{
-            transform: scale(1.12);
-            opacity: 1;
-        }}
-
-    }}
-
-    .character {{
-
-        width: min(320px,75vw);
-
-        max-height: 390px;
-
-        object-fit: cover;
-
-        border-radius: 30px;
-
-        position: relative;
-
-        z-index: 5;
-
-        cursor: pointer;
-
-        user-select: none;
-
-        -webkit-user-drag: none;
-
-        box-shadow:
-            0 20px 45px
-            rgba(0,190,220,.25);
-
-        transition:
-            transform .15s ease-out,
-            box-shadow .2s ease;
-
-        animation:
-            float 3.5s ease-in-out infinite;
-    }}
-
-    @keyframes float {{
-
-        0%,100% {{
-            margin-top: 0;
-        }}
-
-        50% {{
-            margin-top: -12px;
-        }}
-
-    }}
-
-    .character:hover {{
-
-        box-shadow:
-            0 25px 55px
-            rgba(0,200,230,.40);
-    }}
-
-    .character.clicked {{
-
-        animation:
-            happyBounce .65s ease,
-            float 3.5s ease-in-out infinite;
-    }}
-
-    @keyframes happyBounce {{
-
-        0% {{
-            transform: scale(1);
-        }}
-
-        30% {{
-            transform:
-                scale(1.08)
-                rotate(-3deg);
-        }}
-
-        55% {{
-            transform:
-                scale(.97)
-                rotate(3deg);
-        }}
-
-        75% {{
-            transform:
-                scale(1.04)
-                rotate(-2deg);
-        }}
-
-        100% {{
-            transform: scale(1);
-        }}
-
-    }}
-
-    .speech {{
-
-        position: absolute;
-
-        top: 18px;
-
-        right: 8%;
-
-        z-index: 10;
-
-        background: white;
-
-        color: #39aebc;
-
-        padding: 12px 18px;
-
-        border-radius: 20px;
-
-        box-shadow:
-            0 8px 22px
-            rgba(0,180,210,.16);
-
-        font-size: 16px;
-
-        font-weight: bold;
-
-        opacity: 0;
-
-        transform: scale(.7);
-
-        transition:
-            opacity .25s ease,
-            transform .25s ease;
-    }}
-
-    .speech.show {{
-
+    50% {{
+        transform: scale(1.12);
         opacity: 1;
+    }}
 
+}}
+
+.character {{
+
+    width: min(320px,75vw);
+
+    max-height: 390px;
+
+    object-fit: cover;
+
+    border-radius: 30px;
+
+    position: relative;
+
+    z-index: 5;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+
+    box-shadow:
+        0 20px 45px
+        rgba(0,190,220,.25);
+
+    transition:
+        transform .15s ease-out,
+        box-shadow .2s ease;
+
+    animation:
+        float 3.5s ease-in-out infinite;
+}}
+
+@keyframes float {{
+
+    0%,100% {{
+        margin-top: 0;
+    }}
+
+    50% {{
+        margin-top: -12px;
+    }}
+
+}}
+
+.character:hover {{
+
+    box-shadow:
+        0 25px 55px
+        rgba(0,200,230,.40);
+}}
+
+.character.clicked {{
+
+    animation:
+        happyBounce .65s ease,
+        float 3.5s ease-in-out infinite;
+}}
+
+@keyframes happyBounce {{
+
+    0% {{
         transform: scale(1);
     }}
 
-    .speech::after {{
-
-        content: "";
-
-        position: absolute;
-
-        bottom: -10px;
-
-        left: 25px;
-
-        width: 20px;
-
-        height: 20px;
-
-        background: white;
-
-        transform: rotate(45deg);
+    30% {{
+        transform:
+            scale(1.08)
+            rotate(-3deg);
     }}
 
-    .star {{
-
-        position: absolute;
-
-        z-index: 8;
-
-        font-size: 25px;
-
-        pointer-events: none;
-
-        animation:
-            popStar 1s ease forwards;
+    55% {{
+        transform:
+            scale(.97)
+            rotate(3deg);
     }}
 
-    @keyframes popStar {{
-
-        0% {{
-            opacity: 0;
-            transform:
-                scale(0)
-                rotate(0deg);
-        }}
-
-        40% {{
-            opacity: 1;
-            transform:
-                scale(1.3)
-                rotate(90deg);
-        }}
-
-        100% {{
-            opacity: 0;
-
-            transform:
-                translateY(-80px)
-                scale(.3)
-                rotate(180deg);
-        }}
-
+    75% {{
+        transform:
+            scale(1.04)
+            rotate(-2deg);
     }}
 
-    .hint {{
-
-        position: absolute;
-
-        bottom: 8px;
-
-        left: 0;
-
-        right: 0;
-
-        text-align: center;
-
-        color: #66aab2;
-
-        font-size: 15px;
-
-        z-index: 10;
+    100% {{
+        transform: scale(1);
     }}
 
-    </style>
+}}
 
-    </head>
+.speech {{
 
-    <body>
+    position: absolute;
 
-    <div class="game-area" id="game">
+    top: 18px;
 
-        <div class="glow"></div>
+    right: 8%;
 
-        <div class="speech" id="speech">
-            ♡ هييي! ضغطتي عليّ! ୨୧
-        </div>
+    z-index: 10;
 
-        <img
-            src="data:image/png;base64,{miku_base64}"
-            class="character"
-            id="miku"
-            alt="Miku"
-        >
+    background: white;
 
-        <div class="hint">
-            ୨୧ اضغطي على ميكو أو حركي إصبعك عليها ୨୧
-        </div>
+    color: #39aebc;
 
+    padding: 12px 18px;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 8px 22px
+        rgba(0,180,210,.16);
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    opacity: 0;
+
+    transform: scale(.7);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
+}}
+
+.speech.show {{
+
+    opacity: 1;
+
+    transform: scale(1);
+}}
+
+.speech::after {{
+
+    content: "";
+
+    position: absolute;
+
+    bottom: -10px;
+
+    left: 25px;
+
+    width: 20px;
+
+    height: 20px;
+
+    background: white;
+
+    transform: rotate(45deg);
+}}
+
+.star {{
+
+    position: absolute;
+
+    z-index: 8;
+
+    font-size: 25px;
+
+    pointer-events: none;
+
+    animation:
+        popStar 1s ease forwards;
+}}
+
+@keyframes popStar {{
+
+    0% {{
+        opacity: 0;
+        transform:
+            scale(0)
+            rotate(0deg);
+    }}
+
+    40% {{
+        opacity: 1;
+        transform:
+            scale(1.3)
+            rotate(90deg);
+    }}
+
+    100% {{
+        opacity: 0;
+
+        transform:
+            translateY(-80px)
+            scale(.3)
+            rotate(180deg);
+    }}
+
+}}
+
+.hint {{
+
+    position: absolute;
+
+    bottom: 8px;
+
+    left: 0;
+
+    right: 0;
+
+    text-align: center;
+
+    color: #66aab2;
+
+    font-size: 15px;
+
+    z-index: 10;
+}}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="game-area" id="game">
+
+    <div class="glow"></div>
+
+    <div class="speech" id="speech">
+        ♡ هييي! ضغطتي عليّ! 🎀
     </div>
 
-    <script>
+    <img
+        src="data:image/png;base64,{miku_base64}"
+        class="character"
+        id="miku"
+        alt="Miku"
+    >
 
-    const game =
-        document.getElementById("game");
+    <div class="hint">
+        🎀 اضغطي على ميكو أو حركي إصبعك عليها ♡
+    </div>
 
-    const miku =
-        document.getElementById("miku");
+</div>
 
-    const speech =
-        document.getElementById("speech");
+<script>
 
-    let isInteracting = false;
+const game =
+    document.getElementById("game");
 
-    function showMessage() {{
+const miku =
+    document.getElementById("miku");
 
-        speech.classList.add("show");
+const speech =
+    document.getElementById("speech");
 
-        setTimeout(() => {{
+let isInteracting = false;
 
-            speech.classList.remove("show");
+function showMessage() {{
 
-        }},1800);
+    speech.classList.add("show");
 
-    }}
+    setTimeout(() => {{
 
-    function createStar() {{
+        speech.classList.remove("show");
 
-        const star =
-            document.createElement("div");
+    }},1800);
 
-        const stars =
-            ["✦","♡","୨୧","✧"];
+}}
 
-        star.className = "star";
+function createStar() {{
 
-        star.textContent =
-            stars[
-                Math.floor(
-                    Math.random() *
-                    stars.length
-                )
-            ];
+    const star =
+        document.createElement("div");
 
-        star.style.left =
-            (35 + Math.random()*30) + "%";
+    const stars =
+        ["✦","♡","🎀","✧"];
 
-        star.style.top =
-            (40 + Math.random()*20) + "%";
+    star.className = "star";
 
-        game.appendChild(star);
+    star.textContent =
+        stars[
+            Math.floor(
+                Math.random() *
+                stars.length
+            )
+        ];
 
-        setTimeout(() => {{
+    star.style.left =
+        (35 + Math.random()*30) + "%";
 
-            star.remove();
+    star.style.top =
+        (40 + Math.random()*20) + "%";
 
-        }},1000);
+    game.appendChild(star);
 
-    }}
+    setTimeout(() => {{
 
-    function react() {{
+        star.remove();
 
-        isInteracting = true;
+    }},1000);
 
-        miku.classList.remove("clicked");
+}}
 
-        void miku.offsetWidth;
+function react() {{
 
-        miku.classList.add("clicked");
+    isInteracting = true;
 
-        showMessage();
+    miku.classList.remove("clicked");
 
-        for(
-            let i = 0;
-            i < 6;
-            i++
-        ) {{
+    void miku.offsetWidth;
 
-            setTimeout(
-                createStar,
-                i * 70
-            );
+    miku.classList.add("clicked");
 
-        }}
+    showMessage();
 
-        setTimeout(() => {{
-
-            isInteracting = false;
-
-        }},700);
-
-    }}
-
-    function moveCharacter(
-        clientX,
-        clientY
+    for(
+        let i = 0;
+        i < 6;
+        i++
     ) {{
 
-        if(isInteracting)
-            return;
+        setTimeout(
+            createStar,
+            i * 70
+        );
 
-        const rect =
-            miku.getBoundingClientRect();
-
-        const x =
-            (clientX - rect.left) /
-            rect.width;
-
-        const y =
-            (clientY - rect.top) /
-            rect.height;
-
-        const rotateY =
-            (x-.5)*18;
-
-        const rotateX =
-            (.5-y)*18;
-
-        miku.style.transform =
-            `rotateX(${{rotateX}}deg)
-             rotateY(${{rotateY}}deg)
-             scale(1.03)`;
     }}
 
-    game.addEventListener(
-        "mousemove",
-        event => {{
+    setTimeout(() => {{
 
-            moveCharacter(
-                event.clientX,
-                event.clientY
-            );
+        isInteracting = false;
 
-        }}
-    );
+    }},700);
 
-    game.addEventListener(
-        "mouseleave",
-        () => {{
+}}
 
-            miku.style.transform =
-                "rotateX(0deg) rotateY(0deg) scale(1)";
+function moveCharacter(
+    clientX,
+    clientY
+) {{
 
-        }}
-    );
+    if(isInteracting)
+        return;
 
-    game.addEventListener(
-        "touchmove",
-        event => {{
+    const rect =
+        miku.getBoundingClientRect();
 
-            const touch =
-                event.touches[0];
+    const x =
+        (clientX - rect.left) /
+        rect.width;
 
-            moveCharacter(
-                touch.clientX,
-                touch.clientY
-            );
+    const y =
+        (clientY - rect.top) /
+        rect.height;
 
-        }},
-        {{passive:true}}
-    );
+    const rotateY =
+        (x-.5)*18;
 
-    game.addEventListener(
-        "touchend",
-        () => {{
+    const rotateX =
+        (.5-y)*18;
 
-            miku.style.transform =
-                "rotateX(0deg) rotateY(0deg) scale(1)";
+    miku.style.transform =
+        `rotateX(${{rotateX}}deg)
+         rotateY(${{rotateY}}deg)
+         scale(1.03)`;
+}}
 
-        }}
-    );
+game.addEventListener(
+    "mousemove",
+    event => {{
 
-    miku.addEventListener(
-        "click",
-        react
-    );
+        moveCharacter(
+            event.clientX,
+            event.clientY
+        );
 
-    miku.addEventListener(
-        "touchstart",
-        react
-    );
+    }}
+);
 
-    </script>
+game.addEventListener(
+    "mouseleave",
+    () => {{
 
-    </body>
-    </html>
-    """
+        miku.style.transform =
+            "rotateX(0deg) rotateY(0deg) scale(1)";
+
+    }}
+);
+
+game.addEventListener(
+    "touchmove",
+    event => {{
+
+        const touch =
+            event.touches[0];
+
+        moveCharacter(
+            touch.clientX,
+            touch.clientY
+        );
+
+    }},
+    {{passive:true}}
+);
+
+game.addEventListener(
+    "touchend",
+    () => {{
+
+        miku.style.transform =
+            "rotateX(0deg) rotateY(0deg) scale(1)";
+
+    }}
+);
+
+miku.addEventListener(
+    "click",
+    react
+);
+
+miku.addEventListener(
+    "touchstart",
+    react
+);
+
+</script>
+
+</body>
+</html>
+"""
 
     components.html(
         miku_html,
@@ -932,23 +884,25 @@ if st.session_state.page == "home":
     ) + 1
 
     st.markdown(
-        "<h2 class='section-title'>✦ تقدمك ✦</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    ✦ تقدمك ✦
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     col1, col2 = st.columns(2)
 
     with col1:
-
         st.metric(
             "♡ XP",
             st.session_state.xp
         )
 
     with col2:
-
         st.metric(
-            "୨୧ المستوى",
+            "🎀 المستوى",
             level
         )
 
@@ -959,29 +913,32 @@ if st.session_state.page == "home":
 elif st.session_state.page == "study":
 
     st.markdown(
-        "<h2 class='section-title'>♡ دراسة مع ميكو</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    ♡ دراسة مع ميكو
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="cute-card">
+"""
+<div class="cute-card">
 
-                <div class="cute-card-title">
-                    ୨୧ مساحة الدراسة
-                </div>
+    <div class="cute-card-title">
+        ✦ مساحة الدراسة
+    </div>
 
-                <div class="cute-card-text">
-                    هنا ستكون جلستك الخاصة مع ميكو ✦
-                    وستكون الشخصية ثلاثية الأبعاد
-                    وتتحرك وتتفاعل معكِ.
-                </div>
+    <div class="cute-card-text">
+        هنا ستكون جلستك الخاصة مع ميكو 🎀
+        <br>
+        وستكون الشخصية ثلاثية الأبعاد
+        وتتحرك وتتفاعل معكِ.
+    </div>
 
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
     )
 
     st.button(
@@ -996,37 +953,35 @@ elif st.session_state.page == "study":
 elif st.session_state.page == "homework":
 
     st.markdown(
-        "<h2 class='section-title'>✦ حل الواجبات</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    ✦ حل الواجبات
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="cute-card">
+"""
+<div class="cute-card">
 
-                <div class="cute-card-title">
-                    ♡ أرسلي السؤال لميكو
-                </div>
+    <div class="cute-card-title">
+        ♡ أرسلي السؤال لميكو
+    </div>
 
-                <div class="cute-card-text">
-                    ارفعي صورة السؤال وسنضيف
-                    تحليل الذكاء الاصطناعي هنا لاحقًا ୨୧
-                </div>
+    <div class="cute-card-text">
+        ارفعي صورة السؤال وسنضيف
+        تحليل الذكاء الاصطناعي هنا لاحقًا 🎀
+    </div>
 
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
     )
 
     uploaded = st.file_uploader(
-        "୨୧ ارفعي صورة السؤال",
-        type=[
-            "png",
-            "jpg",
-            "jpeg"
-        ]
+        "🎀 ارفعي صورة السؤال",
+        type=["png", "jpg", "jpeg"]
     )
 
     if uploaded:
@@ -1048,14 +1003,17 @@ elif st.session_state.page == "homework":
 elif st.session_state.page == "ask":
 
     st.markdown(
-        "<h2 class='section-title'>୨୧ اسألي ميكو</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    🎀 اسألي ميكو
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     question = st.text_area(
         "♡ اكتبي سؤالك لميكو",
-        placeholder=
-        "مثال: اشرحي لي قانون السرعة بطريقة سهلة..."
+        placeholder="مثال: اشرحي لي قانون السرعة بطريقة سهلة..."
     )
 
     if st.button(
@@ -1071,7 +1029,7 @@ elif st.session_state.page == "ask":
 
             st.write(
                 "هنا سنربط الذكاء الاصطناعي "
-                "بميكو لاحقًا ୨୧"
+                "بميكو لاحقًا 🎀"
             )
 
         else:
@@ -1087,28 +1045,30 @@ elif st.session_state.page == "ask":
 elif st.session_state.page == "timer":
 
     st.markdown(
-        "<h2 class='section-title'>◷ جلسة مذاكرة</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    ◷ جلسة مذاكرة
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     st.markdown(
-        textwrap.dedent(
-            """
-            <div class="cute-card">
+"""
+<div class="cute-card">
 
-                <div class="cute-card-title">
-                    ♡ اختاري وقتك
-                </div>
+    <div class="cute-card-title">
+        ♡ اختاري وقتك
+    </div>
 
-                <div class="cute-card-text">
-                    أنتِ تحددين وقت الدراسة والبريك
-                    وعدد الجولات على كيفك ୨୧
-                </div>
+    <div class="cute-card-text">
+        أنتِ تحددين وقت الدراسة والبريك
+        وعدد الجولات على كيفك 🎀
+    </div>
 
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
     )
 
     study_minutes = st.number_input(
@@ -1126,7 +1086,7 @@ elif st.session_state.page == "timer":
     )
 
     rounds = st.number_input(
-        "୨୧ عدد الجولات",
+        "🎀 عدد الجولات",
         min_value=1,
         max_value=10,
         value=1
@@ -1143,7 +1103,7 @@ elif st.session_state.page == "timer":
     )
 
     st.write(
-        f"୨୧ الجولات: **{rounds}**"
+        f"🎀 الجولات: **{rounds}**"
     )
 
     if st.button(
@@ -1157,7 +1117,7 @@ elif st.session_state.page == "timer":
 
         st.write(
             "المؤقت التفاعلي وميكو التي تدرس معكِ "
-            "سنضيفهما في المرحلة القادمة ୨୧"
+            "سنضيفهما في المرحلة القادمة 🎀"
         )
 
 # =========================================================
@@ -1167,8 +1127,12 @@ elif st.session_state.page == "timer":
 elif st.session_state.page == "achievements":
 
     st.markdown(
-        "<h2 class='section-title'>☆ إنجازاتي ☆</h2>",
-        unsafe_allow_html=True
+"""
+<h2 class="section-title">
+    ☆ إنجازاتي ☆
+</h2>
+""",
+unsafe_allow_html=True
     )
 
     level = (
@@ -1178,16 +1142,14 @@ elif st.session_state.page == "achievements":
     col1, col2 = st.columns(2)
 
     with col1:
-
         st.metric(
             "♡ مجموع XP",
             st.session_state.xp
         )
 
     with col2:
-
         st.metric(
-            "୨୧ المستوى",
+            "🎀 المستوى",
             level
         )
 
@@ -1198,23 +1160,21 @@ elif st.session_state.page == "achievements":
     ]
 
     st.markdown(
-        textwrap.dedent(
-            f"""
-            <div class="cute-card">
+f"""
+<div class="cute-card">
 
-                <div class="cute-card-title">
-                    ✦ إنجازاتك
-                </div>
+    <div class="cute-card-title">
+        ✦ إنجازاتك
+    </div>
 
-                <div class="cute-card-text">
-                    عدد المهام المكتملة:
-                    <b>{len(completed)}</b>
-                </div>
+    <div class="cute-card-text">
+        عدد المهام المكتملة:
+        <b>{len(completed)}</b>
+    </div>
 
-            </div>
-            """
-        ),
-        unsafe_allow_html=True
+</div>
+""",
+unsafe_allow_html=True
     )
 
     if completed:
@@ -1222,8 +1182,7 @@ elif st.session_state.page == "achievements":
         for task in completed:
 
             st.write(
-                f"♡ {task['subject']} — "
-                f"{task['name']}"
+                f"♡ {task['subject']} — {task['name']}"
             )
 
     else:
@@ -1239,17 +1198,15 @@ elif st.session_state.page == "achievements":
 st.divider()
 
 st.markdown(
-    textwrap.dedent(
-        """
-        <div style="
-            text-align:center;
-            color:#7ab8bf;
-            font-size:15px;
-            padding:10px;
-        ">
-            ୨୧ ✦ ♡ Study with Miku ♡ ✦ ୨୧
-        </div>
-        """
-    ),
-    unsafe_allow_html=True
+"""
+<div style="
+    text-align:center;
+    color:#7ab8bf;
+    font-size:15px;
+    padding:10px;
+">
+    🎀 ✦ ♡ Study with Miku ♡ ✦ 🎀
+</div>
+""",
+unsafe_allow_html=True
 )
