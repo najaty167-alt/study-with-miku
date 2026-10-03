@@ -1181,4 +1181,9 @@ elif st.session_state.page == "timer":
 # ACHIEVEMENTS
 # =========================================================
 
-elif st.s
+elif st.session_state.page == "achievements":
+
+    st.markdown(
+        "<h2 class='section-title'>☆ إنجازاتي ☆</h2>",
+        unsafe_allow_html=True
+    )
