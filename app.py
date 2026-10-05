@@ -472,9 +472,7 @@ XP / LEVEL
 level = (st.session_state.xp // 100) + 1
 st.markdown("
 🌱 تقدمك
-",
-    unsafe_allow_html=True
-)
+unsafe_allow_html=True)"
 col1, col2 = st.columns(2)
 with col1:
     st.metric(
