@@ -1,365 +1,616 @@
 import streamlit as st
-import google.generativeai as genai
-from PIL import Image
 import streamlit.components.v1 as components
-
-# =========================================================
-# 1. إعدادات الصفحة
-# =========================================================
+import base64
+=========================================================
+PAGE SETTINGS
+=========================================================
 st.set_page_config(
-    page_title="Study with Miku 🌸",
-    page_icon="🌸",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Study with Miku 🩵",
+    page_icon="🎀",
+    layout="centered"
 )
-
-# الربط بمفتاح الذكاء الاصطناعي من Secrets
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-
-# تهيئة النقاط والمهام في ذاكرة الجلسة
-if "points" not in st.session_state:
-    st.session_state.points = 10
+=========================================================
+SESSION STATE
+=========================================================
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
+if "xp" not in st.session_state:
+    st.session_state.xp = 0
+=========================================================
+LOAD MIKU IMAGE
+=========================================================
+try:
+    with open("miku.png", "rb") as image_file:
+        miku_base64 = base64.b64encode(
+            image_file.read()
+        ).decode("utf-8")
+except FileNotFoundError:
+    st.error("لم يتم العثور على miku.png داخل المشروع.")
+    st.stop()
+=========================================================
+APP STYLE
+=========================================================
+st.markdown(
+    """
+    </p>
+<pre><code>.stApp {
+    background:
+        radial-gradient(circle at top, #e8fbff 0%, #ffffff 45%);
+}
 
-# روابط صور ميكو المتحركة (الروابط القديمة التي كانت تعمل)
-MIKU_GIF_URL = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzbmdnYm4ydWdlanRndnE2dnhreWZscmd5Mmt6b3E2NWY0eWw1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/13A85s05AMQOqY/giphy.gif"
-MIKU_STUDY_GIF = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnZxa3VqdW1oNWVjczV2Nmg5NG8xbzlsbGNmOHBvNnhmZXBnOXc2YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CaiVJuGVvR81W/giphy.gif"
+.main-title {
+    text-align: center;
+    padding: 20px;
+    border-radius: 28px;
+    background: linear-gradient(
+        135deg,
+        #e8fbff,
+        #ffffff
+    );
+    border: 2px solid #c8f2f7;
+    box-shadow: 0 10px 30px rgba(83, 205, 220, 0.12);
+    margin-bottom: 15px;
+}
 
-# =========================================================
-# 2. تنسيقات الـ CSS والتصميم
-# =========================================================
-st.markdown("""
+.main-title h1 {
+    color: #39b8c7;
+    margin-bottom: 8px;
+    font-size: 42px;
+}
+
+.main-title p {
+    color: #4b909a;
+    font-size: 18px;
+    margin: 0;
+}
+
+.section-title {
+    color: #39aebb;
+}
+
+&lt;/style&gt;
+&quot;&quot;&quot;,
+unsafe_allow_html=True
+</code></pre>
+<p>)</p>
+<h1>=========================================================</h1>
+<h1>HEADER</h1>
+<h1>=========================================================</h1>
+<p>st.markdown(
+    &quot;&quot;&quot;
+    <div class="main-title">
+        <h1>🎀 Study with Miku 🩵</h1>
+        <p>✨ ذاكري معي وخلي إنجازاتك تكبر يومًا بعد يوم</p>
+    </div>
+    &quot;&quot;&quot;,
+    unsafe_allow_html=True
+)</p>
+<h1>=========================================================</h1>
+<h1>INTERACTIVE MIKU</h1>
+<h1>=========================================================</h1>
+<p>miku_html = f&quot;&quot;&quot;
+<!DOCTYPE html></p>
+<html lang="ar">
+<head>
+
+<meta charset="UTF-8">
+
 <style>
-    /* تغيير الخط ليكون ألطف */
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Tajawal', sans-serif; /* خط لطيف وجميل */
-        direction: rtl;
-    }
-    
-    .stApp {
-        background-color: #f4fbfd; /* ألوانك القديمة */
-    }
-    
-    /* الهيدر الرئيسي */
-    .main-header {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); /* ألوانك القديمة */
-        padding: 25px;
-        border-radius: 25px;
-        text-align: center;
-        color: #2c3e50;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-        margin-bottom: 25px;
-    }
-    
-    /* بطاقات الميكو اللطيفة */
-    .miku-card {
-        background-color: #ffffff;
-        border: 2px solid #b2ebf2; /* ألوانك القديمة */
-        border-radius: 20px;
-        padding: 20px;
-        margin-top: 15px;
-        box-shadow: 0 4px 15px rgba(57, 197, 187, 0.1);
-    }
-    
-    /* مؤشر النقاط */
-    .points-badge {
-        background-color: #39C5BB; /* ألوانك القديمة */
-        color: white;
-        padding: 8px 18px;
-        border-radius: 50px;
-        font-weight: bold;
-        display: inline-block;
-        font-size: 16px;
-        box-shadow: 0 3px 10px rgba(57, 197, 187, 0.3);
-    }
-</style>
-""", unsafe_allow_html=True)
 
-# =========================================================
-# 3. القائمة الجانبية (Sidebar) مع ميكو المتحركة
-# =========================================================
-st.sidebar.image(MIKU_GIF_URL, caption="Miku is ready to study! ♡", use_container_width=True)
+* {{
+    box-sizing: border-box;
+}}
 
-st.sidebar.title("こんにちは ♡")
-st.sidebar.markdown(f"<div class='points-badge'>🏆 نقاطكِ: {st.session_state.points} نقطة</div>", unsafe_allow_html=True)
-st.sidebar.write("")
+body {{
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    font-family: sans-serif;
+}}
 
-menu = st.sidebar.radio(
-    "🌸 خيارات التطبيق:",
-    ["الرئيسية", "دراسة مع ميكو ♡", "حل الواجبات", "اسألي ميكو ୨୧", "جلسة مذاكرة ⏱️", "إنجازاتي 🏆"]
+.game-area {{
+    width: 100%;
+    height: 500px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+}}
+
+.glow {{
+    position: absolute;
+    width: 330px;
+    height: 330px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(73, 220, 238, 0.28),
+        rgba(73, 220, 238, 0.05),
+        transparent
+    );
+    filter: blur(12px);
+    animation: glow 3s ease-in-out infinite;
+}}
+
+@keyframes glow {{
+    0%, 100% {{
+        transform: scale(1);
+        opacity: 0.75;
+    }}
+
+    50% {{
+        transform: scale(1.12);
+        opacity: 1;
+    }}
+}}
+
+.character {{
+    width: min(320px, 75vw);
+    max-height: 390px;
+    object-fit: cover;
+
+    border-radius: 30px;
+
+    position: relative;
+    z-index: 5;
+
+    cursor: pointer;
+
+    user-select: none;
+    -webkit-user-drag: none;
+
+    box-shadow:
+        0 20px 45px rgba(0, 190, 220, 0.25);
+
+    transition:
+        transform 0.15s ease-out,
+        box-shadow 0.2s ease;
+
+    animation: float 3.5s ease-in-out infinite;
+}}
+
+@keyframes float {{
+    0%, 100% {{
+        margin-top: 0;
+    }}
+
+    50% {{
+        margin-top: -12px;
+    }}
+}}
+
+.character:hover {{
+    box-shadow:
+        0 25px 55px rgba(0, 200, 230, 0.40);
+}}
+
+.character.clicked {{
+    animation:
+        happyBounce 0.65s ease,
+        float 3.5s ease-in-out infinite;
+}}
+
+@keyframes happyBounce {{
+    0% {{
+        transform: scale(1);
+    }}
+
+    30% {{
+        transform: scale(1.08) rotate(-3deg);
+    }}
+
+    55% {{
+        transform: scale(0.97) rotate(3deg);
+    }}
+
+    75% {{
+        transform: scale(1.04) rotate(-2deg);
+    }}
+
+    100% {{
+        transform: scale(1);
+    }}
+}}
+
+.speech {{
+    position: absolute;
+    top: 18px;
+    right: 8%;
+    z-index: 10;
+
+    background: white;
+    color: #39aebc;
+
+    padding: 12px 18px;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 8px 22px rgba(0, 180, 210, 0.16);
+
+    font-size: 16px;
+    font-weight: bold;
+
+    opacity: 0;
+    transform: scale(0.7);
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}}
+
+.speech.show {{
+    opacity: 1;
+    transform: scale(1);
+}}
+
+.speech::after {{
+    content: "";
+    position: absolute;
+
+    bottom: -10px;
+    left: 25px;
+
+    width: 20px;
+    height: 20px;
+
+    background: white;
+
+    transform: rotate(45deg);
+}}
+
+.star {{
+    position: absolute;
+    z-index: 8;
+
+    font-size: 25px;
+
+    pointer-events: none;
+
+    animation: popStar 1s ease forwards;
+}}
+
+@keyframes popStar {{
+    0% {{
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+    }}
+
+    40% {{
+        opacity: 1;
+        transform: scale(1.3) rotate(90deg);
+    }}
+
+    100% {{
+        opacity: 0;
+        transform: translateY(-80px)
+                   scale(0.3)
+                   rotate(180deg);
+    }}
+}}
+
+.hint {{
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+
+    text-align: center;
+
+    color: #66aab2;
+    font-size: 15px;
+
+    z-index: 10;
+}}
+
+
+<div class="glow"></div>
+
+<div class="speech" id="speech">
+    🩵 هييي! ضغطتي عليّ! 🎀
+</div>
+
+<img
+    src="data:image/png;base64,{miku_base64}"
+    class="character"
+    id="miku"
+    alt="Miku"
+>
+
+<div class="hint">
+    🎀 اضغطي على ميكو أو حركي إصبعك عليها 🩵
+</div>
+
+
+const game = document.getElementById("game");
+const miku = document.getElementById("miku");
+const speech = document.getElementById("speech");
+
+let isInteracting = false;
+
+function showMessage() {{
+
+    speech.classList.add("show");
+
+    setTimeout(() => {{
+        speech.classList.remove("show");
+    }}, 1800);
+}}
+
+function createStar() {{
+
+    const star = document.createElement("div");
+
+    const stars = ["✨", "⭐", "🩵", "🎀"];
+
+    star.className = "star";
+    star.textContent =
+        stars[Math.floor(Math.random() * stars.length)];
+
+    star.style.left =
+        (35 + Math.random() * 30) + "%";
+
+    star.style.top =
+        (40 + Math.random() * 20) + "%";
+
+    game.appendChild(star);
+
+    setTimeout(() => {{
+        star.remove();
+    }}, 1000);
+}}
+
+function react() {{
+
+    isInteracting = true;
+
+    miku.classList.remove("clicked");
+
+    void miku.offsetWidth;
+
+    miku.classList.add("clicked");
+
+    showMessage();
+
+    for (let i = 0; i < 6; i++) {{
+        setTimeout(createStar, i * 70);
+    }}
+
+    setTimeout(() => {{
+        isInteracting = false;
+    }}, 700);
+}}
+
+function moveCharacter(clientX, clientY) {{
+
+    if (isInteracting) return;
+
+    const rect = miku.getBoundingClientRect();
+
+    const x =
+        (clientX - rect.left) /
+        rect.width;
+
+    const y =
+        (clientY - rect.top) /
+        rect.height;
+
+    const rotateY =
+        (x - 0.5) * 18;
+
+    const rotateX =
+        (0.5 - y) * 18;
+
+    miku.style.transform =
+        `rotateX(${{rotateX}}deg)
+         rotateY(${{rotateY}}deg)
+         scale(1.03)`;
+}}
+
+// Mouse
+game.addEventListener("mousemove", (event) => {{
+    moveCharacter(event.clientX, event.clientY);
+}});
+
+game.addEventListener("mouseleave", () => {{
+
+    miku.style.transform =
+        "rotateX(0deg) rotateY(0deg) scale(1)";
+}});
+
+// Touch
+game.addEventListener(
+    "touchmove",
+    (event) => {{
+
+        const touch = event.touches[0];
+
+        moveCharacter(
+            touch.clientX,
+            touch.clientY
+        );
+
+    }},
+    {{ passive: true }}
+);
+
+game.addEventListener(
+    "touchend",
+    () => {{
+
+        miku.style.transform =
+            "rotateX(0deg) rotateY(0deg) scale(1)";
+    }}
+);
+
+// Click
+miku.addEventListener("click", () => {{
+    react();
+}});
+
+// Touch
+miku.addEventListener("touchstart", () => {{
+    react();
+}});
+
+
+
+
+"""
+
+
+components.html(
+    miku_html,
+    height=520,
+    scrolling=False
+)
+=========================================================
+XP / LEVEL
+=========================================================
+level = (st.session_state.xp // 100) + 1
+st.markdown(
+    "
+🌱 تقدمك
+",
+    unsafe_allow_html=True
+)
+col1, col2 = st.columns(2)
+with col1:
+    st.metric(
+        "⭐ XP",
+        st.session_state.xp
+    )
+with col2:
+    st.metric(
+        "🎀 المستوى",
+        level
+    )
+st.divider()
+=========================================================
+ADD TASK
+=========================================================
+st.markdown(
+    "
+📝 أضيفي مهمة
+",
+    unsafe_allow_html=True
+)
+task_name = st.text_input(
+    "اسم المهمة",
+    placeholder="مثال: حل واجب الفيزياء ص 29"
+)
+subject = st.selectbox(
+    "المادة",
+    [
+        "📐 رياضيات",
+        "⚗️ كيمياء",
+        "🔬 فيزياء",
+        "📚 عربي",
+        "🇬🇧 إنجليزي",
+        "☪️ إسلامية",
+        "🌍 اجتماعيات",
+        "🔬 علوم",
+        "✨ أخرى"
+    ]
+)
+if st.button(
+    "🎀 أضيفي المهمة",
+    use_container_width=True
+):
+if task_name.strip():
+
+    st.session_state.tasks.append(
+        {
+            "name": task_name.strip(),
+            "subject": subject,
+            "done": False
+        }
+    )
+
+    st.success(
+        "تمت إضافة المهمة! 🩵🎀"
+    )
+
+    st.rerun()
+
+else:
+
+    st.warning(
+        "اكتبي اسم المهمة أولًا 🥹"
+    )
+
+st.divider()
+=========================================================
+TODAY TASKS
+=========================================================
+st.markdown(
+    "
+📚 مهامي اليوم
+",
+    unsafe_allow_html=True
+)
+if not st.session_state.tasks:
+st.info(
+    "ما عندك مهام حاليًا ✨ "
+    "أضيفي أول مهمة وابدئي مع ميكو! 🎀"
 )
 
-# =========================================================
-# 4. الهيدر الموحد
-# =========================================================
-st.markdown("""
-<div class="main-header">
-    <h1>Study with Miku 🌸</h1>
-    <p>مساعدتكِ الذكية والمرحة للمذاكرة والتفوق!</p>
-</div>
-""", unsafe_allow_html=True)
+else:
+for i, task in enumerate(
+    st.session_state.tasks
+):
 
-# =========================================================
-# 5. محتوى الصفحات
-# =========================================================
+    if not task["done"]:
 
-# ---------------------------------------------------------
-# الصفحة 1: الرئيسية
-# ---------------------------------------------------------
-if menu == "الرئيسية":
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.image(MIKU_STUDY_GIF, use_container_width=True)
-    with col2:
-        st.markdown("""
-        <div class='miku-card'>
-            <h2>أهلاً بكِ في عالم ميكو للمذاكرة! ୨୧</h2>
-            <p>أنا ميكو! سأكون بجانبكِ دائماً لنذاكر معاً، ونحل الواجبات، وننظم أوقاتنا بطريقة ممتعة ومشجعة!</p>
-            <ul>
-                <li>💬 <b>اسألي ميكو:</b> للاستفسار عن أي درس أو مادة.</li>
-                <li>📝 <b>حل الواجبات:</b> ارفعي صورة مسألتكِ وسأشرحها لكِ.</li>
-                <li>⏱️ <b>جلسة مذاكرة:</b> مؤقت تفاعلي مع موسيقى هادئة وجرس لطيف.</li>
-                <li>🏆 <b>إنجازاتي:</b> اجمعي النقاط وافتحي أوسمة المتفوقات!</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        st.write(
+            f"**{task['subject']}** — "
+            f"{task['name']}"
+        )
 
-# ---------------------------------------------------------
-# الصفحة 2: دراسة مع ميكو (جدول الأهداف والمهام)
-# ---------------------------------------------------------
-elif menu == "دراسة مع ميكو ♡":
-    st.write("### 📚 قائمة مهام المذاكرة اليومية")
-    st.write("أضيفي الدروس والواجبات التي تريدين إنجازها اليوم، وكل مهمة تنهينها تمنحكِ نقاطاً! 🌸")
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        new_task = st.text_input("إضافة مهمة جديدة:", placeholder="مثال: مذاكرة الفصل الأول فيزياء...")
-    with col2:
-        st.write(" ")
-        st.write(" ")
-        if st.button("إضافة المهمة ✦"):
-            if new_task.strip():
-                st.session_state.tasks.append({"task": new_task, "done": False})
-                st.success("تمت الإضافة!")
-                st.rerun()
+        if st.button(
+            "✅ خلصت المهمة",
+            key=f"done_{i}",
+            use_container_width=True
+        ):
 
-    st.write("---")
-    if not st.session_state.tasks:
-        st.info("لا يوجد مهام حالياً! أضيفي مهمتكِ الأولى للبدء. ♡")
-    else:
-        for idx, item in enumerate(st.session_state.tasks):
-            c1, c2 = st.columns([4, 1])
-            with c1:
-                st.write(f"📌 {item['task']}")
-            with c2:
-                if not item["done"]:
-                    if st.button("إنجاز! ✨", key=f"btn_{idx}"):
-                        st.session_state.tasks[idx]["done"] = True
-                        st.session_state.points += 5
-                        st.balloons()
-                        st.success("+5 نقاط! أحسنتِ 🌸")
-                        st.rerun()
-                else:
-                    st.write("✅ مكتملة")
+            st.session_state.tasks[i]["done"] = True
+            st.session_state.xp += 20
 
-# ---------------------------------------------------------
-# الصفحة 3: حل الواجبات بالصور
-# ---------------------------------------------------------
-elif menu == "حل الواجبات":
-    st.write("### 📝 حل الواجبات والتمارين مع ميكو")
-    st.write("ارفعي صورة التمرين وسأقوم بقراءتها وحلها وشرحها لكِ خطوة بخطوة!")
-    
-    uploaded_file = st.file_uploader("ارفعي صورة الواجب هنا", type=["png", "jpg", "jpeg"])
-    user_prompt = st.text_input("أي ملاحظات إضافية؟", placeholder="مثلاً: اشرحي لي الخطوة الأخيرة...")
-    
-    if st.button("حل الواجب ✦"):
-        if uploaded_file is not None:
-            if "GEMINI_API_KEY" not in st.secrets:
-                st.error("يرجى التأكد من إضافة GEMINI_API_KEY في قسم Secrets!")
-            else:
-                try:
-                    with st.spinner("ميكو تقرأ المسألة وتحلها لكِ... 🌸"):
-                        image = Image.open(uploaded_file)
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        prompt = f"أنتِ ميكو (Hatsune Miku)، مصممة لمساعدة الطلاب بأدب ولطف وشغف. قومي بحل المسألة في الصورة وشرح الخطوات باللغة العربية بطريقة مبسطة مع إضافة إيموجيات لطيفة. ملاحظات: {user_prompt}"
-                        response = model.generate_content([prompt, image])
-                        
-                        st.session_state.points += 10
-                        st.markdown("<div class='miku-card'>", unsafe_allow_html=True)
-                        st.write("### 🌸 إجابة ميكو:")
-                        st.write(response.text)
-                        st.markdown("</div>", unsafe_allow_html=True)
-                        st.toast("كسبتِ 10 نقاط لحل الواجب! 🏆")
-                except Exception as e:
-                    st.error(f"حدث خطأ أثناء تحليل الصورة: {e}")
-        else:
-            st.warning("يرجى رفع صورة أولاً! ♡")
+            st.success(
+                "ميكو فخورة فيك! 🩵 +20 XP 🎀"
+            )
 
-# ---------------------------------------------------------
-# الصفحة 4: اسألي ميكو (شات الذكاء الاصطناعي)
-# ---------------------------------------------------------
-elif menu == "اسألي ميكو ୨୧":
-    st.write("### 💬 اسألي ميكو الذكية")
-    st.write("أي سؤال دراسي في الرياضيات، العلوم، اللغات، أو التاريخ... ميكو جاهزة للإجابة!")
-    
-    question = st.text_area("اكتبي سؤالكِ المباشر هنا:", placeholder="مثال: اشرحي لي كيف تتم عملية البناء الضوئي؟")
-    
-    if st.button("إرسال لميكو ✦"):
-        if question.strip():
-            if "GEMINI_API_KEY" not in st.secrets:
-                st.error("يرجى التأكد من إضافة GEMINI_API_KEY في قسم Secrets!")
-            else:
-                try:
-                    with st.spinner("ميكو تفكر في الإجابة... 🌸"):
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        system_prompt = (
-                            "أنتِ ميكو (Hatsune Miku)، صديقة دراسة لطيفة، ذكية، ومشجعة. "
-                            "تحدثي باللغة العربية بأسلوب لطيف ومشجع مع استخدام إيموجيات لطيفة مثل 🌸, ♡, ୨୧, ✦. "
-                            "اشرحي المفاهيم الدراسية بأسلوب واضح ومبسط جداً."
-                        )
-                        full_prompt = f"{system_prompt}\n\nسؤال الطالبة: {question}"
-                        response = model.generate_content(full_prompt)
-                        
-                        st.markdown("<div class='miku-card'>", unsafe_allow_html=True)
-                        st.write("### 🌸 رد ميكو:")
-                        st.write(response.text)
-                        st.markdown("</div>", unsafe_allow_html=True)
-                except Exception as e:
-                    st.error(f"حدث خطأ أثناء الاتصال: {e}")
-        else:
-            st.warning("يرجى كتابة سؤالكِ أولاً! ♡")
+            st.rerun()
 
-# ---------------------------------------------------------
-# الصفحة 5: جلسة مذاكرة (مؤقت تفاعلي)
-# ---------------------------------------------------------
-elif menu == "جلسة مذاكرة ⏱️":
-    st.write("### ⏱️ مؤقت المذاكرة والتركيز مع ميكو")
-    st.write("استمتعي بجلسة مذاكرة هادئة مع موسيقى استرخاء، وميكو ستنبهكِ بجرس لطيف عند البدء والانتهاء! 🌸")
-    
-    timer_minutes = st.number_input("حدد دقائق المذاكرة (مثلاً 25 دقيقة):", min_value=1, max_value=120, value=25)
-    
-    # واجهة مؤقت أكيت مع أصوات جديدة
-    timer_html = f"""
-    <div style="text-align: center; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); padding: 40px; border-radius: 30px; border: 4px solid #fed6e3; box-shadow: 0 10px 25px rgba(254, 214, 227, 0.4); font-family: 'Tajawal', sans-serif;">
-        
-        <div id="miku-status" style="font-size: 24px; font-weight: bold; color: #ff758c; margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">🌸 مستعدة لنبدأ؟</div>
-        
-        <div id="time-display" style="font-size: 80px; font-weight: bold; color: #39C5BB; font-family: monospace; letter-spacing: 5px; background: white; border-radius: 25px; display: inline-block; padding: 20px 50px; border: 4px dashed #39C5BB; box-shadow: inset 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
-            {timer_minutes:02d}:00
-        </div>
-        
-        <div style="margin-top: 15px;">
-            <button onclick="startTimer()" style="background-color: #ff758c; color: white; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); transition: transform 0.2s;">🚀 ابدأ</button>
-            <button onclick="pauseTimer()" style="background-color: #ffd194; color: #333; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(255, 209, 148, 0.4); transition: transform 0.2s;">⏸️ إيقاف مؤقت</button>
-            <button onclick="resetTimer()" style="background-color: #a8edea; color: #333; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4); transition: transform 0.2s;">🔄 إعادة</button>
-        </div>
+=========================================================
+COMPLETED TASKS
+=========================================================
+completed = [
+    task
+    for task in st.session_state.tasks
+    if task["done"]
+]
+if completed:
+st.divider()
 
-        <!-- جرس لطيف للبداية والنهاية -->
-        <audio id="bell-sound" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio>
-        <!-- موسيقى لو-في (Lo-Fi) هادئة ومستمرة -->
-        <audio id="lofi-music" src="https://assets.mixkit.co/active_storage/sfx/131/131-preview.mp3" loop preload="auto"></audio>
+st.markdown(
+    "<h2 class='section-title'>🏆 إنجازاتك</h2>",
+    unsafe_allow_html=True
+)
 
-        <script>
-            let totalSeconds = {timer_minutes} * 60;
-            let initialSeconds = totalSeconds;
-            let timerInterval = null;
+for task in completed:
 
-            const display = document.getElementById('time-display');
-            const bellSound = document.getElementById('bell-sound');
-            const lofiMusic = document.getElementById('lofi-music');
-            const mikuStatus = document.getElementById('miku-status');
+    st.write(
+        f"✅ {task['subject']} — "
+        f"{task['name']}"
+    )
 
-            function updateDisplay(secs) {{
-                let mins = Math.floor(secs / 60);
-                let remSecs = secs % 60;
-                display.innerText = (mins < 10 ? '0' : '') + mins + ':' + (remSecs < 10 ? '0' : '') + remSecs;
-            }}
-
-            function startTimer() {{
-                if (timerInterval) return;
-                
-                // جرس البداية
-                bellSound.volume = 0.5;
-                bellSound.currentTime = 0;
-                bellSound.play().catch(e => console.log(e));
-                
-                // تشغيل موسيقى الاسترخاء
-                lofiMusic.volume = 0.2;
-                lofiMusic.play().catch(e => console.log(e));
-
-                mikuStatus.innerText = "📚 ركزي جيداً.. ميكو تدرس معكِ الآن!";
-                
-                timerInterval = setInterval(() => {{
-                    if (totalSeconds > 0) {{
-                        totalSeconds--;
-                        updateDisplay(totalSeconds);
-                    }} else {{
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        
-                        // إيقاف الموسيقى وجرس النهاية
-                        lofiMusic.pause();
-                        bellSound.volume = 0.8;
-                        bellSound.currentTime = 0;
-                        bellSound.play().catch(e => console.log(e));
-                        
-                        mikuStatus.innerText = "🔔 انتهى وقت الدرس! أحسنتِ المذاكرة 🌸✨";
-                    }}
-                }}, 1000);
-            }}
-
-            function pauseTimer() {{
-                clearInterval(timerInterval);
-                timerInterval = null;
-                lofiMusic.pause(); // إيقاف الموسيقى عند الإيقاف المؤقت
-                mikuStatus.innerText = "⏸️ المؤقت متوقف مؤقتاً";
-            }}
-
-            function resetTimer() {{
-                clearInterval(timerInterval);
-                timerInterval = null;
-                lofiMusic.pause();
-                lofiMusic.currentTime = 0;
-                totalSeconds = initialSeconds;
-                updateDisplay(totalSeconds);
-                mikuStatus.innerText = "🌸 مستعدة لنبدأ؟";
-            }}
-        </script>
-    </div>
-    """
-    
-    components.html(timer_html, height=450)
-
-# ---------------------------------------------------------
-# الصفحة 6: إنجازاتي والأوسمة
-# ---------------------------------------------------------
-elif menu == "إنجازاتي 🏆":
-    st.write("### 🏆 قائمة إنجازاتكِ وأوسمة المتفوقات")
-    st.write("كلما ذاكرتِ وحللتِ الواجبات مع ميكو تكسبين نقاطاً وتفتحين أوسمة جديدة!")
-    
-    st.markdown(f"""
-    <div class='miku-card' style='text-align: center;'>
-        <h2>مجموع نقاطكِ الحالي:</h2>
-        <h1 style='color: #39C5BB; font-size: 50px;'>{st.session_state.points} 🌸</h1>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.write("### 🎖️ الأوسمة التي فتحتها:")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("<div class='miku-card' style='text-align:center;'>🌱<br><b>بداية الشغف</b><br><small>10 نقاط</small></div>", unsafe_allow_html=True)
-    with col2:
-        if st.session_state.points >= 30:
-            st.markdown("<div class='miku-card' style='text-align:center;'>⭐<br><b>بطلة التركيز</b><br><small>30 نقطة</small></div>", unsafe_allow_html=True)
-        else:
-            st.markdown("<div class='miku-card' style='text-align:center; opacity: 0.4;'>🔒<br><b>بطلة التركيز</b><br><small>تحتاج 30 نقطة</small></div>", unsafe_allow_html=True)
-    with col3:
-        if st.session_state.points >= 50:
-            st.markdown("<div class='miku-card' style='text-align:center;'>👑<br><b>أسطورة ميكو</b><br><small>50 نقطة</small></div>", unsafe_allow_html=True)
-        else:
-            st.markdown("<div class='miku-card' style='text-align:center; opacity: 0.4;'>🔒<br><b>أسطورة ميكو</b><br><small>تحتاج 50 نقطة</small></div>", unsafe_allow_html=True)
+=========================================================
+FOOTER
+=========================================================
+st.divider()
+st.caption(
+    "🩵 Study with Miku — your cute study companion 🎀"
+)
