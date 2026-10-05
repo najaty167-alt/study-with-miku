@@ -23,73 +23,58 @@ if "points" not in st.session_state:
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
 
-# روابط صور وأنيميشن ميكو المتحركة (تم تحديثها لتناسب ميكو بالشعر الأزرق)
-MIKU_GIF_URL = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L2X6i84z1bUaI/giphy.gif" # صورة ميكو متحركة
-MIKU_STUDY_GIF = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/KzDqC8LvCXhxigzxLp/giphy.gif" # صورة ميكو تدرس
+# روابط صور ميكو المتحركة (الروابط القديمة التي كانت تعمل)
+MIKU_GIF_URL = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzbmdnYm4ydWdlanRndnE2dnhreWZscmd5Mmt6b3E2NWY0eWw1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/13A85s05AMQOqY/giphy.gif"
+MIKU_STUDY_GIF = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnZxa3VqdW1oNWVjczV2Nmg5NG8xbzlsbGNmOHBvNnhmZXBnOXc2YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CaiVJuGVvR81W/giphy.gif"
 
 # =========================================================
-# 2. تنسيقات الـ CSS والتصميم (تم تعديل الألوان لألوان ميكو)
+# 2. تنسيقات الـ CSS والتصميم
 # =========================================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    /* تغيير الخط ليكون ألطف */
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Cairo', sans-serif;
+        font-family: 'Tajawal', sans-serif; /* خط لطيف وجميل */
         direction: rtl;
     }
     
     .stApp {
-        background-color: #e0f7fa; /* لون خلفية أزرق فاتح جداً */
+        background-color: #f4fbfd; /* ألوانك القديمة */
     }
     
     /* الهيدر الرئيسي */
     .main-header {
-        background: linear-gradient(135deg, #39c5bb 0%, #b2ebf2 100%); /* تدرج ألوان ميكو */
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); /* ألوانك القديمة */
         padding: 25px;
         border-radius: 25px;
         text-align: center;
-        color: #fff;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        color: #2c3e50;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
         margin-bottom: 25px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     }
     
     /* بطاقات الميكو اللطيفة */
     .miku-card {
         background-color: #ffffff;
-        border: 2px solid #39c5bb;
+        border: 2px solid #b2ebf2; /* ألوانك القديمة */
         border-radius: 20px;
         padding: 20px;
         margin-top: 15px;
-        box-shadow: 0 4px 15px rgba(57, 197, 187, 0.2);
+        box-shadow: 0 4px 15px rgba(57, 197, 187, 0.1);
     }
     
     /* مؤشر النقاط */
     .points-badge {
-        background-color: #ff4081; /* لون وردي للتباين */
+        background-color: #39C5BB; /* ألوانك القديمة */
         color: white;
         padding: 8px 18px;
         border-radius: 50px;
         font-weight: bold;
         display: inline-block;
         font-size: 16px;
-        box-shadow: 0 3px 10px rgba(255, 64, 129, 0.3);
-    }
-    
-    /* أزرار مخصصة */
-    .stButton>button {
-        background-color: #39c5bb;
-        color: white;
-        border-radius: 20px;
-        border: none;
-        padding: 10px 20px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        background-color: #26a69a;
-        box-shadow: 0 4px 10px rgba(57, 197, 187, 0.4);
+        box-shadow: 0 3px 10px rgba(57, 197, 187, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -97,7 +82,7 @@ st.markdown("""
 # =========================================================
 # 3. القائمة الجانبية (Sidebar) مع ميكو المتحركة
 # =========================================================
-st.sidebar.image(MIKU_GIF_URL, caption="ميكو جاهزة للمذاكرة! ♡", use_container_width=True)
+st.sidebar.image(MIKU_GIF_URL, caption="Miku is ready to study! ♡", use_container_width=True)
 
 st.sidebar.title("こんにちは ♡")
 st.sidebar.markdown(f"<div class='points-badge'>🏆 نقاطكِ: {st.session_state.points} نقطة</div>", unsafe_allow_html=True)
@@ -132,12 +117,12 @@ if menu == "الرئيسية":
     with col2:
         st.markdown("""
         <div class='miku-card'>
-            <h2 style='color: #39c5bb;'>أهلاً بكِ في عالم ميكو للمذاكرة! ୨୧</h2>
+            <h2>أهلاً بكِ في عالم ميكو للمذاكرة! ୨୧</h2>
             <p>أنا ميكو! سأكون بجانبكِ دائماً لنذاكر معاً، ونحل الواجبات، وننظم أوقاتنا بطريقة ممتعة ومشجعة!</p>
             <ul>
                 <li>💬 <b>اسألي ميكو:</b> للاستفسار عن أي درس أو مادة.</li>
                 <li>📝 <b>حل الواجبات:</b> ارفعي صورة مسألتكِ وسأشرحها لكِ.</li>
-                <li>⏱️ <b>جلسة مذاكرة:</b> مؤقت تفاعلي مع أصوات تقليب الورق وجرس المدرسة.</li>
+                <li>⏱️ <b>جلسة مذاكرة:</b> مؤقت تفاعلي مع موسيقى هادئة وجرس لطيف.</li>
                 <li>🏆 <b>إنجازاتي:</b> اجمعي النقاط وافتحي أوسمة المتفوقات!</li>
             </ul>
         </div>
@@ -249,30 +234,34 @@ elif menu == "اسألي ميكو ୨୧":
             st.warning("يرجى كتابة سؤالكِ أولاً! ♡")
 
 # ---------------------------------------------------------
-# الصفحة 5: جلسة مذاكرة (مؤقت تفاعلي مع صوت ورق وجرس)
+# الصفحة 5: جلسة مذاكرة (مؤقت تفاعلي)
 # ---------------------------------------------------------
 elif menu == "جلسة مذاكرة ⏱️":
     st.write("### ⏱️ مؤقت المذاكرة والتركيز مع ميكو")
-    st.write("استمتعي بجلسة مذاكرة هادئة! المؤقت يصدر صوت تقليب الورق أثناء العد التنازلي، ويختم بجرس تنبيه عند انتهاء الوقت! 🔔🌸")
+    st.write("استمتعي بجلسة مذاكرة هادئة مع موسيقى استرخاء، وميكو ستنبهكِ بجرس لطيف عند البدء والانتهاء! 🌸")
     
     timer_minutes = st.number_input("حدد دقائق المذاكرة (مثلاً 25 دقيقة):", min_value=1, max_value=120, value=25)
     
+    # واجهة مؤقت أكيت مع أصوات جديدة
     timer_html = f"""
-    <div style="text-align: center; background: #ffffff; padding: 30px; border-radius: 25px; border: 3px solid #39c5bb; box-shadow: 0 6px 20px rgba(57,197,187,0.15); font-family: 'Cairo', sans-serif;">
-        <div id="miku-status" style="font-size: 22px; font-weight: bold; color: #ff4081; margin-bottom: 15px;">🌸 ميكو مستعدة للمذاكرة معكِ...</div>
+    <div style="text-align: center; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); padding: 40px; border-radius: 30px; border: 4px solid #fed6e3; box-shadow: 0 10px 25px rgba(254, 214, 227, 0.4); font-family: 'Tajawal', sans-serif;">
         
-        <div id="time-display" style="font-size: 75px; font-weight: bold; color: #39c5bb; font-family: monospace; letter-spacing: 4px; background: #e0f7fa; border-radius: 20px; display: inline-block; padding: 15px 40px; border: 3px dashed #39c5bb; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);">
+        <div id="miku-status" style="font-size: 24px; font-weight: bold; color: #ff758c; margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">🌸 مستعدة لنبدأ؟</div>
+        
+        <div id="time-display" style="font-size: 80px; font-weight: bold; color: #39C5BB; font-family: monospace; letter-spacing: 5px; background: white; border-radius: 25px; display: inline-block; padding: 20px 50px; border: 4px dashed #39C5BB; box-shadow: inset 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
             {timer_minutes:02d}:00
         </div>
         
-        <div style="margin-top: 25px;">
-            <button onclick="startTimer()" style="background-color: #ff4081; color: white; border: none; padding: 14px 32px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 6px; box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3);">بدء الدرس 🚀</button>
-            <button onclick="pauseTimer()" style="background-color: #e0f7fa; color: #333; border: none; padding: 14px 32px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 6px;">إيقاف مؤقت ⏸️</button>
-            <button onclick="resetTimer()" style="background-color: #e0e0e0; color: #444; border: none; padding: 14px 32px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 6px;">إعادة ضبط 🔄</button>
+        <div style="margin-top: 15px;">
+            <button onclick="startTimer()" style="background-color: #ff758c; color: white; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); transition: transform 0.2s;">🚀 ابدأ</button>
+            <button onclick="pauseTimer()" style="background-color: #ffd194; color: #333; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(255, 209, 148, 0.4); transition: transform 0.2s;">⏸️ إيقاف مؤقت</button>
+            <button onclick="resetTimer()" style="background-color: #a8edea; color: #333; border: none; padding: 15px 35px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4); transition: transform 0.2s;">🔄 إعادة</button>
         </div>
 
-        <audio id="bell-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-        <audio id="paper-sound" src="https://assets.mixkit.co/active_storage/sfx/1470/1470-preview.mp3" preload="auto"></audio>
+        <!-- جرس لطيف للبداية والنهاية -->
+        <audio id="bell-sound" src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" preload="auto"></audio>
+        <!-- موسيقى لو-في (Lo-Fi) هادئة ومستمرة -->
+        <audio id="lofi-music" src="https://assets.mixkit.co/active_storage/sfx/131/131-preview.mp3" loop preload="auto"></audio>
 
         <script>
             let totalSeconds = {timer_minutes} * 60;
@@ -281,7 +270,7 @@ elif menu == "جلسة مذاكرة ⏱️":
 
             const display = document.getElementById('time-display');
             const bellSound = document.getElementById('bell-sound');
-            const paperSound = document.getElementById('paper-sound');
+            const lofiMusic = document.getElementById('lofi-music');
             const mikuStatus = document.getElementById('miku-status');
 
             function updateDisplay(secs) {{
@@ -292,22 +281,33 @@ elif menu == "جلسة مذاكرة ⏱️":
 
             function startTimer() {{
                 if (timerInterval) return;
+                
+                // جرس البداية
+                bellSound.volume = 0.5;
+                bellSound.currentTime = 0;
+                bellSound.play().catch(e => console.log(e));
+                
+                // تشغيل موسيقى الاسترخاء
+                lofiMusic.volume = 0.2;
+                lofiMusic.play().catch(e => console.log(e));
+
                 mikuStatus.innerText = "📚 ركزي جيداً.. ميكو تدرس معكِ الآن!";
                 
                 timerInterval = setInterval(() => {{
                     if (totalSeconds > 0) {{
                         totalSeconds--;
                         updateDisplay(totalSeconds);
-                        
-                        paperSound.currentTime = 0;
-                        paperSound.volume = 0.3;
-                        paperSound.play().catch(e => console.log(e));
                     }} else {{
                         clearInterval(timerInterval);
                         timerInterval = null;
-                        mikuStatus.innerText = "🔔 انتهى وقت الدرس! أحسنتِ المذاكرة 🌸✨";
-                        bellSound.volume = 1.0;
+                        
+                        // إيقاف الموسيقى وجرس النهاية
+                        lofiMusic.pause();
+                        bellSound.volume = 0.8;
+                        bellSound.currentTime = 0;
                         bellSound.play().catch(e => console.log(e));
+                        
+                        mikuStatus.innerText = "🔔 انتهى وقت الدرس! أحسنتِ المذاكرة 🌸✨";
                     }}
                 }}, 1000);
             }}
@@ -315,21 +315,24 @@ elif menu == "جلسة مذاكرة ⏱️":
             function pauseTimer() {{
                 clearInterval(timerInterval);
                 timerInterval = null;
+                lofiMusic.pause(); // إيقاف الموسيقى عند الإيقاف المؤقت
                 mikuStatus.innerText = "⏸️ المؤقت متوقف مؤقتاً";
             }}
 
             function resetTimer() {{
                 clearInterval(timerInterval);
                 timerInterval = null;
+                lofiMusic.pause();
+                lofiMusic.currentTime = 0;
                 totalSeconds = initialSeconds;
                 updateDisplay(totalSeconds);
-                mikuStatus.innerText = "🌸 جاهزة لبدء الجلسة؟";
+                mikuStatus.innerText = "🌸 مستعدة لنبدأ؟";
             }}
         </script>
     </div>
     """
     
-    components.html(timer_html, height=360)
+    components.html(timer_html, height=450)
 
 # ---------------------------------------------------------
 # الصفحة 6: إنجازاتي والأوسمة
@@ -340,7 +343,7 @@ elif menu == "إنجازاتي 🏆":
     
     st.markdown(f"""
     <div class='miku-card' style='text-align: center;'>
-        <h2 style='color: #ff4081;'>مجموع نقاطكِ الحالي:</h2>
+        <h2>مجموع نقاطكِ الحالي:</h2>
         <h1 style='color: #39C5BB; font-size: 50px;'>{st.session_state.points} 🌸</h1>
     </div>
     """, unsafe_allow_html=True)
