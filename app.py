@@ -1,6 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import requests
+import base64
+import os
 
 # =========================================================
 # PAGE CONFIGURATION
@@ -25,19 +27,34 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================
-# GOTHIC STAINED-GLASS FULL BACKGROUND (CSS)
+# LOAD LOCAL BACKGROUND IMAGE (bg.png)
 # =========================================================
-# يمكن استبدال رابط الصورة أدناه برابط خلفيتكِ المباشر
-BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop"
+def get_base64_image(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    return None
 
+# البحث عن ملف الخلفية المحلي
+bg_base64 = get_base64_image("bg.png") or get_base64_image("bg.jpg")
+
+if bg_base64:
+    bg_css_url = f"data:image/png;base64,{bg_base64}"
+else:
+    # رابط احتياطي في حال عدم إيجاد الملف المحلي بعد
+    bg_css_url = ""
+
+# =========================================================
+# CUSTOM CSS FOR EXACT MATCH
+# =========================================================
 css_code = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Tajawal:wght@400;700&display=swap');
 
-/* Fullscreen Gothic Stained Glass Image Background */
+/* Fullscreen Background Image */
 .stApp {
-    background: linear-gradient(rgba(2, 12, 20, 0.65), rgba(2, 12, 20, 0.85)), 
-                url('BACKGROUND_URL_PLACEHOLDER') center/cover no-repeat fixed !important;
+    background: url('BACKGROUND_URL_PLACEHOLDER') center center / cover no-repeat fixed !important;
     color: #d1f4ff;
     font-family: 'Tajawal', sans-serif;
 }
@@ -45,10 +62,16 @@ css_code = """
 /* Hide Streamlit Header & Footer */
 header, footer { visibility: hidden; }
 
+/* Remove block padding */
+.block-container {
+    padding-top: 2rem !important;
+    padding-bottom: 0rem !important;
+}
+
 /* Title Styling */
 .vn-title-container {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 20px;
     margin-bottom: 25px;
 }
 
@@ -74,19 +97,19 @@ header, footer { visibility: hidden; }
 /* Gothic UI Buttons */
 .stButton>button {
     width: 100% !important;
-    background: rgba(4, 24, 36, 0.82) !important;
+    background: rgba(4, 24, 36, 0.75) !important;
     border: 1.5px solid #00838f !important;
     color: #e0f7fa !important;
     font-family: 'Cinzel', 'Tajawal', serif !important;
-    font-size: 17px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
-    padding: 13px 20px !important;
+    padding: 12px 20px !important;
     border-radius: 20px !important;
     letter-spacing: 3px !important;
     box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.15), 0 5px 20px rgba(0,0,0,0.7) !important;
     transition: all 0.3s ease-in-out !important;
     text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .stButton>button:hover {
@@ -97,28 +120,17 @@ header, footer { visibility: hidden; }
     transform: scale(1.02);
 }
 
-/* Transparent Frame Container for 3D Model */
-.miku-3d-box {
-    width: 100%;
-    height: 530px;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1.5px solid rgba(0, 229, 255, 0.3);
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
-    background: rgba(2, 12, 20, 0.3);
-    backdrop-filter: blur(3px);
-}
-
 /* Content Panels for Inner Screens */
 .vn-panel {
-    background: rgba(4, 24, 36, 0.92);
+    background: rgba(4, 24, 36, 0.88);
     border: 1px solid #00838f;
     border-radius: 18px;
     padding: 25px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
 }
 </style>
-""".replace("BACKGROUND_URL_PLACEHOLDER", BACKGROUND_IMAGE_URL)
+""".replace("BACKGROUND_URL_PLACEHOLDER", bg_css_url)
 
 st.markdown(css_code, unsafe_allow_html=True)
 
@@ -127,24 +139,11 @@ st.markdown(css_code, unsafe_allow_html=True)
 # =========================================================
 
 if st.session_state.screen == "MENU":
-    col_left, col_right = st.columns([1.35, 1])
+    col_left, col_right = st.columns([1.4, 1])
 
     with col_left:
-        sketchfab_embed = """
-        <div class="miku-3d-box">
-            <iframe 
-                title="Hatsune Miku II 3D" 
-                frameborder="0" 
-                allowfullscreen 
-                mozallowfullscreen="true" 
-                webkitallowfullscreen="true" 
-                allow="autoplay; fullscreen; xr-spatial-tracking" 
-                src="https://sketchfab.com/models/47de46d489e24baeae73129ed3527b71/embed?autostart=1&transparent=1&ui_controls=0&ui_infos=0&ui_watermark=0&ui_help=0&ui_settings=0&ui_inspector=0"
-                style="width: 100%; height: 100%;">
-            </iframe>
-        </div>
-        """
-        components.html(sketchfab_embed, height=545)
+        # ترك الجهة اليسرى فارغة لتظهر رسمة ميكو والطاولة الشطرنج بالكامل وبشكل واضح
+        st.write("")
 
     with col_right:
         st.markdown(
@@ -216,4 +215,81 @@ elif st.session_state.screen == "LOAD_GAME":
     else:
         for i, task in enumerate(st.session_state.tasks):
             if not task["done"]:
-                c1, c2 = st
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.write(f"📖 **{task['subject']}** — {task['name']}")
+                with c2:
+                    if st.button("✅ إنجاز", key=f"done_{i}"):
+                        st.session_state.tasks[i]["done"] = True
+                        st.session_state.xp += 25
+                        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# MEMORY SCREEN (AI CHAT)
+# ---------------------------------------------------------
+elif st.session_state.screen == "MEMORY":
+    if st.button("◀ العودة للقائمة الرئيسية"):
+        st.session_state.screen = "MENU"
+        st.rerun()
+
+    st.markdown('<div class="vn-title-container"><div class="vn-title">MEMORY</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+    for msg in st.session_state.chat_history:
+        role = "🩵 Miku:" if msg["role"] == "assistant" else "👤 You:"
+        st.write(f"**{role}** {msg['content']}")
+
+    user_input = st.text_input("اكتبي رسالتك لميكو:", key="chat_input")
+    if st.button("إرسال 🕊️"):
+        if user_input.strip():
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+            api_key = st.secrets.get("GEMINI_API_KEY")
+            if api_key:
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                    payload = {
+                        "contents": [{"role": "user", "parts": [{"text": user_input}]}],
+                        "system_instruction": {"parts": [{"text": "أنتِ ميكو من لعبة Visual Novel غامضة وداعم للدراسة."}]}
+                    }
+                    res = requests.post(url, json=payload, timeout=10)
+                    if res.status_code == 200:
+                        reply = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+                        st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"خطأ: {e}")
+            else:
+                st.warning("⚠️ يرجى تفعيل GEMINI_API_KEY في Secrets.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# GALLERY SCREEN
+# ---------------------------------------------------------
+elif st.session_state.screen == "GALLERY":
+    if st.button("◀ العودة للقائمة الرئيسية"):
+        st.session_state.screen = "MENU"
+        st.rerun()
+
+    st.markdown('<div class="vn-title-container"><div class="vn-title">GALLERY</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+    st.write(f"🏆 **نقاط الخبرة (XP):** `{st.session_state.xp}`")
+    st.write(f"👑 **المستوى:** `Level {(st.session_state.xp // 100) + 1}`")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# EXIT SCREEN
+# ---------------------------------------------------------
+elif st.session_state.screen == "EXIT":
+    if st.button("◀ العودة للقائمة الرئيسية"):
+        st.session_state.screen = "MENU"
+        st.rerun()
+
+    st.markdown('<div class="vn-title-container"><div class="vn-title">EXIT</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="vn-panel" style="text-align:center;">', unsafe_allow_html=True)
+    if st.button("🔄 إعادة تعيين البيانات"):
+        st.session_state.tasks = []
+        st.session_state.xp = 0
+        st.session_state.chat_history = []
+        st.session_state.screen = "MENU"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
