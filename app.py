@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# SESSION STATE MANAGEMENT
+# SESSION STATE
 # =========================================================
 if "screen" not in st.session_state:
     st.session_state.screen = "MENU"
@@ -28,47 +28,48 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================
-# GOTHIC AQUA / STAINED GLASS STYLE
+# DARK CRYSTAL GLASS DESIGN
 # =========================================================
 st.markdown(
     """
     <style>
 
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap');
-
-    /* -----------------------------------------------------
+    /* =====================================================
        MAIN BACKGROUND
-    ----------------------------------------------------- */
+       ===================================================== */
 
     .stApp {
         background:
-            radial-gradient(circle at 15% 20%,
-                rgba(32, 145, 170, 0.22) 0%,
-                transparent 25%),
-
-            radial-gradient(circle at 85% 15%,
-                rgba(104, 76, 170, 0.20) 0%,
-                transparent 25%),
-
-            radial-gradient(circle at 70% 85%,
-                rgba(0, 190, 205, 0.14) 0%,
-                transparent 30%),
-
+            radial-gradient(
+                ellipse at 15% 20%,
+                rgba(0, 190, 220, 0.20) 0%,
+                transparent 35%
+            ),
+            radial-gradient(
+                ellipse at 85% 15%,
+                rgba(110, 70, 210, 0.16) 0%,
+                transparent 35%
+            ),
+            radial-gradient(
+                ellipse at 50% 100%,
+                rgba(0, 120, 170, 0.20) 0%,
+                transparent 45%
+            ),
             linear-gradient(
                 135deg,
-                #020b13 0%,
-                #061b29 30%,
-                #082c3b 55%,
-                #071827 75%,
-                #020911 100%
+                #01070c 0%,
+                #03131d 28%,
+                #061d2a 52%,
+                #020b13 78%,
+                #010509 100%
             );
 
-        color: #e5fbff;
-        font-family: 'Tajawal', sans-serif;
+        color: #dffcff;
         min-height: 100vh;
     }
 
-    /* Decorative stained-glass atmosphere */
+    /* Crystal light layers */
+
     .stApp::before {
         content: "";
         position: fixed;
@@ -78,230 +79,392 @@ st.markdown(
 
         background:
             linear-gradient(
-                120deg,
+                125deg,
                 transparent 0%,
-                rgba(91, 226, 238, 0.035) 25%,
-                transparent 45%
+                rgba(102, 235, 255, 0.045) 24%,
+                transparent 25%
             ),
             linear-gradient(
-                45deg,
-                transparent 35%,
-                rgba(124, 88, 190, 0.035) 60%,
-                transparent 80%
+                35deg,
+                transparent 0%,
+                rgba(145, 90, 255, 0.035) 32%,
+                transparent 33%
+            ),
+            linear-gradient(
+                160deg,
+                transparent 0%,
+                rgba(255,255,255,0.025) 48%,
+                transparent 49%
             );
 
-        opacity: 1;
+        background-size: 420px 420px;
+        animation: crystalDrift 18s linear infinite;
     }
 
-    /* -----------------------------------------------------
-       HIDE STREAMLIT DEFAULT HEADER / FOOTER
-    ----------------------------------------------------- */
+    @keyframes crystalDrift {
+        from {
+            transform: translate3d(0,0,0);
+        }
 
-    header,
+        50% {
+            transform: translate3d(-20px,15px,0);
+        }
+
+        to {
+            transform: translate3d(0,0,0);
+        }
+    }
+
+    /* Floating glass lights */
+
+    .stApp::after {
+        content: "";
+        position: fixed;
+        width: 500px;
+        height: 500px;
+        right: -180px;
+        top: 10%;
+        pointer-events: none;
+        z-index: 0;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(74, 224, 255, 0.11),
+                transparent 68%
+            );
+
+        filter: blur(25px);
+
+        animation: aura 7s ease-in-out infinite;
+    }
+
+    @keyframes aura {
+        0%,100% {
+            transform: scale(1);
+            opacity: .6;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+    }
+
+    /* =====================================================
+       HIDE STREAMLIT DEFAULT UI
+       ===================================================== */
+
+    header {
+        visibility: hidden;
+    }
+
     footer {
         visibility: hidden;
     }
 
-    /* -----------------------------------------------------
-       MAIN TITLE
-    ----------------------------------------------------- */
-
-    .vn-title {
-        font-family: 'Cinzel', serif;
-        font-size: 46px;
-        font-weight: 700;
-
-        color: #ffffff;
-
-        text-shadow:
-            0 0 10px rgba(77, 225, 240, 0.75),
-            0 0 25px rgba(39, 154, 180, 0.55),
-            0 0 45px rgba(81, 82, 170, 0.30),
-            2px 2px 5px #000;
-
-        letter-spacing: 3px;
-        text-align: right;
-        margin-bottom: 5px;
+    #MainMenu {
+        visibility: hidden;
     }
 
-    .vn-subtitle {
-        font-family: 'Cinzel', serif;
+    /* =====================================================
+       PAGE TRANSITION
+       ===================================================== */
 
-        font-size: 15px;
-        color: #8ed9e4;
+    .transition-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        pointer-events: none;
+
+        background:
+            radial-gradient(
+                circle at center,
+                rgba(73, 235, 255, 0.22),
+                transparent 45%
+            ),
+            #01070c;
+
+        animation: pageTransition 0.85s ease-out forwards;
+    }
+
+    @keyframes pageTransition {
+
+        0% {
+            opacity: 1;
+            backdrop-filter: blur(20px);
+        }
+
+        45% {
+            opacity: .65;
+            backdrop-filter: blur(12px);
+        }
+
+        100% {
+            opacity: 0;
+            backdrop-filter: blur(0);
+        }
+    }
+
+    /* =====================================================
+       TITLE
+       ===================================================== */
+
+    .vn-title {
+        font-family: Georgia, serif;
+
+        font-size: 50px;
+        font-weight: 700;
+
+        color: #f4ffff;
 
         text-align: right;
 
         letter-spacing: 4px;
-        margin-bottom: 30px;
 
         text-shadow:
-            0 0 10px rgba(81, 220, 235, 0.35);
+            0 0 8px rgba(112, 242, 255, .8),
+            0 0 25px rgba(0, 190, 220, .45),
+            0 0 50px rgba(0, 150, 220, .25);
+
+        margin-top: 25px;
+        margin-bottom: 5px;
     }
 
-    /* -----------------------------------------------------
-       3D FRAME
-    ----------------------------------------------------- */
+    .vn-subtitle {
+        text-align: right;
 
-    .miku-frame {
-        position: relative;
+        color: #83dce9;
 
-        border-radius: 24px;
+        font-size: 16px;
 
-        border: 1px solid rgba(76, 210, 228, 0.55);
+        letter-spacing: 4px;
 
-        background:
-            linear-gradient(
-                145deg,
-                rgba(11, 49, 63, 0.65),
-                rgba(3, 17, 27, 0.82)
-            );
+        text-shadow:
+            0 0 12px rgba(81, 220, 240, .45);
 
-        box-shadow:
-            0 0 20px rgba(39, 196, 218, 0.12),
-            0 0 55px rgba(43, 99, 150, 0.12),
-            inset 0 0 35px rgba(0, 180, 205, 0.05);
-
-        padding: 5px;
+        margin-bottom: 35px;
     }
 
-    /* -----------------------------------------------------
-       MENU BUTTONS
-    ----------------------------------------------------- */
-
-    .stButton > button {
-        width: 100% !important;
-
-        background:
-            linear-gradient(
-                100deg,
-                rgba(8, 38, 54, 0.78),
-                rgba(7, 26, 42, 0.92)
-            ) !important;
-
-        border: 1px solid rgba(58, 157, 178, 0.75) !important;
-
-        color: #c7f3f7 !important;
-
-        font-family:
-            'Cinzel',
-            'Tajawal',
-            serif !important;
-
-        font-size: 17px !important;
-        font-weight: 600 !important;
-
-        padding: 12px 20px !important;
-
-        border-radius: 9px !important;
-
-        letter-spacing: 2px !important;
-
-        box-shadow:
-            0 5px 18px rgba(0, 0, 0, 0.40),
-            inset 0 0 15px rgba(60, 210, 225, 0.03) !important;
-
-        transition:
-            all 0.3s ease !important;
-
-        margin-bottom: 9px;
-    }
-
-    .stButton > button:hover {
-        background:
-            linear-gradient(
-                90deg,
-                rgba(23, 104, 125, 0.92),
-                rgba(11, 43, 59, 0.95)
-            ) !important;
-
-        border-color: #63e9f7 !important;
-
-        color: #ffffff !important;
-
-        box-shadow:
-            0 0 20px rgba(81, 229, 247, 0.45),
-            inset 0 0 18px rgba(81, 229, 247, 0.08) !important;
-
-        transform: translateX(-5px);
-    }
-
-    /* -----------------------------------------------------
-       PANELS
-    ----------------------------------------------------- */
+    /* =====================================================
+       GLASS PANELS
+       ===================================================== */
 
     .vn-panel {
+        position: relative;
+
         background:
             linear-gradient(
-                145deg,
-                rgba(6, 31, 44, 0.90),
-                rgba(3, 17, 27, 0.94)
+                135deg,
+                rgba(18, 55, 70, 0.62),
+                rgba(3, 18, 28, 0.78)
             );
 
-        border: 1px solid rgba(45, 135, 156, 0.65);
+        border: 1px solid rgba(103, 225, 242, 0.32);
 
-        border-radius: 17px;
+        border-radius: 22px;
 
-        padding: 25px;
+        padding: 28px;
 
         box-shadow:
-            0 15px 35px rgba(0, 0, 0, 0.55),
-            inset 0 0 30px rgba(40, 190, 210, 0.025);
+            inset 0 1px 0 rgba(255,255,255,.10),
+            inset 0 -1px 0 rgba(0,0,0,.35),
+            0 20px 60px rgba(0,0,0,.55),
+            0 0 35px rgba(0,180,220,.08);
+
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+
+        overflow: hidden;
     }
 
-    /* -----------------------------------------------------
-       DECORATIVE TEXT
-    ----------------------------------------------------- */
+    .vn-panel::before {
+        content: "";
 
-    .glass-line {
+        position: absolute;
+
+        top: 0;
+        left: -100%;
+
+        width: 70%;
         height: 1px;
-
-        margin: 15px 0 25px;
 
         background:
             linear-gradient(
                 90deg,
                 transparent,
-                rgba(87, 219, 232, 0.65),
-                rgba(128, 91, 190, 0.45),
+                rgba(180,250,255,.9),
                 transparent
             );
+
+        animation: glassShine 6s ease-in-out infinite;
     }
 
-    .small-note {
-        color: #71bfc9;
-        font-size: 13px;
-        letter-spacing: 1px;
+    @keyframes glassShine {
+
+        0% {
+            left: -100%;
+        }
+
+        45%,100% {
+            left: 140%;
+        }
     }
 
-    /* -----------------------------------------------------
-       INPUTS
-    ----------------------------------------------------- */
+    /* =====================================================
+       MENU BUTTONS
+       ===================================================== */
+
+    .stButton > button {
+
+        width: 100% !important;
+
+        min-height: 58px;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13,48,63,.72),
+                rgba(3,20,31,.82)
+            ) !important;
+
+        border:
+            1px solid
+            rgba(81,208,229,.38) !important;
+
+        border-radius: 12px !important;
+
+        color: #c8f7fb !important;
+
+        font-family:
+            Georgia,
+            serif !important;
+
+        font-size: 18px !important;
+
+        letter-spacing: 4px !important;
+
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.08),
+            0 8px 25px rgba(0,0,0,.35),
+            0 0 15px rgba(0,180,220,.06) !important;
+
+        transition:
+            transform .28s ease,
+            box-shadow .28s ease,
+            border-color .28s ease,
+            background .28s ease !important;
+    }
+
+    .stButton > button:hover {
+
+        transform:
+            translateX(-8px)
+            scale(1.025) !important;
+
+        background:
+            linear-gradient(
+                90deg,
+                rgba(20,91,108,.80),
+                rgba(4,27,40,.95)
+            ) !important;
+
+        border-color:
+            rgba(107,235,250,.9) !important;
+
+        box-shadow:
+            0 0 15px rgba(70,220,240,.35),
+            0 0 35px rgba(50,190,230,.18),
+            inset 0 1px 0 rgba(255,255,255,.14) !important;
+
+        color: #ffffff !important;
+    }
+
+    .stButton > button:active {
+
+        transform:
+            translateX(-3px)
+            scale(.98) !important;
+
+    }
+
+    /* =====================================================
+       TEXT INPUTS
+       ===================================================== */
 
     .stTextInput input,
     .stSelectbox div[data-baseweb="select"] {
-        background: rgba(4, 23, 34, 0.85) !important;
-        color: #dffaff !important;
 
-        border-color: #236e80 !important;
+        background:
+            rgba(3,18,27,.75) !important;
+
+        color:
+            #dffcff !important;
+
+        border:
+            1px solid
+            rgba(90,215,235,.30) !important;
+
+        border-radius:
+            10px !important;
     }
 
-    /* -----------------------------------------------------
-       MOBILE FRIENDLY
-    ----------------------------------------------------- */
+    /* =====================================================
+       METRICS
+       ===================================================== */
 
-    @media (max-width: 900px) {
+    [data-testid="stMetric"] {
 
-        .vn-title {
-            font-size: 32px;
-            text-align: center;
-        }
+        background:
+            rgba(8,35,48,.58);
 
-        .vn-subtitle {
-            text-align: center;
-            font-size: 12px;
-        }
+        border:
+            1px solid
+            rgba(80,210,230,.25);
 
+        border-radius:
+            15px;
+
+        padding:
+            15px;
+
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.06),
+            0 10px 25px rgba(0,0,0,.30);
+    }
+
+    /* =====================================================
+       3D FRAME
+       ===================================================== */
+
+    .miku-frame {
+
+        border-radius: 24px;
+
+        border:
+            1px solid
+            rgba(80,225,245,.42);
+
+        box-shadow:
+            0 0 30px rgba(0,200,230,.14),
+            inset 0 0 30px rgba(0,200,230,.05);
+
+        overflow: hidden;
+
+        background:
+            rgba(1,12,19,.45);
+
+        backdrop-filter:
+            blur(12px);
+    }
+
+    /* =====================================================
+       SMALL TEXT
+       ===================================================== */
+
+    .soft-text {
+        color: #83cbd5;
+        line-height: 1.8;
     }
 
     </style>
@@ -310,24 +473,40 @@ st.markdown(
 )
 
 # =========================================================
+# PAGE TRANSITION
+# =========================================================
+
+st.markdown(
+    '<div class="transition-overlay"></div>',
+    unsafe_allow_html=True
+)
+
+# =========================================================
 # MAIN MENU
 # =========================================================
+
 if st.session_state.screen == "MENU":
 
-    col_left, col_right = st.columns([1.3, 1])
+    col_left, col_right = st.columns([1.35, 1])
 
     # -----------------------------------------------------
     # 3D MIKU
     # -----------------------------------------------------
+
     with col_left:
 
         sketchfab_embed = """
         <div class="miku-frame"
              style="
              width:100%;
-             height:520px;
+             height:560px;
              border-radius:24px;
              overflow:hidden;
+             border:1px solid rgba(80,225,245,.42);
+             box-shadow:
+             0 0 45px rgba(0,210,240,.16),
+             inset 0 0 40px rgba(0,200,230,.06);
+             background:#020c13;
              ">
 
             <iframe
@@ -338,17 +517,18 @@ if st.session_state.screen == "MENU":
                 webkitallowfullscreen="true"
 
                 allow="
-                    autoplay;
-                    fullscreen;
-                    xr-spatial-tracking
+                autoplay;
+                fullscreen;
+                xr-spatial-tracking
                 "
 
-                src="https://sketchfab.com/models/47de46d489e24baeae73129ed3527b71/embed?autostart=1&transparent=1&ui_controls=0&ui_infos=0&ui_watermark=0&ui_help=0&ui_settings=0&ui_inspector=0"
+                src="
+                https://sketchfab.com/models/47de46d489e24baeae73129ed3527b71/embed?autostart=1&transparent=1&ui_controls=0&ui_infos=0&ui_watermark=0&ui_help=0&ui_settings=0&ui_inspector=0
+                "
 
                 style="
-                    width:100%;
-                    height:100%;
-                    border:0;
+                width:100%;
+                height:100%;
                 ">
             </iframe>
 
@@ -357,12 +537,13 @@ if st.session_state.screen == "MENU":
 
         components.html(
             sketchfab_embed,
-            height=535
+            height=575
         )
 
     # -----------------------------------------------------
     # MENU
     # -----------------------------------------------------
+
     with col_right:
 
         st.markdown(
@@ -371,251 +552,188 @@ if st.session_state.screen == "MENU":
         )
 
         st.markdown(
-            '<div class="vn-subtitle">❖ STUDY WITH MIKU 3D ❖</div>',
+            '<div class="vn-subtitle">◇ STUDY WITH MIKU 3D ◇</div>',
             unsafe_allow_html=True
         )
 
-        # Decorative line
-        st.markdown(
-            '<div class="glass-line"></div>',
-            unsafe_allow_html=True
-        )
+        st.write("")
 
-        # Main study menu
-        if st.button("❖  S T U D Y   W I T H   M I K U"):
-            st.session_state.screen = "STUDY"
+        if st.button("◇  N E W   G A M E"):
+
+            st.session_state.screen = "NEW_GAME"
+
             st.rerun()
 
-        if st.button("◷  S T U D Y   S E S S I O N"):
-            st.session_state.screen = "SESSION"
-            st.rerun()
+        if st.button("◇  L O A D   G A M E"):
 
-        if st.button("✦  H O M E W O R K"):
-            st.session_state.screen = "HOMEWORK"
-            st.rerun()
-
-        if st.button("♡  A S K   M I K U"):
-            st.session_state.screen = "MEMORY"
-            st.rerun()
-
-        if st.button("☆  A C H I E V E M E N T S"):
-            st.session_state.screen = "GALLERY"
-            st.rerun()
-
-        if st.button("♢  T A S K S"):
             st.session_state.screen = "LOAD_GAME"
+
+            st.rerun()
+
+        if st.button("◇  M E M O R Y"):
+
+            st.session_state.screen = "MEMORY"
+
+            st.rerun()
+
+        if st.button("◇  G A L L E R Y"):
+
+            st.session_state.screen = "GALLERY"
+
+            st.rerun()
+
+        if st.button("◇  E X I T"):
+
+            st.session_state.screen = "EXIT"
+
             st.rerun()
 
         st.markdown(
             """
-            <div class="small-note"
-                 style="
-                 text-align:right;
-                 margin-top:18px;
-                 ">
-                ✦ 3D Study World · Version 1.0
-            </div>
+            <p style="
+                text-align:right;
+                color:#4d8d9a;
+                margin-top:25px;
+                letter-spacing:2px;
+            ">
+                Version 1.0.0 — 3D Miku Edition
+            </p>
             """,
             unsafe_allow_html=True
         )
 
 
 # =========================================================
-# STUDY WITH MIKU
+# NEW GAME
 # =========================================================
-elif st.session_state.screen == "STUDY":
 
-    if st.button("◀  B A C K"):
+elif st.session_state.screen == "NEW_GAME":
+
+    if st.button("‹  Back to Menu"):
+
         st.session_state.screen = "MENU"
+
         st.rerun()
 
     st.markdown(
-        '<div class="vn-title" style="text-align:center;">❖ STUDY WITH MIKU ❖</div>',
+        '<div class="vn-title" style="text-align:center;">◇ NEW GAME ◇</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         """
-        <p style="
-            text-align:center;
-            color:#8ed9e4;
-            font-size:17px;
-        ">
-            Study together, stay focused, and grow your progress.
+        <p class="soft-text" style="text-align:center;">
+        ابدئي جلسة جديدة وأضيفي مهمة للمذاكرة
         </p>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="glass-line"></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="vn-panel">',
+        unsafe_allow_html=True
+    )
+
+    task_name = st.text_input(
+        "عنوان المهمة الدراسية",
+        placeholder="مثال: حل واجب الفيزياء ص 29"
+    )
+
+    subject = st.selectbox(
+        "المادة",
+        [
+            "رياضيات",
+            "كيمياء",
+            "فيزياء",
+            "أحياء",
+            "اللغة العربية",
+            "English",
+            "تقنية معلومات"
+        ]
+    )
+
+    if st.button("◇ حفظ وبدء المهمة"):
+
+        if task_name.strip():
+
+            st.session_state.tasks.append(
+                {
+                    "name": task_name.strip(),
+                    "subject": subject,
+                    "done": False
+                }
+            )
+
+            st.success(
+                "تمت إضافة المهمة بنجاح."
+            )
+
+        else:
+
+            st.warning(
+                "اكتبي اسم المهمة أولاً."
+            )
 
     st.markdown(
-        """
-        <div class="vn-panel">
-
-        <h3 style="
-            color:#bcecf2;
-            font-family:Cinzel;
-        ">
-            ✦ Welcome back
-        </h3>
-
-        <p style="color:#91cbd3;">
-            Miku is ready to study with you.
-            Choose a task and begin your study journey.
-        </p>
-
-        </div>
-        """,
+        '</div>',
         unsafe_allow_html=True
     )
 
 
 # =========================================================
-# STUDY SESSION
+# LOAD GAME
 # =========================================================
-elif st.session_state.screen == "SESSION":
 
-    if st.button("◀  B A C K"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown(
-        '<div class="vn-title" style="text-align:center;">◷ STUDY SESSION ◷</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <p style="
-            text-align:center;
-            color:#8ed9e4;
-        ">
-            Create your own study session.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-
-    study_minutes = st.number_input(
-        "Study duration",
-        min_value=1,
-        max_value=180,
-        value=25
-    )
-
-    break_minutes = st.number_input(
-        "Break duration",
-        min_value=1,
-        max_value=60,
-        value=5
-    )
-
-    rounds = st.number_input(
-        "Number of rounds",
-        min_value=1,
-        max_value=10,
-        value=1
-    )
-
-    if st.button("✦  S T A R T   S E S S I O N"):
-
-        st.success(
-            f"Session ready — {study_minutes} min study / "
-            f"{break_minutes} min break / {rounds} round(s)."
-        )
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# =========================================================
-# HOMEWORK
-# =========================================================
-elif st.session_state.screen == "HOMEWORK":
-
-    if st.button("◀  B A C K"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown(
-        '<div class="vn-title" style="text-align:center;">✦ HOMEWORK ✦</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <p style="
-            text-align:center;
-            color:#8ed9e4;
-        ">
-            Upload your work and prepare it for Miku.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-
-    uploaded_file = st.file_uploader(
-        "Upload your homework",
-        type=["png", "jpg", "jpeg", "pdf"]
-    )
-
-    if uploaded_file is not None:
-
-        st.success(
-            "Your file is ready for Miku."
-        )
-
-        st.info(
-            "Homework analysis will be connected here next."
-        )
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# =========================================================
-# TASKS
-# =========================================================
 elif st.session_state.screen == "LOAD_GAME":
 
-    if st.button("◀  B A C K"):
+    if st.button("‹  Back to Menu"):
+
         st.session_state.screen = "MENU"
+
         st.rerun()
 
     st.markdown(
-        '<div class="vn-title" style="text-align:center;">♢ TASKS ♢</div>',
+        '<div class="vn-title" style="text-align:center;">◇ LOAD GAME ◇</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        '<p style="text-align:center; color:#79cad8;">Your current study tasks</p>',
+        """
+        <p class="soft-text" style="text-align:center;">
+        تابعي مهامك وأهدافك الحالية
+        </p>
+        """,
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="vn-panel">',
+        unsafe_allow_html=True
+    )
 
     active_tasks = [
-        task
-        for task in st.session_state.tasks
-        if not task["done"]
+        t for t in st.session_state.tasks
+        if not t["done"]
     ]
 
     if not active_tasks:
 
         st.info(
-            "No active tasks yet. Create one from the study menu."
+            "لا توجد مهام محفوظة حالياً. "
+            "ابدئي مهمة جديدة من القائمة."
         )
 
     else:
 
-        for i, task in enumerate(st.session_state.tasks):
+        for i, task in enumerate(
+            st.session_state.tasks
+        ):
 
             if not task["done"]:
 
-                c_info, c_btn = st.columns([3, 1])
+                c_info, c_btn = st.columns(
+                    [3, 1]
+                )
 
                 with c_info:
 
@@ -627,65 +745,78 @@ elif st.session_state.screen == "LOAD_GAME":
                 with c_btn:
 
                     if st.button(
-                        "✦ DONE",
+                        "إنجاز",
                         key=f"load_done_{i}"
                     ):
 
                         st.session_state.tasks[i]["done"] = True
+
                         st.session_state.xp += 25
 
-                        st.success("+25 XP")
+                        st.success(
+                            "+25 XP — إنجاز رائع."
+                        )
+
                         st.rerun()
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 
 # =========================================================
-# ASK MIKU / MEMORY
+# MEMORY
 # =========================================================
+
 elif st.session_state.screen == "MEMORY":
 
-    if st.button("◀  B A C K"):
+    if st.button("‹  Back to Menu"):
+
         st.session_state.screen = "MENU"
+
         st.rerun()
 
     st.markdown(
-        '<div class="vn-title" style="text-align:center;">♡ ASK MIKU ♡</div>',
+        '<div class="vn-title" style="text-align:center;">◇ MEMORY ◇</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         """
-        <p style="
-            text-align:center;
-            color:#79cad8;
-        ">
-            Talk with Miku and ask about your studies.
+        <p class="soft-text" style="text-align:center;">
+        تحدثي مع ميكو واحفظي محادثاتك الدراسية
         </p>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="vn-panel">',
+        unsafe_allow_html=True
+    )
 
-    # Chat history
     for msg in st.session_state.chat_history:
 
         if msg["role"] == "assistant":
-            role_name = "✦ Miku"
+
+            role_name = "Miku"
+
         else:
-            role_name = "◇ You"
+
+            role_name = "You"
 
         st.write(
-            f"**{role_name}:** {msg['content']}"
+            f"**{role_name}:** "
+            f"{msg['content']}"
         )
 
     user_input = st.text_input(
-        "Your message",
+        "رسالتك إلى ميكو",
         key="memory_input"
     )
 
-    if st.button("✦  S E N D"):
+    if st.button("◇ إرسال الرسالة"):
 
         if user_input.strip():
 
@@ -703,8 +834,8 @@ elif st.session_state.screen == "MEMORY":
             if not api_key:
 
                 st.warning(
-                    "Add GEMINI_API_KEY to Streamlit Secrets "
-                    "to activate Miku's AI responses."
+                    "أضيفي GEMINI_API_KEY في Secrets "
+                    "لتفعيل ردود ميكو."
                 )
 
             else:
@@ -718,6 +849,7 @@ elif st.session_state.screen == "MEMORY":
                     )
 
                     payload = {
+
                         "contents": [
                             {
                                 "role": "user",
@@ -733,10 +865,11 @@ elif st.session_state.screen == "MEMORY":
                             "parts": [
                                 {
                                     "text":
-                                    "You are Miku, a calm and supportive "
-                                    "AI study companion. Help the student "
-                                    "understand school subjects clearly. "
-                                    "Be encouraging and explain step by step."
+                                    "أنتِ ميكو، "
+                                    "مساعدة دراسية لطيفة وهادئة. "
+                                    "تحدثي باللغة العربية "
+                                    "وساعدي الطالبة في الدراسة "
+                                    "وحل الأسئلة وشرح الدروس."
                                 }
                             ]
                         }
@@ -745,7 +878,7 @@ elif st.session_state.screen == "MEMORY":
                     res = requests.post(
                         url,
                         json=payload,
-                        timeout=10
+                        timeout=15
                     )
 
                     if res.status_code == 200:
@@ -769,65 +902,81 @@ elif st.session_state.screen == "MEMORY":
                     else:
 
                         st.error(
-                            "Miku could not connect right now."
+                            "حدث خطأ أثناء الاتصال بميكو."
                         )
 
-                except Exception as e:
+                except Exception:
 
                     st.error(
-                        f"Connection error: {e}"
+                        "تعذر الاتصال بالخدمة حالياً."
                     )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 
 # =========================================================
-# ACHIEVEMENTS
+# GALLERY
 # =========================================================
+
 elif st.session_state.screen == "GALLERY":
 
-    if st.button("◀  B A C K"):
+    if st.button("‹  Back to Menu"):
+
         st.session_state.screen = "MENU"
+
         st.rerun()
 
     st.markdown(
-        '<div class="vn-title" style="text-align:center;">☆ ACHIEVEMENTS ☆</div>',
+        '<div class="vn-title" style="text-align:center;">◇ GALLERY ◇</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        '<p style="text-align:center; color:#79cad8;">Your study progress and achievements</p>',
+        """
+        <p class="soft-text" style="text-align:center;">
+        إنجازاتك وتقدمك في رحلة الدراسة
+        </p>
+        """,
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="vn-panel">',
+        unsafe_allow_html=True
+    )
 
-    level = (st.session_state.xp // 100) + 1
+    level = (
+        st.session_state.xp // 100
+    ) + 1
 
     st.write(
-        f"✦ **Total XP:** `{st.session_state.xp}`"
+        f"**نقاط الخبرة:** "
+        f"`{st.session_state.xp} XP`"
     )
 
     st.write(
-        f"☆ **Current Level:** `Level {level}`"
+        f"**المستوى الحالي:** "
+        f"`Level {level}`"
     )
 
     st.divider()
 
     st.write(
-        "❖ **Completed Tasks**"
+        "**المهام المكتملة:**"
     )
 
     completed = [
-        task
-        for task in st.session_state.tasks
-        if task["done"]
+        t for t in st.session_state.tasks
+        if t["done"]
     ]
 
     if not completed:
 
         st.write(
-            "No completed tasks yet."
+            "لم تكملي أي مهمة بعد."
         )
 
     else:
@@ -835,44 +984,58 @@ elif st.session_state.screen == "GALLERY":
         for task in completed:
 
             st.write(
-                f"✦ `{task['subject']}` — "
+                f"◇ `{task['subject']}` — "
                 f"{task['name']}"
             )
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# =========================================================
-# EXIT / RESET
-# =========================================================
-elif st.session_state.screen == "EXIT":
-
-    if st.button("◀  B A C K"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
     st.markdown(
-        '<div class="vn-title" style="text-align:center;">❖ SETTINGS ❖</div>',
+        '</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
 
-    st.write(
-        "Manage your current study data."
-    )
+# =========================================================
+# EXIT
+# =========================================================
 
-    if st.button("♢  RESET ALL DATA"):
+elif st.session_state.screen == "EXIT":
 
-        st.session_state.tasks = []
-        st.session_state.xp = 0
-        st.session_state.chat_history = []
+    if st.button("‹  Back to Menu"):
+
         st.session_state.screen = "MENU"
-
-        st.success(
-            "All study data has been reset."
-        )
 
         st.rerun()
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="vn-title" style="text-align:center;">◇ EXIT ◇</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="vn-panel" style="text-align:center;">',
+        unsafe_allow_html=True
+    )
+
+    st.write(
+        "هل تريدين إعادة تصفير بيانات الجلسة "
+        "أو العودة إلى الشاشة الرئيسية؟"
+    )
+
+    if st.button(
+        "◇ إعادة تعيين كافة البيانات"
+    ):
+
+        st.session_state.tasks = []
+
+        st.session_state.xp = 0
+
+        st.session_state.chat_history = []
+
+        st.session_state.screen = "MENU"
+
+        st.rerun()
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
