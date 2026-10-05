@@ -470,8 +470,7 @@ components.html(
 XP / LEVEL
 =========================================================
 level = (st.session_state.xp // 100) + 1
-st.markdown(
-    "
+st.markdown("
 🌱 تقدمك
 ",
     unsafe_allow_html=True
