@@ -27,101 +27,100 @@ if "chat_history" not in st.session_state:
 # =========================================================
 # GOTHIC STAINED-GLASS FULL BACKGROUND (CSS)
 # =========================================================
-# يمكن استبدال رابط الصورة أدناه برابط أو مسار صورة الخلفية الغوطية الخاصة بكِ
+# يمكن استبدال رابط الصورة أدناه برابط خلفيتكِ المباشر
 BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop"
 
-st.markdown(
-    f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Tajawal:wght@400;700&display=swap');
+css_code = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Tajawal:wght@400;700&display=swap');
 
-    /* Fullscreen Gothic Stained Glass Image Background */
-    .stApp {{
-        background: linear-gradient(rgba(2, 12, 20, 0.65), rgba(2, 12, 20, 0.85)), 
-                    url('{BACKGROUND_IMAGE_URL}') center/cover no-repeat fixed !important;
-        color: #d1f4ff;
-        font-family: 'Tajawal', sans-serif;
-    }}
+/* Fullscreen Gothic Stained Glass Image Background */
+.stApp {
+    background: linear-gradient(rgba(2, 12, 20, 0.65), rgba(2, 12, 20, 0.85)), 
+                url('BACKGROUND_URL_PLACEHOLDER') center/cover no-repeat fixed !important;
+    color: #d1f4ff;
+    font-family: 'Tajawal', sans-serif;
+}
 
-    /* Hide Streamlit Header & Footer */
-    header, footer {{ visibility: hidden; }}
+/* Hide Streamlit Header & Footer */
+header, footer { visibility: hidden; }
 
-    /* Title Styling */
-    .vn-title-container {{
-        text-align: center;
-        margin-top: 10px;
-        margin-bottom: 25px;
-    }}
+/* Title Styling */
+.vn-title-container {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
 
-    .vn-title {{
-        font-family: 'Cinzel', serif;
-        font-size: 38px;
-        font-weight: 900;
-        color: #ffffff;
-        text-shadow: 0 0 15px #00e5ff, 0 0 30px #00838f, 2px 2px 8px #000;
-        letter-spacing: 3px;
-        margin: 0;
-    }
+.vn-title {
+    font-family: 'Cinzel', serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 15px #00e5ff, 0 0 30px #00838f, 2px 2px 8px #000;
+    letter-spacing: 3px;
+    margin: 0;
+}
 
-    .vn-subtitle {{
-        font-family: 'Cinzel', serif;
-        font-size: 14px;
-        color: #80deea;
-        letter-spacing: 5px;
-        margin-top: 5px;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-    }}
+.vn-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: #80deea;
+    letter-spacing: 5px;
+    margin-top: 5px;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+}
 
-    /* Gothic UI Buttons */
-    .stButton>button {{
-        width: 100% !important;
-        background: rgba(4, 24, 36, 0.82) !important;
-        border: 1.5px solid #00838f !important;
-        color: #e0f7fa !important;
-        font-family: 'Cinzel', 'Tajawal', serif !important;
-        font-size: 17px !important;
-        font-weight: 700 !important;
-        padding: 13px 20px !important;
-        border-radius: 20px !important;
-        letter-spacing: 3px !important;
-        box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.15), 0 5px 20px rgba(0,0,0,0.7) !important;
-        transition: all 0.3s ease-in-out !important;
-        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
-        margin-bottom: 10px;
-    }}
+/* Gothic UI Buttons */
+.stButton>button {
+    width: 100% !important;
+    background: rgba(4, 24, 36, 0.82) !important;
+    border: 1.5px solid #00838f !important;
+    color: #e0f7fa !important;
+    font-family: 'Cinzel', 'Tajawal', serif !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    padding: 13px 20px !important;
+    border-radius: 20px !important;
+    letter-spacing: 3px !important;
+    box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.15), 0 5px 20px rgba(0,0,0,0.7) !important;
+    transition: all 0.3s ease-in-out !important;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+    margin-bottom: 10px;
+}
 
-    .stButton>button:hover {{
-        background: linear-gradient(90deg, rgba(0, 131, 143, 0.9), rgba(4, 24, 36, 0.95)) !important;
-        border-color: #80deea !important;
-        color: #ffffff !important;
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.6) !important;
-        transform: scale(1.02);
-    }}
+.stButton>button:hover {
+    background: linear-gradient(90deg, rgba(0, 131, 143, 0.9), rgba(4, 24, 36, 0.95)) !important;
+    border-color: #80deea !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.6) !important;
+    transform: scale(1.02);
+}
 
-    /* Transparent Frame Container for 3D Model */
-    .miku-3d-box {{
-        width: 100%;
-        height: 530px;
-        border-radius: 20px;
-        overflow: hidden;
-        border: 1.5px solid rgba(0, 229, 255, 0.3);
-        box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
-        background: rgba(2, 12, 20, 0.3);
-        backdrop-filter: blur(3px);
-    }}
+/* Transparent Frame Container for 3D Model */
+.miku-3d-box {
+    width: 100%;
+    height: 530px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid rgba(0, 229, 255, 0.3);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+    background: rgba(2, 12, 20, 0.3);
+    backdrop-filter: blur(3px);
+}
 
-    /* Content Panels for Inner Screens */
-    .vn-panel {{
-        background: rgba(4, 24, 36, 0.92);
-        border: 1px solid #00838f;
-        border-radius: 18px;
-        padding: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+/* Content Panels for Inner Screens */
+.vn-panel {
+    background: rgba(4, 24, 36, 0.92);
+    border: 1px solid #00838f;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+</style>
+""".replace("BACKGROUND_URL_PLACEHOLDER", BACKGROUND_IMAGE_URL)
+
+st.markdown(css_code, unsafe_allow_html=True)
 
 # =========================================================
 # ROUTING & SCREENS
@@ -131,7 +130,6 @@ if st.session_state.screen == "MENU":
     col_left, col_right = st.columns([1.35, 1])
 
     with col_left:
-        # تضمين مجسم Sketchfab ثلاثي الأبعاد بخلفية شفافة لتظهر الخلفية الغوطية خلفه
         sketchfab_embed = """
         <div class="miku-3d-box">
             <iframe 
@@ -218,81 +216,4 @@ elif st.session_state.screen == "LOAD_GAME":
     else:
         for i, task in enumerate(st.session_state.tasks):
             if not task["done"]:
-                c1, c2 = st.columns([3, 1])
-                with c1:
-                    st.write(f"📖 **{task['subject']}** — {task['name']}")
-                with c2:
-                    if st.button("✅ إنجاز", key=f"done_{i}"):
-                        st.session_state.tasks[i]["done"] = True
-                        st.session_state.xp += 25
-                        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# MEMORY SCREEN (AI CHAT)
-# ---------------------------------------------------------
-elif st.session_state.screen == "MEMORY":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">MEMORY</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-    for msg in st.session_state.chat_history:
-        role = "🩵 Miku:" if msg["role"] == "assistant" else "👤 You:"
-        st.write(f"**{role}** {msg['content']}")
-
-    user_input = st.text_input("اكتبي رسالتك لميكو:", key="chat_input")
-    if st.button("إرسال 🕊️"):
-        if user_input.strip():
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
-            api_key = st.secrets.get("GEMINI_API_KEY")
-            if api_key:
-                try:
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-                    payload = {
-                        "contents": [{"role": "user", "parts": [{"text": user_input}]}],
-                        "system_instruction": {"parts": [{"text": "أنتِ ميكو من لعبة Visual Novel غامضة وداعم للدراسة."}]}
-                    }
-                    res = requests.post(url, json=payload, timeout=10)
-                    if res.status_code == 200:
-                        reply = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-                        st.session_state.chat_history.append({"role": "assistant", "content": reply})
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"خطأ: {e}")
-            else:
-                st.warning("⚠️ يرجى تفعيل GEMINI_API_KEY في Secrets.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# GALLERY SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "GALLERY":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">GALLERY</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-    st.write(f"🏆 **نقاط الخبرة (XP):** `{st.session_state.xp}`")
-    st.write(f"👑 **المستوى:** `Level {(st.session_state.xp // 100) + 1}`")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# EXIT SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "EXIT":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">EXIT</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel" style="text-align:center;">', unsafe_allow_html=True)
-    if st.button("🔄 إعادة تعيين البيانات"):
-        st.session_state.tasks = []
-        st.session_state.xp = 0
-        st.session_state.chat_history = []
-        st.session_state.screen = "MENU"
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+                c1, c2 = st
