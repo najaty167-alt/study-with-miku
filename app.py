@@ -25,7 +25,7 @@ if "xp" not in st.session_state:
     st.session_state.xp = 0
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
+ 
 # =========================================================
 # LOAD LOCAL BACKGROUND IMAGE (bg.png)
 # =========================================================
