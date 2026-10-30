@@ -102,69 +102,71 @@ def ask_miku(message):
 
 # ---------- Styling ----------
 bg_rule = (
-    f"background-image: linear-gradient(120deg, rgba(239,251,255,.86), rgba(248,246,255,.90)), url('{background_uri}');"
+    f"background-image: linear-gradient(120deg, rgba(255,229,241,.76), rgba(255,248,252,.86)), url('{background_uri}');"
     if background_uri else
-    "background-image: radial-gradient(circle at 12% 8%, #d7f8ff 0, transparent 30%), radial-gradient(circle at 90% 12%, #eee3ff 0, transparent 28%), linear-gradient(135deg,#f5fcff,#f5f1ff 55%,#fff8fd);"
+    "background-image: radial-gradient(circle at 12% 8%, #ffd8e9 0, transparent 30%), radial-gradient(circle at 90% 12%, #f8d8ef 0, transparent 28%), linear-gradient(135deg,#fff0f7,#fff9fc 55%,#ffe6f1);" 
 )
 
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Tajawal:wght@400;500;600;700;800&display=swap');
 :root {{
- --ink:#253451; --muted:#71819b; --cyan:#66d9ed; --blue:#8cbcff;
- --lilac:#c6a8ff; --pink:#ffcae4; --glass:rgba(255,255,255,.68);
+ --ink:#70465e; --muted:#a77f95; --cyan:#ffc7e1; --blue:#f7a9d0;
+ --lilac:#e9c9f7; --pink:#ffb8d9; --glass:rgba(255,250,253,.78);
 }}
 html, body, [class*="css"] {{ font-family:'Tajawal','Baloo 2',sans-serif; }}
 .stApp {{ {bg_rule} background-size:cover; background-attachment:fixed; color:var(--ink); }}
 header[data-testid="stHeader"] {{ background:transparent; }}
 footer {{ visibility:hidden; }}
 .block-container {{ padding-top:1.35rem; padding-bottom:2.5rem; max-width:1450px; }}
-[data-testid="stSidebar"] {{ background:rgba(255,255,255,.62); backdrop-filter:blur(24px); border-right:1px solid rgba(255,255,255,.8); }}
+[data-testid="stSidebar"] {{ background:rgba(255,250,253,.76); backdrop-filter:blur(24px); border-right:1px solid rgba(255,255,255,.8); }}
 [data-testid="stSidebar"] * {{ color:var(--ink); }}
 h1,h2,h3 {{ color:var(--ink)!important; font-weight:800!important; }}
 p, label, .stMarkdown {{ color:var(--ink); }}
-div[data-testid="stMetric"] {{ background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.95); border-radius:22px; padding:15px 18px; box-shadow:0 12px 30px rgba(86,128,171,.10); }}
+div[data-testid="stMetric"] {{ background:rgba(255,250,253,.76); border:1px solid rgba(255,255,255,.95); border-radius:22px; padding:15px 18px; box-shadow:0 12px 30px rgba(86,128,171,.10); }}
 div[data-testid="stMetricLabel"] {{ color:#6f819d!important; }}
-div[data-testid="stMetricValue"] {{ color:#34476b!important; }}
+div[data-testid="stMetricValue"] {{ color:#8a5271!important; }}
 .stButton>button, .stFormSubmitButton>button {{
  border:1px solid rgba(255,255,255,.96)!important; border-radius:16px!important;
- background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(224,248,255,.85))!important;
- color:#34476b!important; font-weight:800!important; min-height:2.7rem;
- box-shadow:0 7px 18px rgba(93,151,190,.13), inset 0 1px 0 white!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(255,222,238,.88))!important;
+ color:#8a5271!important; font-weight:800!important; min-height:2.7rem;
+ box-shadow:0 7px 18px rgba(205,126,166,.15), inset 0 1px 0 white!important;
  transition:all .18s ease!important;
 }}
-.stButton>button:hover, .stFormSubmitButton>button:hover {{ transform:translateY(-2px); border-color:#8de4f2!important; box-shadow:0 12px 24px rgba(93,151,190,.2)!important; }}
+.stButton>button:hover, .stFormSubmitButton>button:hover {{ transform:translateY(-2px); border-color:#f2a8ce!important; box-shadow:0 12px 24px rgba(205,126,166,.22)!important; }}
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stNumberInput input {{
  border-radius:14px!important; background:rgba(255,255,255,.82)!important;
 }}
 div[data-testid="stProgressBar"] > div > div {{ background:linear-gradient(90deg,#69dbea,#a8baff,#f5b9dd)!important; }}
 .glass-card {{
- background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.9);
- border-radius:26px; padding:22px; box-shadow:0 18px 45px rgba(77,116,163,.12);
+ background:rgba(255,250,253,.76); border:1px solid rgba(255,220,237,.95);
+ border-radius:26px; padding:22px; box-shadow:0 18px 45px rgba(205,126,166,.15);
  backdrop-filter:blur(22px); margin-bottom:16px;
 }}
 .hero {{
  position:relative; overflow:hidden; padding:30px 30px 26px; border-radius:30px;
- background:linear-gradient(125deg,rgba(255,255,255,.82),rgba(224,248,255,.65),rgba(244,232,255,.72));
- border:1px solid rgba(255,255,255,.95); box-shadow:0 20px 50px rgba(100,138,180,.15);
+ background:linear-gradient(125deg,rgba(255,255,255,.92),rgba(255,220,237,.78),rgba(255,240,248,.84));
+ border:1px solid rgba(255,255,255,.95); box-shadow:0 20px 50px rgba(205,126,166,.18);
 }}
-.hero:before {{ content:''; position:absolute; width:240px;height:240px;right:-65px;top:-95px;border-radius:50%;background:rgba(130,226,244,.22);filter:blur(2px); }}
-.eyebrow {{ color:#6d94b9; font-size:13px; letter-spacing:2px; font-weight:800; }}
-.hero-title {{ font-size:clamp(28px,3.4vw,46px); line-height:1.15; font-weight:800; color:#34476b; margin:7px 0; }}
-.hero-sub {{ color:#71819b; font-size:16px; line-height:1.8; max-width:650px; }}
-.pill {{ display:inline-block; border-radius:999px; padding:7px 12px; background:rgba(255,255,255,.78); border:1px solid white; color:#6685a8; font-size:12px; font-weight:800; margin:3px 4px 3px 0; }}
-.section-title {{ font-size:22px; font-weight:800; margin:8px 0 14px; color:#34476b; }}
-.task-row {{ background:rgba(255,255,255,.68); border:1px solid rgba(255,255,255,.95); border-radius:18px; padding:13px 16px; margin-bottom:9px; }}
+.hero:before {{ content:'♡'; position:absolute; font-family:serif; font-size:150px; line-height:1; right:12px;top:-18px;color:rgba(244,155,198,.20);filter:blur(.2px); }}
+.hero:after {{ content:'୨୧'; position:absolute; right:28px;bottom:12px;font-size:30px;color:rgba(205,126,166,.45); }}
+[data-testid='stSidebar'] button {{ border-radius:18px!important; }}
+.eyebrow {{ color:#c27da0; font-size:13px; letter-spacing:2px; font-weight:800; }}
+.hero-title {{ font-size:clamp(28px,3.4vw,46px); line-height:1.15; font-weight:800; color:#8a5271; margin:7px 0; }}
+.hero-sub {{ color:#a77f95; font-size:16px; line-height:1.8; max-width:650px; }}
+.pill {{ display:inline-block; border-radius:999px; padding:7px 12px; background:rgba(255,255,255,.86); border:1px solid #ffe0ee; color:#b16f91; font-size:12px; font-weight:800; margin:3px 4px 3px 0; }}
+.section-title {{ font-size:22px; font-weight:800; margin:8px 0 14px; color:#8a5271; }}
+.task-row {{ background:rgba(255,250,253,.78); border:1px solid rgba(255,255,255,.95); border-radius:18px; padding:13px 16px; margin-bottom:9px; }}
 .small-muted {{ color:#7a8aa3; font-size:13px; }}
 .miku-orb {{ width:180px;height:180px;margin:auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
- background:radial-gradient(circle at 35% 25%,#fff 0,#e5fbff 32%,#c8d8ff 68%,#ead7ff 100%);
- border:1px solid rgba(255,255,255,.95); box-shadow:0 0 0 10px rgba(255,255,255,.24),0 22px 55px rgba(112,145,208,.22);
+ background:radial-gradient(circle at 35% 25%,#fff 0,#fff0f7 32%,#ffcde4 68%,#f2dafa 100%);
+ border:1px solid rgba(255,255,255,.95); box-shadow:0 0 0 10px rgba(255,255,255,.35),0 22px 55px rgba(205,126,166,.25);
  animation:floaty 4s ease-in-out infinite; overflow:hidden; }}
 .miku-orb img {{ width:100%;height:100%;object-fit:contain; filter:drop-shadow(0 12px 14px rgba(83,113,172,.20)); }}
 .miku-fallback {{ font-size:66px; filter:drop-shadow(0 8px 8px rgba(94,131,177,.18)); }}
 @keyframes floaty {{0%,100%{{transform:translateY(0) rotate(-1deg)}}50%{{transform:translateY(-9px) rotate(1deg)}}}}
-div[data-testid="stChatMessage"] {{ background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.8); border-radius:18px; }}
-hr {{ border-color:rgba(155,192,224,.3); }}
+div[data-testid="stChatMessage"] {{ background:rgba(255,250,253,.76); border:1px solid rgba(255,255,255,.8); border-radius:18px; }}
+hr {{ border-color:rgba(239,174,207,.45); }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -240,7 +242,7 @@ if page == "الرئيسية":
             st.markdown("<div class='miku-orb'><div class='miku-fallback'>🩵</div></div>", unsafe_allow_html=True)
         st.markdown("<h3 style='margin:18px 0 2px'>ميكو هنا معك!</h3><div class='small-muted'>رفيقتك في الدراسة والتنظيم</div>", unsafe_allow_html=True)
         st.write("")
-        st.markdown("<div style='background:rgba(226,248,255,.72);padding:14px;border-radius:18px;text-align:right;line-height:1.9'>«مو لازم تخلصين كل شيء مرة وحدة. اختاري مهمة واحدة، ونبدأ فيها مع بعض.»</div>", unsafe_allow_html=True)
+        st.markdown("<div style='background:rgba(255,226,240,.82);padding:14px;border-radius:18px;text-align:right;line-height:1.9'>«مو لازم تخلصين كل شيء مرة وحدة. اختاري مهمة واحدة، ونبدأ فيها مع بعض.»</div>", unsafe_allow_html=True)
         if st.button("تحدثي مع ميكو 🕊️", use_container_width=True):
             go("اسألي ميكو")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -254,7 +256,7 @@ if page == "الرئيسية":
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif page == "مهامي وواجباتي":
-    st.markdown("<div class='hero'><div class='eyebrow'>PLAN · PRIORITIZE · COMPLETE</div><div class='hero-title'>مهامي وواجباتي 🗂️</div><div class='hero-sub'>اجمعي واجباتك في مكان واحد، وحددي المادة والأولوية والموعد، ثم علّمي عليها عند الإنجاز.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero'><div class='eyebrow'>୨୧ PLAN · PRIORITIZE · COMPLETE ♡</div><div class='hero-title'>مهامي وواجباتي 🗂️</div><div class='hero-sub'>اجمعي واجباتك في مكان واحد، وحددي المادة والأولوية والموعد، ثم علّمي عليها عند الإنجاز.</div></div>", unsafe_allow_html=True)
     st.write("")
     with st.container(border=True):
         st.markdown("<div class='section-title'>＋ إضافة مهمة جديدة</div>", unsafe_allow_html=True)
@@ -323,7 +325,7 @@ elif page == "مهامي وواجباتي":
                         st.rerun()
 
 elif page == "اسألي ميكو":
-    st.markdown("<div class='hero'><div class='eyebrow'>YOUR STUDY COMPANION</div><div class='hero-title'>اسألي ميكو 💬</div><div class='hero-sub'>اسألي عن درس، اطلبي شرحًا خطوة بخطوة، أو رتّبي خطة مذاكرة. يلزم إعداد مفتاح Gemini لتفعيل الردود الذكية.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero'><div class='eyebrow'>♡ YOUR STUDY COMPANION ୨୧</div><div class='hero-title'>اسألي ميكو 💬</div><div class='hero-sub'>اسألي عن درس، اطلبي شرحًا خطوة بخطوة، أو رتّبي خطة مذاكرة. يلزم إعداد مفتاح Gemini لتفعيل الردود الذكية.</div></div>", unsafe_allow_html=True)
     st.write("")
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"], avatar="🩵" if msg["role"] == "assistant" else "🌷"):
@@ -344,7 +346,7 @@ elif page == "اسألي ميكو":
         st.caption("للتفعيل: أضيفي GEMINI_API_KEY إلى Secrets في إعدادات التطبيق.")
 
 elif page == "جلسة المذاكرة":
-    st.markdown("<div class='hero'><div class='eyebrow'>FOCUS · REST · REPEAT</div><div class='hero-title'>جلسة المذاكرة ⏳</div><div class='hero-sub'>اختاري مدة التركيز والاستراحة. ابدئي المؤقت وخذي استراحة قصيرة بعد انتهاء الجلسة.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero'><div class='eyebrow'>♡ FOCUS · REST · REPEAT ୨୧</div><div class='hero-title'>جلسة المذاكرة ⏳</div><div class='hero-sub'>اختاري مدة التركيز والاستراحة. ابدئي المؤقت وخذي استراحة قصيرة بعد انتهاء الجلسة.</div></div>", unsafe_allow_html=True)
     st.write("")
     left, right = st.columns([1.15, 0.85], gap="large")
     with left:
@@ -391,7 +393,7 @@ elif page == "جلسة المذاكرة":
         else:
             remaining = int((st.session_state.timer_minutes if st.session_state.timer_mode == "مذاكرة" else st.session_state.break_minutes) * 60)
         mins, secs = divmod(remaining, 60)
-        st.markdown(f"<div style='font-size:clamp(46px,6vw,72px);font-weight:800;letter-spacing:3px;color:#536b9a;margin:10px 0'>{mins:02d}:{secs:02d}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:clamp(46px,6vw,72px);font-weight:800;letter-spacing:3px;color:#bf6e9a;margin:10px 0'>{mins:02d}:{secs:02d}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='pill'>{'📚 وقت المذاكرة' if st.session_state.timer_mode == 'مذاكرة' else '🌿 وقت الاستراحة'}</div>", unsafe_allow_html=True)
         st.write("")
         st.metric("جلسات مكتملة", st.session_state.timer_completed_sessions)
@@ -414,7 +416,7 @@ elif page == "جلسة المذاكرة":
         st.rerun()
 
 elif page == "إنجازاتي":
-    st.markdown("<div class='hero'><div class='eyebrow'>EVERY LITTLE STEP COUNTS</div><div class='hero-title'>إنجازاتك 🏆</div><div class='hero-sub'>شاهدي كيف يتراكم تعبك الجميل إلى نقاط وخطوات واضحة.</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero'><div class='eyebrow'>୨୧ EVERY LITTLE STEP COUNTS ♡</div><div class='hero-title'>إنجازاتك 🏆</div><div class='hero-sub'>شاهدي كيف يتراكم تعبك الجميل إلى نقاط وخطوات واضحة.</div></div>", unsafe_allow_html=True)
     st.write("")
     level, level_xp = level_info()
     a, b, c = st.columns(3)
