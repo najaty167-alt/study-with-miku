@@ -1,295 +1,431 @@
+import os
+import time
+import base64
+from datetime import datetime
+
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
-import requests
-import base64
-import os
 
 # =========================================================
-# PAGE CONFIGURATION
+# STUDY WITH MIKU — soft crystal / glass dashboard
+# Optional local files: miku.png, bg.png or bg.jpg
+# Optional Streamlit secret: GEMINI_API_KEY
 # =========================================================
 st.set_page_config(
-    page_title="Study with Miku — Raison d'être",
-    page_icon="🦋",
+    page_title="Study with Miku",
+    page_icon="🩵",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded",
 )
 
-# =========================================================
-# SESSION STATE MANAGEMENT
-# =========================================================
-if "screen" not in st.session_state:
-    st.session_state.screen = "MENU"
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
-if "xp" not in st.session_state:
-    st.session_state.xp = 0
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# =========================================================
-# LOAD LOCAL BACKGROUND IMAGE (bg.png)
-# =========================================================
-def get_base64_image(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    return None
-
-# البحث عن ملف الخلفية المحلي
-bg_base64 = get_base64_image("bg.png") or get_base64_image("bg.jpg")
-
-if bg_base64:
-    bg_css_url = f"data:image/png;base64,{bg_base64}"
-else:
-    # رابط احتياطي في حال عدم إيجاد الملف المحلي بعد
-    bg_css_url = ""
-
-# =========================================================
-# CUSTOM CSS FOR EXACT MATCH
-# =========================================================
-css_code = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Tajawal:wght@400;700&display=swap');
-
-/* Fullscreen Background Image */
-.stApp {
-    background: url('BACKGROUND_URL_PLACEHOLDER') center center / cover no-repeat fixed !important;
-    color: #d1f4ff;
-    font-family: 'Tajawal', sans-serif;
+# ---------- State ----------
+DEFAULTS = {
+    "page": "الرئيسية",
+    "tasks": [],
+    "xp": 0,
+    "chat_history": [],
+    "timer_mode": "مذاكرة",
+    "timer_minutes": 25,
+    "break_minutes": 5,
+    "timer_end": None,
+    "timer_running": False,
+    "timer_paused_remaining": None,
+    "timer_completed_sessions": 0,
+    "task_counter": 0,
 }
+for key, value in DEFAULTS.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
-/* Hide Streamlit Header & Footer */
-header, footer { visibility: hidden; }
+# ---------- Helpers ----------
+def image_as_data_uri(path):
+    if not os.path.exists(path):
+        return ""
+    ext = os.path.splitext(path)[1].lower()
+    mime = "image/jpeg" if ext in (".jpg", ".jpeg") else "image/png"
+    with open(path, "rb") as file:
+        return f"data:{mime};base64,{base64.b64encode(file.read()).decode()}"
 
-/* Remove block padding */
-.block-container {
-    padding-top: 2rem !important;
-    padding-bottom: 0rem !important;
-}
+miku_uri = image_as_data_uri("miku.png")
+background_uri = image_as_data_uri("bg.png") or image_as_data_uri("bg.jpg")
 
-/* Title Styling */
-.vn-title-container {
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 25px;
-}
+def go(page):
+    st.session_state.page = page
+    st.rerun()
 
-.vn-title {
-    font-family: 'Cinzel', serif;
-    font-size: 38px;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 0 15px #00e5ff, 0 0 30px #00838f, 2px 2px 8px #000;
-    letter-spacing: 3px;
-    margin: 0;
-}
+def completed_count():
+    return sum(1 for task in st.session_state.tasks if task["done"])
 
-.vn-subtitle {
-    font-family: 'Cinzel', serif;
-    font-size: 14px;
-    color: #80deea;
-    letter-spacing: 5px;
-    margin-top: 5px;
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-}
+def level_info():
+    xp = st.session_state.xp
+    return xp // 100 + 1, xp % 100
 
-/* Gothic UI Buttons */
-.stButton>button {
-    width: 100% !important;
-    background: rgba(4, 24, 36, 0.75) !important;
-    border: 1.5px solid #00838f !important;
-    color: #e0f7fa !important;
-    font-family: 'Cinzel', 'Tajawal', serif !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    padding: 12px 20px !important;
-    border-radius: 20px !important;
-    letter-spacing: 3px !important;
-    box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.15), 0 5px 20px rgba(0,0,0,0.7) !important;
-    transition: all 0.3s ease-in-out !important;
-    text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
-    margin-bottom: 8px;
-}
-
-.stButton>button:hover {
-    background: linear-gradient(90deg, rgba(0, 131, 143, 0.9), rgba(4, 24, 36, 0.95)) !important;
-    border-color: #80deea !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 25px rgba(0, 229, 255, 0.6) !important;
-    transform: scale(1.02);
-}
-
-/* Content Panels for Inner Screens */
-.vn-panel {
-    background: rgba(4, 24, 36, 0.88);
-    border: 1px solid #00838f;
-    border-radius: 18px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px);
-}
-</style>
-""".replace("BACKGROUND_URL_PLACEHOLDER", bg_css_url)
-
-st.markdown(css_code, unsafe_allow_html=True)
-
-# =========================================================
-# ROUTING & SCREENS
-# =========================================================
-
-if st.session_state.screen == "MENU":
-    col_left, col_right = st.columns([1.4, 1])
-
-    with col_left:
-        # ترك الجهة اليسرى فارغة لتظهر رسمة ميكو والطاولة الشطرنج بالكامل وبشكل واضح
-        st.write("")
-
-    with col_right:
-        st.markdown(
-            """
-            <div class="vn-title-container">
-                <div class="vn-title">STUDY WITH MIKU</div>
-                <div class="vn-subtitle">❖ RAISON D'ÊTRE ❖</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+def ask_miku(message):
+    api_key = st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY", ""))
+    if not api_key:
+        return (
+            "أنا موجودة أساعدك يا بطلة 🩵 لكن لازم تفعّلين مفتاح Gemini أولًا في "
+            "Streamlit Secrets باسم GEMINI_API_KEY. إلى ذلك الوقت أقدر أساعدك "
+            "بالتنظيم والخطط داخل التطبيق."
         )
+    history = []
+    for item in st.session_state.chat_history[-10:]:
+        role = "user" if item["role"] == "user" else "model"
+        history.append({"role": role, "parts": [{"text": item["content"]}]})
+    history.append({"role": "user", "parts": [{"text": message}]})
+    payload = {
+        "system_instruction": {
+            "parts": [{
+                "text": (
+                    "اسمك ميكو، مساعدة دراسة لطيفة وذكية تتحدث بالعربية الواضحة. "
+                    "اشـرحي للطالب خطوة بخطوة وبمستوى مناسب للمدرسة، ولا تختلقي "
+                    "معلومات. ساعدي في فهم الواجب والتخطيط للمذاكرة، وشجعي دون مبالغة."
+                )
+            }]
+        },
+        "contents": history,
+        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1200},
+    }
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-2.5-flash:generateContent?key={api_key}"
+    )
+    try:
+        response = requests.post(url, json=payload, timeout=35)
+        if response.status_code != 200:
+            return f"تعذّر الاتصال بميكو حاليًا (رمز {response.status_code}). تأكدي من المفتاح وإعدادات Gemini."
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception:
+        return "صار خلل بسيط في الاتصال. جرّبي مرة ثانية بعد قليل 🩵"
 
-        st.write("")
+# ---------- Styling ----------
+bg_rule = (
+    f"background-image: linear-gradient(120deg, rgba(239,251,255,.86), rgba(248,246,255,.90)), url('{background_uri}');"
+    if background_uri else
+    "background-image: radial-gradient(circle at 12% 8%, #d7f8ff 0, transparent 30%), radial-gradient(circle at 90% 12%, #eee3ff 0, transparent 28%), linear-gradient(135deg,#f5fcff,#f5f1ff 55%,#fff8fd);"
+)
 
-        if st.button("✦   N E W   G A M E"):
-            st.session_state.screen = "NEW_GAME"
-            st.rerun()
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Tajawal:wght@400;500;600;700;800&display=swap');
+:root {{
+ --ink:#253451; --muted:#71819b; --cyan:#66d9ed; --blue:#8cbcff;
+ --lilac:#c6a8ff; --pink:#ffcae4; --glass:rgba(255,255,255,.68);
+}}
+html, body, [class*="css"] {{ font-family:'Tajawal','Baloo 2',sans-serif; }}
+.stApp {{ {bg_rule} background-size:cover; background-attachment:fixed; color:var(--ink); }}
+header[data-testid="stHeader"] {{ background:transparent; }}
+footer {{ visibility:hidden; }}
+.block-container {{ padding-top:1.35rem; padding-bottom:2.5rem; max-width:1450px; }}
+[data-testid="stSidebar"] {{ background:rgba(255,255,255,.62); backdrop-filter:blur(24px); border-right:1px solid rgba(255,255,255,.8); }}
+[data-testid="stSidebar"] * {{ color:var(--ink); }}
+h1,h2,h3 {{ color:var(--ink)!important; font-weight:800!important; }}
+p, label, .stMarkdown {{ color:var(--ink); }}
+div[data-testid="stMetric"] {{ background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.95); border-radius:22px; padding:15px 18px; box-shadow:0 12px 30px rgba(86,128,171,.10); }}
+div[data-testid="stMetricLabel"] {{ color:#6f819d!important; }}
+div[data-testid="stMetricValue"] {{ color:#34476b!important; }}
+.stButton>button, .stFormSubmitButton>button {{
+ border:1px solid rgba(255,255,255,.96)!important; border-radius:16px!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(224,248,255,.85))!important;
+ color:#34476b!important; font-weight:800!important; min-height:2.7rem;
+ box-shadow:0 7px 18px rgba(93,151,190,.13), inset 0 1px 0 white!important;
+ transition:all .18s ease!important;
+}}
+.stButton>button:hover, .stFormSubmitButton>button:hover {{ transform:translateY(-2px); border-color:#8de4f2!important; box-shadow:0 12px 24px rgba(93,151,190,.2)!important; }}
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stNumberInput input {{
+ border-radius:14px!important; background:rgba(255,255,255,.82)!important;
+}}
+div[data-testid="stProgressBar"] > div > div {{ background:linear-gradient(90deg,#69dbea,#a8baff,#f5b9dd)!important; }}
+.glass-card {{
+ background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.9);
+ border-radius:26px; padding:22px; box-shadow:0 18px 45px rgba(77,116,163,.12);
+ backdrop-filter:blur(22px); margin-bottom:16px;
+}}
+.hero {{
+ position:relative; overflow:hidden; padding:30px 30px 26px; border-radius:30px;
+ background:linear-gradient(125deg,rgba(255,255,255,.82),rgba(224,248,255,.65),rgba(244,232,255,.72));
+ border:1px solid rgba(255,255,255,.95); box-shadow:0 20px 50px rgba(100,138,180,.15);
+}}
+.hero:before {{ content:''; position:absolute; width:240px;height:240px;right:-65px;top:-95px;border-radius:50%;background:rgba(130,226,244,.22);filter:blur(2px); }}
+.eyebrow {{ color:#6d94b9; font-size:13px; letter-spacing:2px; font-weight:800; }}
+.hero-title {{ font-size:clamp(28px,3.4vw,46px); line-height:1.15; font-weight:800; color:#34476b; margin:7px 0; }}
+.hero-sub {{ color:#71819b; font-size:16px; line-height:1.8; max-width:650px; }}
+.pill {{ display:inline-block; border-radius:999px; padding:7px 12px; background:rgba(255,255,255,.78); border:1px solid white; color:#6685a8; font-size:12px; font-weight:800; margin:3px 4px 3px 0; }}
+.section-title {{ font-size:22px; font-weight:800; margin:8px 0 14px; color:#34476b; }}
+.task-row {{ background:rgba(255,255,255,.68); border:1px solid rgba(255,255,255,.95); border-radius:18px; padding:13px 16px; margin-bottom:9px; }}
+.small-muted {{ color:#7a8aa3; font-size:13px; }}
+.miku-orb {{ width:180px;height:180px;margin:auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(circle at 35% 25%,#fff 0,#e5fbff 32%,#c8d8ff 68%,#ead7ff 100%);
+ border:1px solid rgba(255,255,255,.95); box-shadow:0 0 0 10px rgba(255,255,255,.24),0 22px 55px rgba(112,145,208,.22);
+ animation:floaty 4s ease-in-out infinite; overflow:hidden; }}
+.miku-orb img {{ width:100%;height:100%;object-fit:contain; filter:drop-shadow(0 12px 14px rgba(83,113,172,.20)); }}
+.miku-fallback {{ font-size:66px; filter:drop-shadow(0 8px 8px rgba(94,131,177,.18)); }}
+@keyframes floaty {{0%,100%{{transform:translateY(0) rotate(-1deg)}}50%{{transform:translateY(-9px) rotate(1deg)}}}}
+div[data-testid="stChatMessage"] {{ background:rgba(255,255,255,.62); border:1px solid rgba(255,255,255,.8); border-radius:18px; }}
+hr {{ border-color:rgba(155,192,224,.3); }}
+</style>
+""", unsafe_allow_html=True)
 
-        if st.button("🌹   L O A D   G A M E"):
-            st.session_state.screen = "LOAD_GAME"
-            st.rerun()
-
-        if st.button("🦋   M E M O R Y"):
-            st.session_state.screen = "MEMORY"
-            st.rerun()
-
-        if st.button("✦   G A L L E R Y"):
-            st.session_state.screen = "GALLERY"
-            st.rerun()
-
-        if st.button("🌙   E X I T"):
-            st.session_state.screen = "EXIT"
-            st.rerun()
-
-# ---------------------------------------------------------
-# NEW GAME SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "NEW_GAME":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">NEW GAME</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-    task_name = st.text_input("عنوان المهمة الدراسية:", placeholder="مثال: حل واجب الفيزياء ص 29")
-    subject = st.selectbox("المادة:", ["📐 رياضيات", "⚗️ كيمياء", "🔬 فيزياء", "🧬 أحياء", "📚 عربي", "🇬🇧 English"])
-
-    if st.button("✨ حفظ المهمة"):
-        if task_name.strip():
-            st.session_state.tasks.append({"name": task_name.strip(), "subject": subject, "done": False})
-            st.success("تمت إضافة المهمة بنجاح! 🌹")
-        else:
-            st.warning("الرجاء كتابة اسم المهمة أولاً!")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# LOAD GAME SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "LOAD_GAME":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">LOAD GAME</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-    active_tasks = [t for t in st.session_state.tasks if not t["done"]]
-    if not active_tasks:
-        st.info("لا توجد مهام معلقة حالياً.")
+# ---------- Sidebar navigation ----------
+with st.sidebar:
+    st.markdown("<div style='text-align:center;padding:10px 0 18px'>", unsafe_allow_html=True)
+    if miku_uri:
+        st.markdown(f"<img src='{miku_uri}' style='width:92px;height:92px;object-fit:contain;filter:drop-shadow(0 8px 12px #a8d8ed)'/>", unsafe_allow_html=True)
     else:
-        for i, task in enumerate(st.session_state.tasks):
-            if not task["done"]:
-                c1, c2 = st.columns([3, 1])
-                with c1:
-                    st.write(f"📖 **{task['subject']}** — {task['name']}")
-                with c2:
-                    if st.button("✅ إنجاز", key=f"done_{i}"):
-                        st.session_state.tasks[i]["done"] = True
-                        st.session_state.xp += 25
+        st.markdown("<div style='font-size:54px'>🩵</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size:22px;font-weight:800;color:#34476b'>Study with Miku</div><div class='small-muted'>مساحة مذاكرتك اللطيفة</div></div>", unsafe_allow_html=True)
+    st.divider()
+    pages = [
+        ("🏠", "الرئيسية"),
+        ("🗂️", "مهامي وواجباتي"),
+        ("💬", "اسألي ميكو"),
+        ("⏳", "جلسة المذاكرة"),
+        ("🏆", "إنجازاتي"),
+    ]
+    for icon, label in pages:
+        if st.button(f"{icon}  {label}", key=f"nav_{label}", use_container_width=True):
+            go(label)
+    st.divider()
+    level, level_xp = level_info()
+    st.markdown(f"**المستوى {level}**")
+    st.progress(level_xp / 100)
+    st.caption(f"✨ {st.session_state.xp} XP · {level_xp}/100 للمستوى التالي")
+    st.caption("صمّمي يومك على مهلك 🩵")
+
+# ---------- Header ----------
+level, level_xp = level_info()
+page = st.session_state.page
+
+if page == "الرئيسية":
+    left, right = st.columns([1.55, 1], gap="large")
+    with left:
+        st.markdown(f"""
+        <div class="hero">
+          <div class="eyebrow">YOUR COZY STUDY SPACE ✦</div>
+          <div class="hero-title">أهلًا بعودتك! 🩵<br>خلّينا ننجز شيئًا جميلًا.</div>
+          <div class="hero-sub">كل خطوة صغيرة تقرّبك من هدفك. رتّبي واجباتك، ابدئي جلسة تركيز، وخلي ميكو تساعدك في الطريق.</div>
+          <span class="pill">✧ خطوة بخطوة</span><span class="pill">♡ إنجاز بلا ضغط</span><span class="pill">✦ {datetime.now().strftime('%d / %m / %Y')}</span>
+        </div>
+        """, unsafe_allow_html=True)
+        st.write("")
+        m1, m2, m3 = st.columns(3)
+        m1.metric("المهام الكلية", len(st.session_state.tasks))
+        m2.metric("المهام المنجزة", completed_count())
+        m3.metric("نقاط الخبرة", st.session_state.xp)
+        st.markdown("<div class='section-title'>✨ اختصارات سريعة</div>", unsafe_allow_html=True)
+        q1, q2, q3 = st.columns(3)
+        with q1:
+            if st.button("＋ إضافة واجب", use_container_width=True):
+                go("مهامي وواجباتي")
+        with q2:
+            if st.button("⏳ ابدئي المذاكرة", use_container_width=True):
+                go("جلسة المذاكرة")
+        with q3:
+            if st.button("💬 اسألي ميكو", use_container_width=True):
+                go("اسألي ميكو")
+        st.markdown("<div class='section-title'>📌 أقرب المهام</div>", unsafe_allow_html=True)
+        pending = [t for t in st.session_state.tasks if not t["done"]]
+        if pending:
+            for task in pending[:4]:
+                st.markdown(f"<div class='task-row'><b>{task['subject']}</b>　{task['name']}<div class='small-muted'>الأولوية: {task['priority']} · {task['due'] or 'بدون موعد محدد'}</div></div>", unsafe_allow_html=True)
+        else:
+            st.info("ما عندك مهام معلّقة الآن. أضيفي أول واجب من صفحة «مهامي وواجباتي» 🌷")
+    with right:
+        st.markdown("<div class='glass-card' style='text-align:center'>", unsafe_allow_html=True)
+        if miku_uri:
+            st.markdown(f"<div class='miku-orb'><img src='{miku_uri}' alt='Miku'></div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div class='miku-orb'><div class='miku-fallback'>🩵</div></div>", unsafe_allow_html=True)
+        st.markdown("<h3 style='margin:18px 0 2px'>ميكو هنا معك!</h3><div class='small-muted'>رفيقتك في الدراسة والتنظيم</div>", unsafe_allow_html=True)
+        st.write("")
+        st.markdown("<div style='background:rgba(226,248,255,.72);padding:14px;border-radius:18px;text-align:right;line-height:1.9'>«مو لازم تخلصين كل شيء مرة وحدة. اختاري مهمة واحدة، ونبدأ فيها مع بعض.»</div>", unsafe_allow_html=True)
+        if st.button("تحدثي مع ميكو 🕊️", use_container_width=True):
+            go("اسألي ميكو")
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<div class='glass-card'><div class='section-title'>🌱 تقدّمك اليوم</div>", unsafe_allow_html=True)
+        total = len(st.session_state.tasks)
+        done = completed_count()
+        progress = done / total if total else 0
+        st.progress(progress)
+        st.write(f"أنجزتِ **{done}** من أصل **{total}** مهمة.")
+        st.caption("كل مهمة مكتملة تمنحك 25 XP.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+elif page == "مهامي وواجباتي":
+    st.markdown("<div class='hero'><div class='eyebrow'>PLAN · PRIORITIZE · COMPLETE</div><div class='hero-title'>مهامي وواجباتي 🗂️</div><div class='hero-sub'>اجمعي واجباتك في مكان واحد، وحددي المادة والأولوية والموعد، ثم علّمي عليها عند الإنجاز.</div></div>", unsafe_allow_html=True)
+    st.write("")
+    with st.container(border=True):
+        st.markdown("<div class='section-title'>＋ إضافة مهمة جديدة</div>", unsafe_allow_html=True)
+        with st.form("add_task_form", clear_on_submit=True):
+            name = st.text_input("اسم الواجب أو المهمة", placeholder="مثال: حل أسئلة الفيزياء صفحة ٢٩")
+            c1, c2 = st.columns(2)
+            with c1:
+                subject = st.selectbox("المادة", ["رياضيات", "فيزياء", "كيمياء", "أحياء", "لغة عربية", "لغة إنجليزية", "تربية إسلامية", "دراسات اجتماعية", "أخرى"])
+                priority = st.selectbox("الأولوية", ["عالية 🔴", "متوسطة 🟡", "منخفضة 🟢"])
+            with c2:
+                due = st.date_input("موعد التسليم (اختياري)", value=None)
+                note = st.text_input("ملاحظة (اختيارية)", placeholder="مثل: مراجعة القانون قبل الحل")
+            submitted = st.form_submit_button("حفظ المهمة ✨", use_container_width=True)
+            if submitted:
+                if name.strip():
+                    st.session_state.tasks.append({
+                        "id": int(time.time() * 1000),
+                        "name": name.strip(), "subject": subject, "priority": priority,
+                        "due": due.strftime("%d/%m/%Y") if due else "",
+                        "note": note.strip(), "done": False,
+                    })
+                    st.success("انضافت المهمة إلى قائمتك 🩵")
+                    st.rerun()
+                else:
+                    st.warning("اكتبي اسم المهمة أولًا.")
+    st.write("")
+    filter_choice = st.radio("عرض المهام", ["الكل", "المعلّقة", "المنجزة"], horizontal=True)
+    tasks = st.session_state.tasks
+    if filter_choice == "المعلّقة":
+        tasks = [t for t in tasks if not t["done"]]
+    elif filter_choice == "المنجزة":
+        tasks = [t for t in tasks if t["done"]]
+    if not tasks:
+        st.info("القائمة فاضية حاليًا — أضيفي مهمة من النموذج أعلاه.")
+    for task in tasks:
+        with st.container(border=True):
+            a, b, c = st.columns([0.12, 0.68, 0.2])
+            with a:
+                st.write("✅" if task["done"] else "📘")
+            with b:
+                title = f"~~{task['name']}~~" if task["done"] else task["name"]
+                st.markdown(f"**{title}**")
+                st.caption(f"{task['subject']} · {task['priority']} · {task['due'] or 'بدون موعد'}")
+                if task.get("note"):
+                    st.caption(f"ملاحظة: {task['note']}")
+            with c:
+                if not task["done"]:
+                    if st.button("تم الإنجاز +25 XP", key=f"complete_{task['id']}", use_container_width=True):
+                        for item in st.session_state.tasks:
+                            if item["id"] == task["id"] and not item["done"]:
+                                item["done"] = True
+                                st.session_state.xp += 25
+                                break
+                        st.toast("رائعة! حصلتِ على 25 XP ✨")
                         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+                else:
+                    if st.button("إرجاع للمعلّقة", key=f"undo_{task['id']}", use_container_width=True):
+                        for item in st.session_state.tasks:
+                            if item["id"] == task["id"]:
+                                item["done"] = False
+                                st.session_state.xp = max(0, st.session_state.xp - 25)
+                                break
+                        st.rerun()
+                    if st.button("حذف", key=f"delete_{task['id']}", use_container_width=True):
+                        st.session_state.tasks = [x for x in st.session_state.tasks if x["id"] != task["id"]]
+                        st.rerun()
 
-# ---------------------------------------------------------
-# MEMORY SCREEN (AI CHAT)
-# ---------------------------------------------------------
-elif st.session_state.screen == "MEMORY":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">MEMORY</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
+elif page == "اسألي ميكو":
+    st.markdown("<div class='hero'><div class='eyebrow'>YOUR STUDY COMPANION</div><div class='hero-title'>اسألي ميكو 💬</div><div class='hero-sub'>اسألي عن درس، اطلبي شرحًا خطوة بخطوة، أو رتّبي خطة مذاكرة. يلزم إعداد مفتاح Gemini لتفعيل الردود الذكية.</div></div>", unsafe_allow_html=True)
+    st.write("")
     for msg in st.session_state.chat_history:
-        role = "🩵 Miku:" if msg["role"] == "assistant" else "👤 You:"
-        st.write(f"**{role}** {msg['content']}")
+        with st.chat_message(msg["role"], avatar="🩵" if msg["role"] == "assistant" else "🌷"):
+            st.markdown(msg["content"])
+    prompt = st.chat_input("اكتبي سؤالك لميكو هنا...")
+    if prompt:
+        st.session_state.chat_history.append({"role": "user", "content": prompt})
+        with st.spinner("ميكو تفكر في إجابة مناسبة..."):
+            answer = ask_miku(prompt)
+        st.session_state.chat_history.append({"role": "assistant", "content": answer})
+        st.rerun()
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("مسح المحادثة", use_container_width=True):
+            st.session_state.chat_history = []
+            st.rerun()
+    with c2:
+        st.caption("للتفعيل: أضيفي GEMINI_API_KEY إلى Secrets في إعدادات التطبيق.")
 
-    user_input = st.text_input("اكتبي رسالتك لميكو:", key="chat_input")
-    if st.button("إرسال 🕊️"):
-        if user_input.strip():
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
-            api_key = st.secrets.get("GEMINI_API_KEY")
-            if api_key:
-                try:
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-                    payload = {
-                        "contents": [{"role": "user", "parts": [{"text": user_input}]}],
-                        "system_instruction": {"parts": [{"text": "أنتِ ميكو من لعبة Visual Novel غامضة وداعم للدراسة."}]}
-                    }
-                    res = requests.post(url, json=payload, timeout=10)
-                    if res.status_code == 200:
-                        reply = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-                        st.session_state.chat_history.append({"role": "assistant", "content": reply})
+elif page == "جلسة المذاكرة":
+    st.markdown("<div class='hero'><div class='eyebrow'>FOCUS · REST · REPEAT</div><div class='hero-title'>جلسة المذاكرة ⏳</div><div class='hero-sub'>اختاري مدة التركيز والاستراحة. ابدئي المؤقت وخذي استراحة قصيرة بعد انتهاء الجلسة.</div></div>", unsafe_allow_html=True)
+    st.write("")
+    left, right = st.columns([1.15, 0.85], gap="large")
+    with left:
+        with st.container(border=True):
+            st.markdown("<div class='section-title'>إعداد الجلسة</div>", unsafe_allow_html=True)
+            study_min = st.number_input("مدة المذاكرة بالدقائق", min_value=1, max_value=180, value=int(st.session_state.timer_minutes), step=5)
+            break_min = st.number_input("مدة الاستراحة بالدقائق", min_value=1, max_value=60, value=int(st.session_state.break_minutes), step=1)
+            mode = st.radio("وضع الجلسة", ["مذاكرة", "استراحة"], horizontal=True, index=0 if st.session_state.timer_mode == "مذاكرة" else 1)
+            st.session_state.timer_minutes = int(study_min)
+            st.session_state.break_minutes = int(break_min)
+            st.session_state.timer_mode = mode
+            if st.button("بدء / إعادة ضبط المؤقت", use_container_width=True):
+                mins = study_min if mode == "مذاكرة" else break_min
+                st.session_state.timer_end = time.time() + int(mins) * 60
+                st.session_state.timer_running = True
+                st.session_state.timer_paused_remaining = None
+                st.rerun()
+            p1, p2 = st.columns(2)
+            with p1:
+                if st.button("إيقاف مؤقت", use_container_width=True):
+                    if st.session_state.timer_running and st.session_state.timer_end:
+                        st.session_state.timer_paused_remaining = max(0, st.session_state.timer_end - time.time())
+                        st.session_state.timer_running = False
                         st.rerun()
-                except Exception as e:
-                    st.error(f"خطأ: {e}")
+            with p2:
+                if st.button("استئناف", use_container_width=True):
+                    if not st.session_state.timer_running and st.session_state.timer_paused_remaining is not None:
+                        st.session_state.timer_end = time.time() + st.session_state.timer_paused_remaining
+                        st.session_state.timer_running = True
+                        st.session_state.timer_paused_remaining = None
+                        st.rerun()
+            if st.button("إنهاء الجلسة", use_container_width=True):
+                st.session_state.timer_running = False
+                st.session_state.timer_end = None
+                st.session_state.timer_paused_remaining = None
+                st.rerun()
+    with right:
+        st.markdown("<div class='glass-card' style='text-align:center;padding:28px 18px'>", unsafe_allow_html=True)
+        st.markdown("<div class='eyebrow'>TIME TO FOCUS</div>", unsafe_allow_html=True)
+        if st.session_state.timer_running and st.session_state.timer_end:
+            remaining = max(0, int(st.session_state.timer_end - time.time()))
+        elif st.session_state.timer_paused_remaining is not None:
+            remaining = max(0, int(st.session_state.timer_paused_remaining))
+        else:
+            remaining = int((st.session_state.timer_minutes if st.session_state.timer_mode == "مذاكرة" else st.session_state.break_minutes) * 60)
+        mins, secs = divmod(remaining, 60)
+        st.markdown(f"<div style='font-size:clamp(46px,6vw,72px);font-weight:800;letter-spacing:3px;color:#536b9a;margin:10px 0'>{mins:02d}:{secs:02d}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='pill'>{'📚 وقت المذاكرة' if st.session_state.timer_mode == 'مذاكرة' else '🌿 وقت الاستراحة'}</div>", unsafe_allow_html=True)
+        st.write("")
+        st.metric("جلسات مكتملة", st.session_state.timer_completed_sessions)
+        if st.session_state.timer_running and remaining == 0:
+            st.session_state.timer_running = False
+            st.session_state.timer_end = None
+            if st.session_state.timer_mode == "مذاكرة":
+                st.session_state.timer_completed_sessions += 1
+                st.session_state.xp += 10
+                st.success("انتهت جلسة التركيز! حصلتِ على 10 XP 🎉")
             else:
-                st.warning("⚠️ يرجى تفعيل GEMINI_API_KEY في Secrets.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# GALLERY SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "GALLERY":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
+                st.success("انتهت الاستراحة، تقدرين تبدئين من جديد 🩵")
+        elif st.session_state.timer_running:
+            st.info("المؤقت يعمل — اتركي هذه الصفحة مفتوحة.")
+        else:
+            st.caption("ابدئي المؤقت عندما تكونين جاهزة.")
+        st.markdown("</div>", unsafe_allow_html=True)
+    if st.session_state.timer_running:
+        time.sleep(1)
         st.rerun()
 
-    st.markdown('<div class="vn-title-container"><div class="vn-title">GALLERY</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel">', unsafe_allow_html=True)
-    st.write(f"🏆 **نقاط الخبرة (XP):** `{st.session_state.xp}`")
-    st.write(f"👑 **المستوى:** `Level {(st.session_state.xp // 100) + 1}`")
-    st.markdown('</div>', unsafe_allow_html=True)
+elif page == "إنجازاتي":
+    st.markdown("<div class='hero'><div class='eyebrow'>EVERY LITTLE STEP COUNTS</div><div class='hero-title'>إنجازاتك 🏆</div><div class='hero-sub'>شاهدي كيف يتراكم تعبك الجميل إلى نقاط وخطوات واضحة.</div></div>", unsafe_allow_html=True)
+    st.write("")
+    level, level_xp = level_info()
+    a, b, c = st.columns(3)
+    a.metric("نقاط الخبرة XP", st.session_state.xp)
+    b.metric("المستوى الحالي", level)
+    c.metric("مهام مكتملة", completed_count())
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-title'>المستوى {level}</div>", unsafe_allow_html=True)
+    st.progress(level_xp / 100)
+    st.caption(f"باقي {100 - level_xp} XP للوصول إلى المستوى التالي.")
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='glass-card'><div class='section-title'>🌟 كيف تجمعين النقاط؟</div><p>• إكمال واجب: 25 XP</p><p>• إنهاء جلسة مذاكرة: 10 XP</p><p>• كلما واصلتِ، ارتفع مستواك!</p></div>", unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# EXIT SCREEN
-# ---------------------------------------------------------
-elif st.session_state.screen == "EXIT":
-    if st.button("◀ العودة للقائمة الرئيسية"):
-        st.session_state.screen = "MENU"
-        st.rerun()
-
-    st.markdown('<div class="vn-title-container"><div class="vn-title">EXIT</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vn-panel" style="text-align:center;">', unsafe_allow_html=True)
-    if st.button("🔄 إعادة تعيين البيانات"):
-        st.session_state.tasks = []
-        st.session_state.xp = 0
-        st.session_state.chat_history = []
-        st.session_state.screen = "MENU"
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;color:#8798b2;font-size:12px;padding:20px 0 0'>Made with 🩵 for your study journey · Study with Miku</div>", unsafe_allow_html=True)
