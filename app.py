@@ -324,26 +324,96 @@ elif page == "مهامي وواجباتي":
                         st.session_state.tasks = [x for x in st.session_state.tasks if x["id"] != task["id"]]
                         st.rerun()
 
-elif page == "اسألي ميكو":
-    st.markdown("<div class='hero'><div class='eyebrow'>♡ YOUR STUDY COMPANION ୨୧</div><div class='hero-title'>اسألي ميكو 💬</div><div class='hero-sub'>اسألي عن درس، اطلبي شرحًا خطوة بخطوة، أو رتّبي خطة مذاكرة. يلزم إعداد مفتاح Gemini لتفعيل الردود الذكية.</div></div>", unsafe_allow_html=True)
-    st.write("")
-    for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"], avatar="🩵" if msg["role"] == "assistant" else "🌷"):
-            st.markdown(msg["content"])
-    prompt = st.chat_input("اكتبي سؤالك لميكو هنا...")
+# ==================================================
+# 🤖 MIKU AI CHAT (FIXED)
+# ==================================================
+
+elif st.session_state.page == "ميكو الذكية":
+
+    draw_header("Chat with Miku", "اسألي، تعلّمي، واكتشفي أشياء جديدة ♡")
+
+    draw_miku("أنا هنا لمساعدتك في الدراسة! اسأليني أي سؤال دراسي. 🩷")
+
+    st.markdown("""
+    <div class="soft-note">
+        🎀 يمكنكِ سؤال ميكو عن شرح الدروس، والمسائل، والقواعد،
+        والمراجعة. المفتاح الخاص بكِ متصل وجاهز!
+    </div>
+    """, unsafe_allow_html=True)
+
+    try:
+        api_key = st.secrets.get("GEMINI_API_KEY", "")
+    except Exception:
+        api_key = ""
+
+    for message in st.session_state.chat_history:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    prompt = st.chat_input("اكتبي سؤالك لميكو هنا... 🎀")
+
     if prompt:
-        st.session_state.chat_history.append({"role": "user", "content": prompt})
-        with st.spinner("ميكو تفكر في إجابة مناسبة..."):
-            answer = ask_miku(prompt)
-        st.session_state.chat_history.append({"role": "assistant", "content": answer})
+
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": prompt
+        })
+
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        if not api_key:
+            reply = "يا هلا! 🎀 يرجى التأكد من إضافة GEMINI_API_KEY في إعدادات Secrets."
+        else:
+            try:
+                import requests
+
+                with st.spinner("ميكو تفكر في إجابتك... 🩷"):
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+                    contents = []
+                    for message in st.session_state.chat_history[-12:]:
+                        contents.append({
+                            "role": "model" if message["role"] == "assistant" else "user",
+                            "parts": [{"text": message["content"]}]
+                        })
+
+                    payload = {
+                        "system_instruction": {
+                            "parts": [{
+                                "text": "أنت ميكو، مساعدة دراسية لطيفة تتحدث باللغة العربية بوضوح. اشرحي للطالبات بأسلوب مشجع ومناسب لمستواهن الدراسي."
+                            }]
+                        },
+                        "contents": contents
+                    }
+
+                    response = requests.post(
+                        url,
+                        json=payload,
+                        timeout=45
+                    )
+
+                    if response.status_code == 200:
+                        result = response.json()
+                        reply = result["candidates"][0]["content"]["parts"][0]["text"]
+                    else:
+                        reply = f"تعذّر الاتصال بميكو حالياً (رمز {response.status_code}). تأكدي من صحة المفتاح."
+
+            except Exception as e:
+                reply = f"صار خطأ أثناء الاتصال: {e}"
+
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": reply
+        })
+
+        save_data()
         st.rerun()
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("مسح المحادثة", use_container_width=True):
-            st.session_state.chat_history = []
-            st.rerun()
-    with c2:
-        st.caption("للتفعيل: أضيفي GEMINI_API_KEY إلى Secrets في إعدادات التطبيق.")
+
+    if st.button("🧹 مسح سجل المحادثة"):
+        st.session_state.chat_history = []
+        save_data()
+        st.rerun()
 
 elif page == "جلسة المذاكرة":
     st.markdown("<div class='hero'><div class='eyebrow'>♡ FOCUS · REST · REPEAT ୨୧</div><div class='hero-title'>جلسة المذاكرة ⏳</div><div class='hero-sub'>اختاري مدة التركيز والاستراحة. ابدئي المؤقت وخذي استراحة قصيرة بعد انتهاء الجلسة.</div></div>", unsafe_allow_html=True)
