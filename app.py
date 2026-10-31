@@ -1,588 +1,271 @@
+
 import streamlit as st
 import streamlit.components.v1 as components
 import json
 import os
 import time
+import requests
 from datetime import datetime, date
 
-# ==================================================
-# 🎀 STUDY WITH MIKU — BABY PINK EDITION
-# ==================================================
-
+# -------------------------
+# إعداد الصفحة
+# -------------------------
 st.set_page_config(
-    page_title="Study with Miku 🎀",
-    page_icon="🎀",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Study with Miku",
+    page_icon="୨୧",
+    layout="wide"
 )
 
 DATA_FILE = "miku_data.json"
 
-# ==================================================
-# 🩷 SAVE AND LOAD DATA
-# ==================================================
+SUBJECTS = [
+    "رياضيات متقدمة",
+    "رياضيات أساسية",
+    "فيزياء",
+    "كيمياء",
+    "أحياء",
+    "علوم البيئة",
+    "اللغة العربية",
+    "اللغة الإنجليزية",
+    "اللغة الفرنسية",
+    "تاريخ",
+    "جغرافيا",
+    "دراسات اجتماعية",
+    "تربية إسلامية",
+    "فنون",
+    "موسيقى",
+    "تقنية",
+    "رياضة"
+]
 
+# -------------------------
+# تحميل وحفظ البيانات
+# -------------------------
 def load_data():
-    default = {
+    default_data = {
         "tasks": [],
-        "xp": 0,
-        "sessions": 0,
-        "chat_history": []
+        "xp": 0
     }
 
     if os.path.exists(DATA_FILE):
         try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                saved = json.load(f)
-            default.update(saved)
-        except (json.JSONDecodeError, OSError):
+            with open(DATA_FILE, "r", encoding="utf-8") as file:
+                saved = json.load(file)
+
+            default_data["tasks"] = saved.get("tasks", [])
+            default_data["xp"] = saved.get("xp", 0)
+
+        except Exception:
             pass
 
-    return default
+    return default_data
 
 
 def save_data():
     data = {
         "tasks": st.session_state.tasks,
-        "xp": st.session_state.xp,
-        "sessions": st.session_state.sessions,
-        "chat_history": st.session_state.chat_history
+        "xp": st.session_state.xp
     }
 
-    temporary_file = DATA_FILE + ".tmp"
-
-    with open(temporary_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    os.replace(temporary_file, DATA_FILE)
+    with open(DATA_FILE, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
 
-if "initialized" not in st.session_state:
-    data = load_data()
+if "loaded" not in st.session_state:
+    saved_data = load_data()
+    st.session_state.tasks = saved_data["tasks"]
+    st.session_state.xp = saved_data["xp"]
+    st.session_state.page = "الرئيسية"
+    st.session_state.chat_history = []
+    st.session_state.loaded = True
 
-    st.session_state.tasks = data["tasks"]
-    st.session_state.xp = data["xp"]
-    st.session_state.sessions = data["sessions"]
-    st.session_state.chat_history = data["chat_history"]
-
-    st.session_state.initialized = True
 
 if "page" not in st.session_state:
     st.session_state.page = "الرئيسية"
 
-if "timer_running" not in st.session_state:
-    st.session_state.timer_running = False
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-if "timer_end" not in st.session_state:
-    st.session_state.timer_end = None
-
-if "timer_mode" not in st.session_state:
-    st.session_state.timer_mode = "مذاكرة"
-
-if "timer_message" not in st.session_state:
-    st.session_state.timer_message = ""
-
-if "timer_completed" not in st.session_state:
-    st.session_state.timer_completed = False
-
-
-# ==================================================
-# 🎀 PINK DESIGN SYSTEM
-# ==================================================
-
+# -------------------------
+# التصميم الوردي
+# -------------------------
 st.markdown("""
 <style>
-@import url(
-'https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap'
-);
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
 
-:root {
-    --pink: #f3a8ca;
-    --dark-pink: #d96e9d;
-    --light-pink: #fff0f6;
-    --baby-pink: #ffe0ed;
-    --white: #fffdfd;
-    --text: #765466;
-    --lavender: #f2eaff;
+html, body, [class*="css"] {
+    font-family: 'Baloo 2', sans-serif;
 }
 
 .stApp {
-    background:
-        radial-gradient(ellipse at 10% 5%,
-            #ffe4ef 0%, transparent 40%),
-        radial-gradient(ellipse at 90% 80%,
-            #f0e7ff 0%, transparent 40%),
-        #fffafd;
-
-    color: var(--text);
-    font-family: 'Tajawal', sans-serif;
+    background: linear-gradient(135deg, #fff7fb, #ffeaf4, #fff0f7);
+    color: #70465d;
 }
-
-html, body, [class*="css"] {
-    font-family: 'Tajawal', sans-serif;
-}
-
-header[data-testid="stHeader"] {
-    background: rgba(255,250,253,0.75);
-}
-
-footer {
-    visibility: hidden;
-}
-
-.block-container {
-    padding-top: 1.8rem;
-    padding-bottom: 3rem;
-    max-width: 1200px;
-}
-
-/* Sidebar */
 
 section[data-testid="stSidebar"] {
-    background: linear-gradient(
-        180deg,
-        #ffe5f0,
-        #fff6fa 55%,
-        #f3ebff
-    );
-    border-right: 2px solid #f8d4e5;
+    background: linear-gradient(180deg, #ffdce9, #fff0f6);
+    border-right: 2px solid #f8c7dc;
 }
 
-section[data-testid="stSidebar"] * {
-    color: #80566c;
+h1, h2, h3 {
+    color: #bd7098 !important;
 }
 
-section[data-testid="stSidebar"] button {
-    border-radius: 16px !important;
+p, label, span {
+    color: #79546a;
 }
 
-/* Main heading */
-
-.miku-header {
-    text-align: center;
-    padding: 27px 15px;
-    margin-bottom: 24px;
-    border-radius: 28px;
-    background: rgba(255,255,255,0.78);
-    border: 2px solid #f8d7e7;
-    box-shadow: 0 10px 35px rgba(219,143,180,0.13);
-    position: relative;
-    overflow: hidden;
-}
-
-.miku-header h1 {
-    color: #dc83ac;
-    font-family: 'Quicksand', sans-serif;
-    font-size: clamp(26px, 5vw, 42px);
+div.stButton > button {
+    background: linear-gradient(135deg, #f6b8d3, #e99fc2);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 10px 22px;
     font-weight: 700;
-    letter-spacing: 1px;
-    margin: 0;
+    transition: 0.2s;
 }
 
-.miku-header p {
-    color: #a8809a;
-    margin-top: 8px;
-    font-size: 16px;
-}
-
-.ribbon {
-    color: #e6a0c1;
-    font-size: 24px;
-    letter-spacing: 8px;
-}
-
-/* Cute cards */
-
-.miku-card {
-    background: rgba(255,255,255,0.88);
-    border: 1.5px solid #f7d5e5;
-    border-radius: 24px;
-    padding: 22px;
-    margin: 10px 0;
-    box-shadow: 0 7px 25px rgba(218,147,183,0.10);
-    backdrop-filter: blur(12px);
-}
-
-.stat-card {
-    background: linear-gradient(140deg, #fff, #fff0f7);
-    border: 1.5px solid #f6d5e6;
-    border-radius: 22px;
-    padding: 19px 10px;
-    text-align: center;
-    min-height: 112px;
-    box-shadow: 0 5px 18px rgba(220,145,184,0.10);
-}
-
-.stat-number {
-    color: #d86e9e;
-    font-family: 'Quicksand', sans-serif;
-    font-size: 29px;
-    font-weight: 700;
-}
-
-.stat-label {
-    color: #99748b;
-    font-size: 14px;
-}
-
-.section-title {
-    color: #c86e9a;
-    font-size: 23px;
-    font-weight: 800;
-    margin: 24px 0 12px;
-}
-
-.soft-note {
-    background: #fff0f7;
-    padding: 13px 16px;
-    border-radius: 17px;
-    border: 1px dashed #e9a8c7;
-    color: #97627f;
-    margin: 12px 0;
-}
-
-/* Miku character */
-
-.miku-stage {
-    text-align: center;
-    padding: 22px 10px;
-    margin: 8px 0 18px;
-    background: linear-gradient(
-        145deg,
-        rgba(255,255,255,.95),
-        rgba(255,232,244,.85)
-    );
-    border: 2px solid #f8d8e8;
-    border-radius: 30px;
-    box-shadow: 0 12px 30px rgba(214,133,172,.15);
-}
-
-.miku-character {
-    display: inline-block;
-    font-size: 95px;
-    animation: floaty 3s ease-in-out infinite;
-    filter: drop-shadow(0 10px 7px rgba(220,140,180,.18));
-}
-
-@keyframes floaty {
-    0%,100% { transform: translateY(0) rotate(-2deg); }
-    50% { transform: translateY(-10px) rotate(2deg); }
-}
-
-.speech {
-    display: inline-block;
-    background: white;
-    border: 1.5px solid #f3c7dc;
-    border-radius: 20px;
-    padding: 10px 18px;
-    color: #bc6d94;
-    margin-top: 12px;
-}
-
-/* Buttons */
-
-.stButton > button {
-    background: linear-gradient(135deg, #f5b5d2, #e99fc2);
-    color: white !important;
-    border: 1px solid #efc0d7;
-    border-radius: 16px;
-    padding: 9px 16px;
-    font-family: 'Tajawal', sans-serif;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(221,131,174,.14);
-    transition: .2s ease;
-}
-
-.stButton > button:hover {
-    background: linear-gradient(135deg, #eaa0c1, #d982aa);
-    border-color: #df94b6;
+div.stButton > button:hover {
+    background: #df8eb5;
+    color: white;
     transform: translateY(-2px);
 }
 
-/* Inputs */
+div[data-testid="stForm"] {
+    background: #fffafd;
+    border: 1px solid #f4c8dc;
+    border-radius: 20px;
+    padding: 18px;
+}
+
+div[data-testid="stMetric"] {
+    background: #fffafd;
+    border: 1px solid #f4c8dc;
+    border-radius: 18px;
+    padding: 15px;
+}
 
 .stTextInput input,
 .stTextArea textarea,
-.stNumberInput input,
+.stSelectbox div[data-baseweb="select"],
 .stDateInput input {
-    background: #fff !important;
-    color: #765466 !important;
-    border: 1.5px solid #f0cede !important;
-    border-radius: 14px !important;
-}
-
-.stSelectbox div[data-baseweb="select"] > div {
-    background: white;
-    border-color: #f0cede;
-    border-radius: 14px;
-}
-
-div[data-testid="stProgressBar"] > div > div {
-    background: linear-gradient(90deg, #f5b5d2, #d98eb5);
+    border-radius: 13px !important;
+    background: #fffafd !important;
 }
 
 hr {
-    border-color: #f4dbe7;
+    border-color: #f3c5da;
 }
 
-.task-done {
-    color: #9d91a0;
-    text-decoration: line-through;
+.miku-card {
+    background: linear-gradient(135deg, #fffafd, #ffe5f0);
+    border: 2px solid #f4c2d9;
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 5px 20px #e8a9c522;
 }
 
-.small-label {
-    color: #a47d96;
-    font-size: 13px;
+.miku-face {
+    font-size: 75px;
+    animation: float 3s ease-in-out infinite;
 }
 
-[data-testid="stChatMessage"] {
-    background: rgba(255,240,247,.72);
-    border: 1px solid #f6d9e8;
-    border-radius: 18px;
-}
-
-@media (max-width: 640px) {
-    .block-container {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-
-    .miku-character {
-        font-size: 75px;
-    }
-
-    .miku-card {
-        padding: 15px;
-    }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 </style>
 """, unsafe_allow_html=True)
 
-
-# ==================================================
-# 🩷 HELPERS
-# ==================================================
-
-def go_to(page):
-    st.session_state.page = page
-
-
-def xp_level():
-    return st.session_state.xp // 100 + 1
-
-
-def completed_count():
-    return sum(1 for t in st.session_state.tasks if t["done"])
-
-
-def draw_header(title, subtitle):
-    st.markdown(f"""
-    <div class="miku-header">
-        <div class="ribbon">୨୧ ♡ 🎀 ♡ ୨୧</div>
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-def draw_miku(message="هيي! خلينا نذاكر مع بعض! 🎀"):
-    st.markdown(f"""
-    <div class="miku-stage">
-        <div class="miku-character">🎀🐰</div>
-        <div class="speech">{message}</div>
-        <div style="color:#dba2c0; margin-top:12px;">
-            ♡ ୨୧ ♡  study with miku  ♡ ୨୧ ♡
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-def stat_card(label, number, emoji):
-    st.markdown(f"""
-    <div class="stat-card">
-        <div style="font-size:24px">{emoji}</div>
-        <div class="stat-number">{number}</div>
-        <div class="stat-label">{label}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ==================================================
-# 🎀 SIDEBAR NAVIGATION
-# ==================================================
-
+# -------------------------
+# القائمة الجانبية
+# -------------------------
 with st.sidebar:
-    st.markdown("""
-    <div style="text-align:center;padding:15px 0 20px;">
-        <div style="font-size:60px;">🎀🐰</div>
-        <div style="font-size:23px;font-weight:800;color:#d982aa;">
-            Study with Miku
-        </div>
-        <div style="font-size:13px;color:#ac8199;">
-            your cute study companion ♡
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>୨୧ Study with Miku</h1>",
+                unsafe_allow_html=True)
+
+    st.markdown("<p style='text-align:center;'>ذاكري معي بكل حب ♡</p>",
+                unsafe_allow_html=True)
 
     st.markdown("---")
 
-    pages = {
-        "🏠 الرئيسية": "الرئيسية",
-        "📚 واجباتي": "الواجبات",
-        "🤖 اسألي ميكو": "ميكو الذكية",
-        "⏰ جلسة المذاكرة": "المؤقت",
-        "🏆 إنجازاتي": "الإنجازات"
-    }
+    pages = [
+        "الرئيسية",
+        "المهام الدراسية",
+        "ميكو الذكية",
+        "جلسة مذاكرة",
+        "إنجازاتي"
+    ]
 
-    for label, page_name in pages.items():
-        if st.button(label, key="nav_" + page_name, use_container_width=True):
-            go_to(page_name)
+    for page in pages:
+        if st.button(
+            page,
+            key="nav_" + page,
+            use_container_width=True
+        ):
+            st.session_state.page = page
             st.rerun()
 
     st.markdown("---")
+    st.markdown("୨୧ لا تنسي أن كل خطوة صغيرة تصنع إنجازًا كبيرًا!")
 
-    st.markdown(f"""
-    <div class="miku-card" style="text-align:center;padding:15px;">
-        <div style="font-size:30px;">👑</div>
-        <b>Level {xp_level()}</b>
-        <p style="margin:5px 0;color:#b27c9c;">
-            {st.session_state.xp} XP
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.caption("Made with ♡ and lots of pink 🎀")
-
-
-# ==================================================
-# 🏠 HOME
-# ==================================================
-
+# -------------------------
+# الصفحة الرئيسية
+# -------------------------
 if st.session_state.page == "الرئيسية":
 
-    draw_header(
-        "Study with Miku",
-        "a little progress every day ♡ كل يوم إنجاز جديد"
-    )
+    st.title("مرحبًا بكِ في Study with Miku ♡")
+    st.write("مساحة لطيفة للدراسة وتنظيم مهامك وتحقيق أهدافك.")
 
-    draw_miku("أهلًااا! مستعدة نخلي يومنا مليان إنجازات؟ 🩷")
+    st.markdown("""
+    <div class="miku-card">
+        <div class="miku-face">🎀</div>
+        <h2>أهلًا! أنا ميكو</h2>
+        <p>هيا ندرس معًا ونحقق إنجازات جديدة اليوم!</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    completed = sum(
+        1 for task in st.session_state.tasks
+        if task.get("done", False)
+    )
 
     total = len(st.session_state.tasks)
-    finished = completed_count()
-    remaining = total - finished
 
-    c1, c2, c3, c4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
-    with c1:
-        stat_card("كل المهام", total, "📚")
-    with c2:
-        stat_card("المهام المتبقية", remaining, "📝")
-    with c3:
-        stat_card("المهام المنجزة", finished, "🌸")
-    with c4:
-        stat_card("نقاط الخبرة", st.session_state.xp, "⭐")
+    col1.metric("⭐ نقاطك", st.session_state.xp)
+    col2.metric("📚 مهامك", total)
+    col3.metric("🌸 المهام المكتملة", completed)
 
-    st.markdown(
-        '<div class="section-title">🎀 خطتك الدراسية</div>',
-        unsafe_allow_html=True
-    )
+    st.subheader("إنجازك الدراسي")
 
-    if total:
-        progress = finished / total
+    if total > 0:
+        progress = completed / total
         st.progress(progress)
-        st.caption(f"أنجزتِ {finished} من {total} مهام.")
-
+        st.write(f"أنجزتِ {completed} من {total} مهام.")
     else:
-        st.markdown("""
-        <div class="miku-card" style="text-align:center;">
-            <div style="font-size:40px;">🌷📖🌷</div>
-            <h3 style="color:#d982aa;">خطوتك الأولى تبدأ هنا!</h3>
-            <p>أضيفي أول واجب لكِ، وميكو بتساعدك ترتبين يومك.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("لم تضيفي أي مهمة بعد. ابدئي بإضافة أول مهمة!")
 
-    col1, col2 = st.columns(2)
+# -------------------------
+# صفحة المهام
+# -------------------------
+elif st.session_state.page == "المهام الدراسية":
 
-    with col1:
-        if st.button("＋ إضافة واجب جديد", use_container_width=True):
-            go_to("الواجبات")
-            st.rerun()
-
-    with col2:
-        if st.button("⏰ ابدئي جلسة مذاكرة", use_container_width=True):
-            go_to("المؤقت")
-            st.rerun()
-
-    st.markdown(
-        '<div class="section-title">♡ مهامي القادمة</div>',
-        unsafe_allow_html=True
-    )
-
-    upcoming = [t for t in st.session_state.tasks if not t["done"]]
-
-    upcoming.sort(
-        key=lambda t: (
-            t.get("due", "9999-12-31"),
-            {"عالية": 0, "متوسطة": 1, "منخفضة": 2}.get(
-                t.get("priority", "متوسطة"), 1
-            )
-        )
-    )
-
-    if upcoming:
-        for task in upcoming[:5]:
-            due = task.get("due", "")
-            due_text = f" · 📅 {due}" if due else ""
-
-            st.markdown(
-                f"""
-                <div class="miku-card">
-                    <b>🎀 {task['name']}</b><br>
-                    <span class="small-label">
-                        {task['subject']} · الأولوية: {task['priority']}
-                        {due_text}
-                    </span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    else:
-        st.info("ما عندك مهام معلقة! أضيفي واجبًا جديدًا وقت ما تحتاجين. 🌸")
-
-
-# ==================================================
-# 📚 TASK MANAGER
-# ==================================================
-
-elif st.session_state.page == "الواجبات":
-
-    draw_header("My Study Planner", "رتبي واجباتك بطريقة لطيفة 🎀")
-
-    st.markdown(
-        '<div class="section-title">♡ إضافة مهمة جديدة</div>',
-        unsafe_allow_html=True
-    )
+    st.title("📚 مهامي الدراسية")
+    st.write("رتبي واجباتك وتابعي إنجازاتك.")
 
     with st.form("add_task_form", clear_on_submit=True):
 
-        task_name = st.text_input(
-            "عنوان المهمة",
-            placeholder="مثال: حل أسئلة الفيزياء"
+        task_name = st.text_input("اسم المهمة")
+
+        subject = st.selectbox(
+            "المادة",
+            SUBJECTS
         )
-
-        subjects = [
-            "رياضيات",
-            "فيزياء",
-            "كيمياء",
-            "أحياء",
-            "لغة عربية",
-            "لغة إنجليزية",
-            "دراسات اجتماعية",
-            "تربية إسلامية",
-            "أخرى"
-        ]
-
-        subject = st.selectbox("المادة الدراسية", subjects)
 
         priority = st.selectbox(
             "الأولوية",
@@ -590,156 +273,109 @@ elif st.session_state.page == "الواجبات":
         )
 
         due_date = st.date_input(
-            "موعد التسليم (اختياري)",
-            value=None
+            "موعد التسليم",
+            value=date.today()
         )
 
-        submitted = st.form_submit_button(
-            "🎀 حفظ المهمة",
-            use_container_width=True
-        )
+        submitted = st.form_submit_button("إضافة المهمة 🎀")
 
         if submitted:
             if task_name.strip():
-
                 st.session_state.tasks.append({
-                    "id": str(time.time_ns()),
                     "name": task_name.strip(),
                     "subject": subject,
                     "priority": priority,
-                    "due": due_date.isoformat() if due_date else "",
+                    "due": due_date.isoformat(),
                     "done": False
                 })
 
                 save_data()
-                st.success("انضافت المهمة بنجاح! 🌸")
+                st.success("تمت إضافة المهمة بنجاح ♡")
                 st.rerun()
 
             else:
-                st.warning("اكتبي عنوان المهمة أولًا يا مجتهدة! 🩷")
+                st.warning("اكتبي اسم المهمة أولًا.")
 
     st.markdown("---")
+    st.subheader("قائمة المهام")
 
-    filter_option = st.radio(
-        "عرض المهام",
-        ["الكل", "غير المنجزة", "المنجزة"],
-        horizontal=True
-    )
+    if not st.session_state.tasks:
+        st.info("لا توجد مهام حاليًا. استمتعي بوقتك!")
 
-    filtered_tasks = []
-
-    for task in st.session_state.tasks:
-        if filter_option == "غير المنجزة" and task["done"]:
-            continue
-
-        if filter_option == "المنجزة" and not task["done"]:
-            continue
-
-        filtered_tasks.append(task)
-
-    priority_order = {"عالية": 0, "متوسطة": 1, "منخفضة": 2}
-
-    filtered_tasks.sort(
-        key=lambda t: (
-            t["done"],
-            priority_order.get(t.get("priority", "متوسطة"), 1),
-            t.get("due") or "9999-12-31"
-        )
-    )
-
-    st.markdown(
-        '<div class="section-title">📖 قائمة المهام</div>',
-        unsafe_allow_html=True
-    )
-
-    if not filtered_tasks:
-        st.info("ما فيه مهام في هذه القائمة حاليًا. 🎀")
-
-    for task in filtered_tasks:
+    for index, task in enumerate(st.session_state.tasks):
 
         with st.container(border=True):
 
             col1, col2 = st.columns([4, 1])
 
             with col1:
-                if task["done"]:
-                    st.markdown(
-                        f"~~{task['name']}~~  🌸",
-                        unsafe_allow_html=False
-                    )
-                else:
-                    st.markdown(f"### 🎀 {task['name']}")
+                st.markdown(f"### {task['name']}")
+                st.write(f"📖 المادة: {task['subject']}")
+                st.write(f"⭐ الأولوية: {task['priority']}")
+                st.write(f"📅 التسليم: {task['due']}")
 
-                st.caption(
-                    f"📚 {task['subject']}  ·  "
-                    f"الأولوية: {task['priority']}"
-                )
-
-                if task.get("due"):
-                    st.caption(f"📅 التسليم: {task['due']}")
-
-                if task.get("due") and not task["done"]:
-                    try:
-                        due = date.fromisoformat(task["due"])
-                        days_left = (due - date.today()).days
-
-                        if days_left < 0:
-                            st.warning("تجاوز موعد التسليم.")
-                        elif days_left == 0:
-                            st.warning("موعد التسليم اليوم! 🩷")
-                        elif days_left <= 2:
-                            st.info(f"باقي {days_left} يوم/أيام.")
-                    except ValueError:
-                        pass
+                if task.get("done", False):
+                    st.success("تم إنجاز هذه المهمة!")
 
             with col2:
-                if not task["done"]:
-                    if st.button("✓ إنجاز", key="finish_" + task["id"]):
-                        task["done"] = True
-                        st.session_state.xp += 25
+
+                if not task.get("done", False):
+
+                    if st.button("إنجاز ✓", key=f"done_{index}"):
+
+                        st.session_state.tasks[index]["done"] = True
+                        st.session_state.xp += 20
+
                         save_data()
-                        st.success("+25 XP 🎉")
+                        st.success("رائع! حصلتِ على 20 نقطة 🎀")
                         st.rerun()
 
                 else:
-                    st.markdown("🩷 منجزة!")
 
-                if st.button("🗑️ حذف", key="delete_" + task["id"]):
-                    st.session_state.tasks = [
-                        t for t in st.session_state.tasks
-                        if t["id"] != task["id"]
-                    ]
-                    save_data()
-                    st.rerun()
+                    if st.button("حذف المهمة", key=f"delete_{index}"):
 
+                        st.session_state.tasks.pop(index)
+                        save_data()
+                        st.rerun()
 
-# ==================================================
-# 🤖 MIKU AI CHAT (FIXED & CONNECTED)
-# ==================================================
-
+# -------------------------
+# ميكو الذكية - Gemini AI
+# -------------------------
 elif st.session_state.page == "ميكو الذكية":
 
-    draw_header("Chat with Miku", "اسألي، تعلّمي، واكتشفي أشياء جديدة ♡")
-
-    draw_miku("أنا هنا لمساعدتك في الدراسة! اسأليني أي سؤال دراسي. 🩷")
+    st.title("🎀 تحدثي مع ميكو الذكية")
+    st.write("اسألي ميكو عن دروسك أو واجباتك، وستساعدك خطوة بخطوة.")
 
     st.markdown("""
-    <div class="soft-note">
-        🎀 يمكنكِ سؤال ميكو عن شرح الدروس، والمسائل، والقواعد،
-        والمراجعة. المفتاح الخاص بكِ متصل وجاهز!
+    <div class="miku-card">
+        <div class="miku-face">🌸</div>
+        <h3>أنا ميكو، مساعدتك الدراسية!</h3>
+        <p>اسأليني عن أي درس وسأشرح لكِ بطريقة سهلة وواضحة.</p>
     </div>
     """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # قراءة المفتاح من Streamlit Secrets
+    api_key = ""
 
     try:
         api_key = st.secrets.get("GEMINI_API_KEY", "")
     except Exception:
         api_key = ""
 
+    # عرض المحادثة السابقة
     for message in st.session_state.chat_history:
+
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    prompt = st.chat_input("اكتبي سؤالك لميكو هنا... 🎀")
+    # مسح المحادثة
+    if st.button("مسح المحادثة 🧹"):
+        st.session_state.chat_history = []
+        st.rerun()
+
+    prompt = st.chat_input("اكتبي سؤالك لميكو هنا...")
 
     if prompt:
 
@@ -752,332 +388,289 @@ elif st.session_state.page == "ميكو الذكية":
             st.markdown(prompt)
 
         if not api_key:
-            reply = (
-                "يا هلا! 🎀 وصلتني رسالتك، لكن الذكاء الاصطناعي "
-                "ما تفعّل بعد. أضيفي GEMINI_API_KEY إلى Secrets "
-                "حتى أقدر أجيبك باستخدام Gemini."
+
+            answer = (
+                "لم أجد مفتاح Gemini! 🎀\n\n"
+                "تأكدي من إضافة المفتاح في Streamlit Secrets "
+                "بالاسم التالي تمامًا:\n\n"
+                "`GEMINI_API_KEY`\n\n"
+                "لا تضعي المفتاح داخل الكود أو ترسليه لأحد."
             )
 
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+
         else:
-            try:
-                import requests
 
-                with st.spinner("ميكو تفكر في إجابتك... 🩷"):
+            with st.chat_message("assistant"):
 
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                with st.spinner("ميكو تفكر في إجابتك... 🌸"):
 
-                    contents = []
+                    try:
 
-                    for message in st.session_state.chat_history[-12:]:
-                        contents.append({
-                            "role": (
+                        url = (
+                            "https://generativelanguage.googleapis.com/"
+                            "v1beta/models/gemini-2.5-flash:generateContent"
+                        )
+
+                        # تجهيز آخر الرسائل مع الحفاظ على ترتيب الأدوار
+                        history = st.session_state.chat_history[:-1][-20:]
+
+                        contents = []
+
+                        for item in history:
+                            role = (
                                 "model"
-                                if message["role"] == "assistant"
+                                if item["role"] == "assistant"
                                 else "user"
-                            ),
-                            "parts": [{"text": message["content"]}]
-                        })
+                            )
 
-                    payload = {
-                        "system_instruction": {
-                            "parts": [{
-                                "text": (
-                                    "أنت ميكو، مساعدة دراسية لطيفة "
-                                    "تتحدث باللغة العربية بوضوح. "
-                                    "اشرحي للطالبات بأسلوب مشجع "
-                                    "ومناسب لمستواهن الدراسي. "
-                                    "في المسائل الحسابية، اشرحي "
-                                    "الخطوات بترتيب واضح."
+                            # دمج الرسائل المتتالية من الدور نفسه
+                            if contents and contents[-1]["role"] == role:
+                                contents[-1]["parts"][0]["text"] += (
+                                    "\n" + item["content"]
                                 )
-                            }]
-                        },
-                        "contents": contents,
-                        "generationConfig": {
-                            "temperature": 0.7,
-                            "maxOutputTokens": 1800
+                            else:
+                                contents.append({
+                                    "role": role,
+                                    "parts": [
+                                        {"text": item["content"]}
+                                    ]
+                                })
+
+                        # إضافة السؤال الحالي
+                        if contents and contents[-1]["role"] == "user":
+                            contents[-1]["parts"][0]["text"] += (
+                                "\n" + prompt
+                            )
+                        else:
+                            contents.append({
+                                "role": "user",
+                                "parts": [{"text": prompt}]
+                            })
+
+                        payload = {
+                            "system_instruction": {
+                                "parts": [{
+                                    "text": (
+                                        "أنتِ ميكو، مساعدة دراسية لطيفة "
+                                        "تشرح باللغة العربية الواضحة. "
+                                        "استخدمي خطوات مرتبة وأمثلة بسيطة "
+                                        "ومناسبة لمستوى الطالبة. "
+                                        "ساعدي في المواد الدراسية، "
+                                        "ولا تخترعي معلومات عند عدم التأكد. "
+                                        "إذا كان السؤال باللغة الإنجليزية "
+                                        "فيمكنك شرحه بالعربية."
+                                    )
+                                }]
+                            },
+                            "contents": contents,
+                            "generationConfig": {
+                                "temperature": 0.7,
+                                "maxOutputTokens": 2048
+                            }
                         }
-                    }
 
-                    response = requests.post(
-                        url,
-                        json=payload,
-                        timeout=45
-                    )
+                        response = requests.post(
+                            url,
+                            headers={
+                                "Content-Type": "application/json",
+                                "x-goog-api-key": api_key
+                            },
+                            json=payload,
+                            timeout=45
+                        )
 
-                    if response.status_code == 200:
-                        result = response.json()
-                        reply = result["candidates"][0]["content"]["parts"][0]["text"]
-                    else:
-                        reply = f"تعذّر الاتصال بميكو حالياً (رمز {response.status_code}). تأكدي من المفتاح."
+                        if response.status_code == 200:
 
-            except Exception as e:
-                reply = f"صار خطأ أثناء الاتصال: {e}"
+                            result = response.json()
 
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": reply
-        })
+                            answer = (
+                                result["candidates"][0]
+                                ["content"]["parts"][0]["text"]
+                            )
 
-        save_data()
+                        else:
+
+                            try:
+                                error_data = response.json()
+                                error_message = error_data.get(
+                                    "error", {}
+                                ).get("message", "خطأ غير معروف")
+                            except Exception:
+                                error_message = response.text[:500]
+
+                            answer = (
+                                f"لم أتمكن من الاتصال بميكو حاليًا. 🌸\n\n"
+                                f"رمز الخطأ: {response.status_code}\n\n"
+                                f"تفاصيل الخطأ: {error_message}\n\n"
+                                "تحققي من صلاحية المفتاح وإعدادات Gemini "
+                                "ثم حاولي مرة أخرى."
+                            )
+
+                    except requests.exceptions.Timeout:
+
+                        answer = (
+                            "استغرق الاتصال وقتًا طويلًا. "
+                            "تأكدي من الإنترنت ثم حاولي مرة أخرى. 🌸"
+                        )
+
+                    except requests.exceptions.ConnectionError:
+
+                        answer = (
+                            "لم أستطع الاتصال بالخدمة. "
+                            "تحققي من اتصال الإنترنت وحاولي مجددًا."
+                        )
+
+                    except (KeyError, IndexError, TypeError):
+
+                        answer = (
+                            "وصلني رد غير متوقع من Gemini. "
+                            "حاولي إرسال السؤال مرة أخرى."
+                        )
+
+                    except Exception as error:
+
+                        answer = (
+                            "حدث خطأ غير متوقع أثناء تشغيل ميكو.\n\n"
+                            f"تفاصيل الخطأ: {str(error)}"
+                        )
+
+                st.markdown(answer)
+
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+
         st.rerun()
 
-    if st.button("🧹 مسح سجل المحادثة"):
-        st.session_state.chat_history = []
-        save_data()
-        st.rerun()
+# -------------------------
+# جلسة المذاكرة
+# -------------------------
+elif st.session_state.page == "جلسة مذاكرة":
 
+    st.title("⏰ جلسة مذاكرة مع ميكو")
+    st.write("اختاري مدة الدراسة وابدئي جلستك.")
 
-# ==================================================
-# ⏰ STUDY TIMER
-# ==================================================
-
-elif st.session_state.page == "المؤقت":
-
-    draw_header("Study Time", "خذي وقتك، وحققي أهدافك خطوة بخطوة ♡")
-
-    draw_miku("كل دقيقة تذاكرينها تقرّبك من هدفك! 🌷")
-
-    st.markdown(
-        '<div class="section-title">⏰ جلسة المذاكرة</div>',
-        unsafe_allow_html=True
+    study_minutes = st.number_input(
+        "مدة الدراسة بالدقائق",
+        min_value=1,
+        max_value=180,
+        value=60
     )
 
-    if st.session_state.timer_running:
+    break_minutes = st.number_input(
+        "مدة الاستراحة بالدقائق",
+        min_value=1,
+        max_value=60,
+        value=10
+    )
 
-        remaining = max(
-            0,
-            int(st.session_state.timer_end - time.time())
+    if st.button("ابدئي جلسة المذاكرة 🎀"):
+
+        total_seconds = int(study_minutes * 60)
+
+        components.html(
+            f"""
+            <div style="
+                text-align:center;
+                background:#fff0f7;
+                border:2px solid #f2b9d2;
+                border-radius:25px;
+                padding:25px;
+                font-family:sans-serif;
+                color:#bd7098;
+            ">
+                <h2>🌸 وقت المذاكرة 🌸</h2>
+                <div id="timer" style="
+                    font-size:55px;
+                    font-weight:bold;
+                ">00:00</div>
+                <p>بالتوفيق! أنتِ قادرة على الإنجاز ♡</p>
+            </div>
+
+            <script>
+                let remaining = {total_seconds};
+                const timer = document.getElementById("timer");
+
+                function updateTimer() {{
+                    let minutes = Math.floor(remaining / 60);
+                    let seconds = remaining % 60;
+
+                    timer.textContent =
+                        String(minutes).padStart(2, "0") + ":" +
+                        String(seconds).padStart(2, "0");
+
+                    if (remaining <= 0) {{
+                        timer.textContent = "انتهى الوقت! 🎀";
+                        return;
+                    }}
+
+                    remaining--;
+                    setTimeout(updateTimer, 1000);
+                }}
+
+                updateTimer();
+            </script>
+            """,
+            height=230
         )
 
-        minutes, seconds = divmod(remaining, 60)
-
-        st.markdown(f"""
-        <div class="miku-card" style="text-align:center;">
-            <div style="font-size:22px;color:#d982aa;">
-                {"📚 وقت المذاكرة" if st.session_state.timer_mode == "مذاكرة" else "☕ وقت الاستراحة"}
-            </div>
-            <div style="
-                font-family:Quicksand,sans-serif;
-                font-size:clamp(50px,10vw,85px);
-                color:#d86e9e;
-                font-weight:700;
-                margin:15px 0;">
-                {minutes:02d}:{seconds:02d}
-            </div>
-            <div style="color:#a8809a;">୨୧ ♡ خذي نفسًا عميقًا ♡ ୨୧</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if remaining <= 0:
-            st.session_state.timer_running = False
-
-            if st.session_state.timer_mode == "مذاكرة":
-                st.session_state.sessions += 1
-                st.session_state.xp += 10
-                st.session_state.timer_message = (
-                    "أحسنتِ! انتهت جلسة المذاكرة، وحصلتِ على 10 XP! 🎉"
-                )
-            else:
-                st.session_state.timer_message = (
-                    "انتهت الاستراحة! أنتِ مستعدة للعودة للدراسة. 🩷"
-                )
-
-            st.session_state.timer_completed = True
-            save_data()
-            st.rerun()
-
-        else:
-            col1, col2 = st.columns(2)
-
-            with col1:
-                if st.button("⏹️ إيقاف المؤقت", use_container_width=True):
-                    st.session_state.timer_running = False
-                    st.session_state.timer_message = "أُوقفت الجلسة."
-                    st.rerun()
-
-            with col2:
-                if st.button("🔄 إعادة الجلسة", use_container_width=True):
-                    st.session_state.timer_running = False
-                    st.session_state.timer_end = None
-                    st.rerun()
-
-            # تحديث العرض كل ثانية
-            time.sleep(1)
-            st.rerun()
-
-    else:
-
-        if st.session_state.timer_message:
-            st.success(st.session_state.timer_message)
-
-        with st.form("timer_form"):
-
-            mode = st.selectbox(
-                "نوع الجلسة",
-                ["مذاكرة", "استراحة"]
-            )
-
-            duration = st.number_input(
-                "المدة بالدقائق",
-                min_value=1,
-                max_value=180,
-                value=25 if mode == "مذاكرة" else 5,
-                step=5
-            )
-
-            start = st.form_submit_button(
-                "🎀 ابدئي المؤقت",
-                use_container_width=True
-            )
-
-            if start:
-                st.session_state.timer_mode = mode
-                st.session_state.timer_end = (
-                    time.time() + int(duration * 60)
-                )
-                st.session_state.timer_running = True
-                st.session_state.timer_message = ""
-                st.session_state.timer_completed = False
-                st.rerun()
-
-        st.markdown("""
-        <div class="miku-card" style="text-align:center;">
-            <div style="font-size:36px;">🍓 📖 ☕</div>
-            <h3 style="color:#d982aa;">نصيحة ميكو</h3>
-            <p>جرّبي 25 دقيقة مذاكرة، ثم 5 دقائق استراحة.</p>
-            <p style="color:#b58ba3;">تقدرين تغيرين المدة حسب احتياجك.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
     st.markdown("---")
-    st.markdown(
-        f"### 🌸 الجلسات المكتملة: {st.session_state.sessions}"
+    st.subheader("بعد انتهاء المذاكرة")
+
+    st.write(
+        f"استمتعي باستراحة مدتها {break_minutes} دقيقة "
+        "ثم عودي بنشاط! ♡"
     )
-    st.markdown(
-        f"### ⭐ نقاط الخبرة: {st.session_state.xp} XP"
-    )
 
+# -------------------------
+# صفحة الإنجازات
+# -------------------------
+elif st.session_state.page == "إنجازاتي":
 
-# ==================================================
-# 🏆 ACHIEVEMENTS
-# ==================================================
-
-elif st.session_state.page == "الإنجازات":
-
-    draw_header("My Achievements", "كل إنجاز صغير يستحق الاحتفال! 🎀")
-
-    draw_miku("أنا فخورة بكل خطوة تتقدمين فيها! 🩷")
+    st.title("🏆 إنجازاتي")
 
     xp = st.session_state.xp
-    level = xp_level()
-    current_level_xp = xp % 100
+    level = (xp // 100) + 1
+    progress = (xp % 100) / 100
 
-    c1, c2, c3 = st.columns(3)
+    st.metric("⭐ مجموع النقاط", xp)
+    st.metric("🌸 مستواك الحالي", level)
 
-    with c1:
-        stat_card("المستوى", level, "👑")
-    with c2:
-        stat_card("نقاط الخبرة", xp, "⭐")
-    with c3:
-        stat_card("جلسات المذاكرة", st.session_state.sessions, "📚")
+    st.subheader("التقدم نحو المستوى التالي")
+    st.progress(progress)
+    st.write(f"{xp % 100} / 100 نقطة")
 
-    st.markdown(
-        '<div class="section-title">🌷 تقدم المستوى</div>',
-        unsafe_allow_html=True
+    completed = sum(
+        1 for task in st.session_state.tasks
+        if task.get("done", False)
     )
-
-    st.progress(current_level_xp / 100)
-
-    st.caption(
-        f"جمعتِ {current_level_xp} من 100 نقطة للمستوى التالي."
-    )
-
-    st.markdown(
-        '<div class="section-title">🎀 أوسمتي</div>',
-        unsafe_allow_html=True
-    )
-
-    badges = [
-        (
-            "🌱",
-            "البداية الجميلة",
-            "أضيفي أول مهمة دراسية.",
-            len(st.session_state.tasks) >= 1
-        ),
-        (
-            "🌸",
-            "إنجاز أول",
-            "أكملي أول واجب.",
-            completed_count() >= 1
-        ),
-        (
-            "⭐",
-            "عشرون دقيقة من الجهد",
-            "اجمعي 10 نقاط خبرة.",
-            xp >= 10
-        ),
-        (
-            "👑",
-            "نجمة الدراسة",
-            "اجمعي 100 نقطة خبرة.",
-            xp >= 100
-        ),
-        (
-            "📚",
-            "قارئة مجتهدة",
-            "أكملي خمس مهام.",
-            completed_count() >= 5
-        ),
-        (
-            "⏰",
-            "صديقة الوقت",
-            "أكملي ثلاث جلسات مذاكرة.",
-            st.session_state.sessions >= 3
-        )
-    ]
-
-    for emoji, title, description, unlocked in badges:
-        with st.container(border=True):
-            c1, c2 = st.columns([1, 5])
-
-            with c1:
-                st.markdown(
-                    f"<div style='font-size:35px;text-align:center;'>"
-                    f"{emoji if unlocked else '🔒'}</div>",
-                    unsafe_allow_html=True
-                )
-
-            with c2:
-                st.markdown(f"**{title}**")
-                st.caption(description)
-
-                if unlocked:
-                    st.success("تم فتح الوسام! 🎉")
-                else:
-                    st.caption("واصلي التقدم لفتح هذا الوسام.")
 
     st.markdown("---")
+    st.subheader("شارات الإنجاز")
 
-    if st.button("🎀 العودة للرئيسية", use_container_width=True):
-        go_to("الرئيسية")
-        st.rerun()
+    achievements = [
+        ("🌷", "أول خطوة", completed >= 1),
+        ("🎀", "ثلاث مهام مكتملة", completed >= 3),
+        ("🌸", "خمس مهام مكتملة", completed >= 5),
+        ("👑", "عشر مهام مكتملة", completed >= 10),
+        ("⭐", "وصلتِ إلى 100 نقطة", xp >= 100),
+        ("💖", "وصلتِ إلى 500 نقطة", xp >= 500)
+    ]
 
+    for emoji, title, unlocked in achievements:
 
-# ==================================================
-# 🌸 FOOTER
-# ==================================================
+        if unlocked:
+            st.success(f"{emoji} {title}")
+        else:
+            st.info(f"🔒 {title}")
 
-st.markdown("""
-<br>
-<div style="
-    text-align:center;
-    color:#c69ab2;
-    padding:20px 5px;
-    font-size:14px;">
-    ୨୧ ♡  Study with Miku  ♡ ୨୧
-    <br>
-    made for your little study journey 🎀
-    <br><br>
-    ✿ take it one step at a time ✿
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("---")
+    st.write("استمري، فكل إنجاز يستحق الاحتفال! ୨୧")
