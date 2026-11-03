@@ -1,76 +1,152 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+st.set_page_config(page_title="Study with Miku", layout="wide")
+
+# قراءة واجهة الدخول الكريستالية والـ 3D
+html_code = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study with Miku</title>
-    <!-- استدعاء خطوط فخمة للعربية والإنجليزي -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- مكتبة Three.js ومحمل مجسمات GLTF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #060b19; 
+            color: #fff; 
+            font-family: 'Tajawal', sans-serif; 
+            overflow: hidden; 
+            height: 100vh;
+        }
+        #canvas-container { 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 1; 
+        }
+        .gothic-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            height: 100vh;
+            padding-right: 8%;
+            background: radial-gradient(circle at 30% 50%, rgba(10, 25, 50, 0.4), transparent 70%);
+        }
+        .title-box { text-align: center; margin-bottom: 30px; text-shadow: 0 0 15px #82d9ec; }
+        .app-title { font-family: 'Cinzel', serif; font-size: 2.8rem; color: #b8eff7; letter-spacing: 2px; }
+        .app-sub { font-family: 'Cinzel', serif; font-size: 1rem; color: #5bc0be; letter-spacing: 4px; }
+        
+        .crystal-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+        }
+        .menu-btn {
+            background: rgba(13, 34, 64, 0.55);
+            border: 1px solid rgba(130, 217, 236, 0.4);
+            backdrop-filter: blur(10px);
+            color: #e0f7fa;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .menu-btn:hover {
+            background: rgba(30, 80, 130, 0.7);
+            border-color: #82d9ec;
+            box-shadow: 0 0 20px rgba(130, 217, 236, 0.6);
+            transform: translateX(-5px);
+        }
+    </style>
 </head>
 <body>
 
-    <!-- 1. شاشة الدخول التفاعلية الأولى (3D Welcome Hub) -->
-    <div id="welcome-screen" class="screen active">
-        <!-- كانفاس العرض 3D لتتبع العيون والأنيميشن -->
-        <div id="canvas-container"></div>
+    <div id="canvas-container"></div>
 
-        <!-- القائمة الكريستالية الفخمة -->
-        <div class="gothic-menu-container">
+    <div class="gothic-container">
+        <div class="title-box">
             <h1 class="app-title">STUDY WITH MIKU</h1>
-            <p class="app-subtitle">RAISON D'ÊTRE</p>
-
-            <nav class="crystal-menu">
-                <button class="menu-btn" onclick="navigateTo('timer-screen')">
-                    <span class="btn-icon">✦</span>
-                    <span class="btn-text" data-en="START STUDY SESSION" data-ar="بدء جلسة المذاكرة">بدء جلسة المذاكرة</span>
-                </button>
-                <button class="menu-btn" onclick="navigateTo('gallery-screen')">
-                    <span class="btn-icon">🌸</span>
-                    <span class="btn-text" data-en="MEMORY & GALLERY" data-ar="سجل الذكريات والإنجازات">سجل الذكريات والإنجازات</span>
-                </button>
-                <button class="menu-btn" onclick="navigateTo('settings-screen')">
-                    <span class="btn-icon">⚙</span>
-                    <span class="btn-text" data-en="SETTINGS" data-ar="الإعدادات">الإعدادات</span>
-                </button>
-                <button class="menu-btn exit-btn" onclick="exitApp()">
-                    <span class="btn-icon">☾</span>
-                    <span class="btn-text" data-en="EXIT" data-ar="خروج">خروج</span>
-                </button>
-            </nav>
+            <p class="app-sub">RAISON D'ÊTRE</p>
         </div>
+
+        <nav class="crystal-menu">
+            <button class="menu-btn"><span>بدء جلسة المذاكرة</span> <span>✦</span></button>
+            <button class="menu-btn"><span>سجل الذكريات</span> <span>🌸</span></button>
+            <button class="menu-btn"><span>الإعدادات</span> <span>⚙</span></button>
+            <button class="menu-btn"><span>خروج</span> <span>☾</span></button>
+        </nav>
     </div>
 
-    <!-- 2. صفحة مؤقت التركيز (صفحة مستقلة بالكامل) -->
-    <div id="timer-screen" class="screen">
-        <button class="back-btn" onclick="navigateTo('welcome-screen')">➔ العودة للقائمة</button>
-        <div class="screen-content">
-            <h2>مؤقت التركيز</h2>
-            <!-- محتوى المؤقت المنفصل -->
-        </div>
-    </div>
+    <script>
+        // إعداد مشهد Three.js 3D لميكو
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
 
-    <!-- 3. صفحة الملاحظات والدفتر (صفحة مستقلة بالكامل) -->
-    <div id="notebook-screen" class="screen">
-        <button class="back-btn" onclick="navigateTo('welcome-screen')">➔ العودة للقائمة</button>
-        <div class="screen-content">
-            <h2>الدفتر الرقمي</h2>
-            <!-- محتوى الملاحظات المنفصل -->
-        </div>
-    </div>
+        // إضاءة كريستالية
+        const light = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(light);
+        const dirLight = new THREE.DirectionalLight(0x82d9ec, 2);
+        dirLight.position.set(-5, 5, 5);
+        scene.add(dirLight);
 
-    <!-- 4. صفحة الإعدادات -->
-    <div id="settings-screen" class="screen">
-        <button class="back-btn" onclick="navigateTo('welcome-screen')">➔ العودة للقائمة</button>
-        <div class="screen-content">
-            <h2>الإعدادات</h2>
-            <!-- خيارات اللغة والصوت -->
-        </div>
-    </div>
+        camera.position.set(0, 0, 5);
 
-    <script src="app.js"></script>
+        // تحميل أحد النموذجين اللذين اخترتيهما (pHuT8 / p87YZ)
+        const loader = new THREE.GLTFLoader();
+        let mikuModel;
+
+        // رابط النموذج الثلاثي الأبعاد المعتمد
+        loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb', function (gltf) {
+            mikuModel = gltf.scene;
+            mikuModel.scale.set(1.5, 1.5, 1.5);
+            mikuModel.position.set(-1.2, -0.5, 0);
+            scene.add(mikuModel);
+        });
+
+        // حركة تتبع الماوس / اللمس للعيون والرأس
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mikuModel) {
+                // تتبع ناعم
+                mikuModel.rotation.y += (mouseX * 0.5 - mikuModel.rotation.y) * 0.05;
+                mikuModel.rotation.x += (-mouseY * 0.3 - mikuModel.rotation.x) * 0.05;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
+"""
+
+components.html(html_code, height=750, scrolling=False)
