@@ -220,9 +220,11 @@ if not st.session_state.auth_token:
                 try:
                     if st.session_state.auth_mode == "إنشاء حساب":
                         data = auth_call("signup", {"email": clean_email, "password": password})
-                        if data.get("access_token") and data.get("user"):
-                            st.session_state.auth_token = data["access_token"]
-                            st.session_state.user_id = data["user"]["id"]
+                        if (data.get("access_token") or data.get("session")) and (data.get("user") or data.get("session")):
+                            session_data = data.get("session", data)
+                            user_data = session_data.get("user", data.get("user"))
+                            st.session_state.auth_token = session_data.get("access_token", data.get("access_token"))
+                            st.session_state.user_id = user_data["id"]
                             st.session_state.user_email = clean_email
                             load_data()
                             st.rerun()
@@ -230,11 +232,13 @@ if not st.session_state.auth_token:
                             st.success("تم إنشاء الحساب! أكدي بريدك الإلكتروني ثم ارجعي وسجلي الدخول.")
                     else:
                         data = auth_call("token?grant_type=password", {"email": clean_email, "password": password})
-                        user = data.get("user")
-                        if not data.get("access_token") or not user:
+                        session_data = data.get("session", data)
+                        user = session_data.get("user", data.get("user"))
+                        token = session_data.get("access_token", data.get("access_token"))
+                        if not token or not user:
                             st.error("لم تكتمل عملية تسجيل الدخول. حاولي مرة أخرى.")
                         else:
-                            st.session_state.auth_token = data["access_token"]
+                            st.session_state.auth_token = token
                             st.session_state.user_id = user["id"]
                             st.session_state.user_email = clean_email
                             load_data()
