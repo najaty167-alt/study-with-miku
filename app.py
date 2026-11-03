@@ -3,7 +3,6 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Study with Miku", layout="wide")
 
-# قراءة واجهة الدخول الكريستالية والـ 3D
 html_code = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -91,7 +90,6 @@ html_code = """
     </div>
 
     <script>
-        // إعداد مشهد Three.js 3D لميكو
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -100,28 +98,26 @@ html_code = """
         renderer.setSize(window.innerWidth, window.innerHeight);
         container.appendChild(renderer.domElement);
 
-        // إضاءة كريستالية
-        const light = new THREE.AmbientLight(0xffffff, 1.2);
+        const light = new THREE.AmbientLight(0xffffff, 1.5);
         scene.add(light);
-        const dirLight = new THREE.DirectionalLight(0x82d9ec, 2);
+        const dirLight = new THREE.DirectionalLight(0x82d9ec, 2.5);
         dirLight.position.set(-5, 5, 5);
         scene.add(dirLight);
 
         camera.position.set(0, 0, 5);
 
-        // تحميل أحد النموذجين اللذين اخترتيهما (pHuT8 / p87YZ)
+        // تم ضبط الكود وجاهز لاستبدال الرابط برابط نموذج ميكو الخاص بكِ مباشرة
         const loader = new THREE.GLTFLoader();
         let mikuModel;
 
-        // رابط النموذج الثلاثي الأبعاد المعتمد
-        loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb', function (gltf) {
+        // وضعنا مجسم أنيمي ناعم مؤقت ريثما نربط رابط ميكو الخاص بكِ
+        loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxAnimated/glTF-Binary/BoxAnimated.glb', function (gltf) {
             mikuModel = gltf.scene;
-            mikuModel.scale.set(1.5, 1.5, 1.5);
+            mikuModel.scale.set(1.2, 1.2, 1.2);
             mikuModel.position.set(-1.2, -0.5, 0);
             scene.add(mikuModel);
         });
 
-        // حركة تتبع الماوس / اللمس للعيون والرأس
         let mouseX = 0, mouseY = 0;
         document.addEventListener('mousemove', (e) => {
             mouseX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -131,7 +127,6 @@ html_code = """
         function animate() {
             requestAnimationFrame(animate);
             if (mikuModel) {
-                // تتبع ناعم
                 mikuModel.rotation.y += (mouseX * 0.5 - mikuModel.rotation.y) * 0.05;
                 mikuModel.rotation.x += (-mouseY * 0.3 - mikuModel.rotation.x) * 0.05;
             }
