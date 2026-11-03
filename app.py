@@ -72,30 +72,11 @@ footer,#MainMenu{visibility:hidden}
 </style>
 """, unsafe_allow_html=True)
 
-def sb_headers(token=None, prefer=None):
-    h={"apikey":SB_KEY,"Authorization":"Bearer "+(token or SB_KEY),"Content-Type":"application/json"}
-    if prefer: h["Prefer"]=prefer
-    return h
-
 def load_data():
-    if not st.session_state.user_id: return
-    try:
-        r=requests.get(f"{SB_URL}/rest/v1/miku_user_data",params={"user_id":f"eq.{st.session_state.user_id}","select":"data"},headers=sb_headers(st.session_state.auth_token),timeout=15)
-        if r.status_code==200 and r.json():
-            stored=r.json()[0].get("data") or {}
-            for k in DATA_DEFAULTS:
-                if k in stored: st.session_state[k]=stored[k]
-    except Exception:
-        pass
     st.session_state.data_loaded=True
 
 def save_data():
-    if not st.session_state.user_id or not st.session_state.auth_token: return
-    payload={"user_id":st.session_state.user_id,"data":{k:st.session_state.get(k,default) for k,default in DATA_DEFAULTS.items()}}
-    try:
-        requests.post(f"{SB_URL}/rest/v1/miku_user_data",params={"on_conflict":"user_id"},headers=sb_headers(st.session_state.auth_token,"resolution=merge-duplicates,return=minimal"),json=payload,timeout=15)
-    except Exception:
-        pass
+    pass
 
 def do_logout():
     for k,v in DATA_DEFAULTS.items(): st.session_state[k]=v.copy() if isinstance(v,(list,dict)) else v
@@ -116,21 +97,18 @@ def ask_miku(question):
     if not GEMINI_KEY: return "مفتاح Gemini غير موجود في Secrets (GEMINI_API_KEY)."
     contents=normalize_history(st.session_state.chat_history)
     if not contents or contents[-1]["role"]!="user": contents.append({"role":"user","parts":[{"text":question}]})
-    body={"systemInstruction":{"parts":[{"text":"أنتِ ميكو، مساعدة دراسية لطيفة. أجيبي بالعربية الواضحة، واشرحي خطوات مناسبة للطلاب، ولا تختلقي معلومات."}]},"contents":contents,"generationConfig":{"maxOutputTokens":900}}
-    for model in ("gemini-2.5-flash","gemini-1.5-flash"):
-        try:
-            r=requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",headers={"Content-Type":"application/json","x-goog-api-key":GEMINI_KEY},json=body,timeout=40)
-            if r.status_code==200:
-                c=r.json().get("candidates",[])
-                if not c: return "لم تظهر إجابة هذه المرة. أعيدي إرسال السؤال."
-                return "\n".join(p.get("text","") for p in c[0].get("content",{}).get("parts",[]) if p.get("text")).strip() or "لم يظهر نص الإجابة."
-            try: message=r.json().get("error",{}).get("message",r.text)
-            except Exception: message=r.text
-            if r.status_code not in (404,503): return f"خطأ من Gemini ({r.status_code}): {message[:300]}"
-            last_error=message
-        except requests.Timeout: return "الاتصال أخذ وقتًا طويلًا؛ جربي مرة أخرى."
-        except requests.RequestException: return "تعذر الاتصال بخدمة ميكو. تحققي من الإنترنت."
-    return "النموذج غير متاح حاليًا أو عليه ضغط. التفاصيل: "+str(last_error)[:250]
+    body={"system_instruction":{"parts":[{"text":"أنتِ ميكو، مساعدة دراسية لطيفة. أجيبي بالعربية الواضحة، واشرحي خطوات مناسبة للطلاب، ولا تختلقي معلومات."}]},"contents":contents}
+    
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+        r = requests.post(url, headers={"Content-Type": "application/json"}, json=body, timeout=40)
+        if r.status_code == 200:
+            res = r.json()
+            return res["candidates"][0]["content"]["parts"][0]["text"]
+        else:
+            return f"تعذّر الاتصال بميكو حالياً (رمز {r.status_code})."
+    except Exception as e:
+        return f"خطأ في الاتصال: {e}"
 
 def finish_timer():
     st.session_state.timer_running=False
@@ -139,7 +117,6 @@ def finish_timer():
     if st.session_state.timer_mode=="مذاكرة":
         st.session_state.completed_sessions+=1
         st.session_state.xp+=10
-        save_data()
 
 def render_timer():
     if st.session_state.timer_running:
@@ -188,56 +165,16 @@ if not st.session_state.auth_token:
         '<div class="hero-card" style="text-align:center">'
         '<div class="miku-title">୨୧ Study with Miku ୨୧</div>'
         '<h3>مساحتك الدراسية الصغيرة 🩵</h3>'
-        '<p>سجلي دخولك أو ادخلي مباشرة لمتابعة مذاكرتك ومهامك.</p>'
+        '<p>اضغطي الزر أدناه للدخول الفوري إلى تطبيقك ومذاكرتك.</p>'
         '</div>',
         unsafe_allow_html=True
     )
 
-    # زر دخول سريع لتخطي أي مشاكل في Supabase فوراً
     if st.button("✨ دخول سريع ومباشر للتطبيق", use_container_width=True):
-        st.session_state.auth_token = "local_bypass_token"
-        st.session_state.user_id = "najaty_local_user"
+        st.session_state.auth_token = "bypass"
+        st.session_state.user_id = "najaty"
         st.session_state.user_email = "najaty167@gmail.com"
-        st.session_state.data_loaded = True
         st.rerun()
-
-    st.markdown("---")
-    st.markdown("### أو التسجيل عبر الحساب:")
-
-    st.radio("اختاري", ["تسجيل الدخول", "إنشاء حساب"], horizontal=True, key="auth_mode")
-
-    with st.form("auth_form"):
-        email = st.text_input("البريد الإلكتروني")
-        password = st.text_input("كلمة المرور", type="password")
-        submit = st.form_submit_button("متابعة 🩵", use_container_width=True)
-
-        if submit:
-            clean_email = email.strip().lower()
-            if not clean_email or not password:
-                st.error("أدخلي البريد وكلمة المرور.")
-            else:
-                try:
-                    endpoint = "signup" if st.session_state.auth_mode == "إنشاء حساب" else "token?grant_type=password"
-                    r = requests.post(f"{SB_URL}/auth/v1/{endpoint}", headers={"apikey": SB_KEY, "Content-Type": "application/json"}, json={"email": clean_email, "password": password}, timeout=20)
-                    data = r.json()
-                    
-                    if r.status_code in (200, 201):
-                        session_data = data.get("session", data)
-                        user = session_data.get("user", data.get("user"))
-                        token = session_data.get("access_token", data.get("access_token"))
-                        if token and user:
-                            st.session_state.auth_token = token
-                            st.session_state.user_id = user["id"]
-                            st.session_state.user_email = clean_email
-                            load_data()
-                            st.rerun()
-                        else:
-                            st.success("تم إنشاء الحساب أو التسجيل بنجاح! إذا لم يدخل، استخدمي زر 'دخول سريع' بالأعلى.")
-                    else:
-                        msg = data.get("error_description") or data.get("msg") or data.get("message") or "خطأ في بيانات الدخول"
-                        st.error(f"تعذّر الدخول: {msg}")
-                except Exception as e:
-                    st.error(f"حدث خطأ في الاتصال: {e}")
 
     st.stop()
 
@@ -284,16 +221,16 @@ elif st.session_state.page == "مهامي وواجباتي":
             title = st.text_input("اسم المهمة"); subject = st.selectbox("المادة", SUBJECTS); priority = st.selectbox("الأولوية", ["عالية", "متوسطة", "منخفضة"]); due = st.date_input("موعد التسليم", value=None); notes = st.text_area("ملاحظات")
             if st.form_submit_button("إضافة", use_container_width=True):
                 if title.strip():
-                    st.session_state.tasks.append({"id": str(uuid.uuid4()), "title": title.strip(), "subject": subject, "priority": priority, "date": str(due) if due else "", "notes": notes, "done": False}); save_data(); st.rerun()
+                    st.session_state.tasks.append({"id": str(uuid.uuid4()), "title": title.strip(), "subject": subject, "priority": priority, "date": str(due) if due else "", "notes": notes, "done": False}); st.rerun()
                 else: st.warning("اكتبي اسم المهمة.")
     for t in list(st.session_state.tasks):
         if t.get("done"): continue
         st.markdown(f'<div class="task-card"><h4>{html.escape(t["title"])}</h4><div class="small-note">{html.escape(t["subject"])} · {html.escape(t["priority"])} · {html.escape(t.get("date") or "بدون موعد")}</div><p>{html.escape(t.get("notes", ""))}</p></div>', unsafe_allow_html=True)
         a, b = st.columns(2)
         with a:
-            if st.button("✓ اكتملت +20 XP", key="done"+t["id"], use_container_width=True): t["done"] = True; st.session_state.xp += 20; st.session_state.completed_tasks += 1; save_data(); st.rerun()
+            if st.button("✓ اكتملت +20 XP", key="done"+t["id"], use_container_width=True): t["done"] = True; st.session_state.xp += 20; st.session_state.completed_tasks += 1; st.rerun()
         with b:
-            if st.button("حذف", key="del"+t["id"], use_container_width=True): st.session_state.tasks = [x for x in st.session_state.tasks if x["id"] != t["id"]]; save_data(); st.rerun()
+            if st.button("حذف", key="del"+t["id"], use_container_width=True): st.session_state.tasks = [x for x in st.session_state.tasks if x["id"] != t["id"]]; st.rerun()
     st.markdown("### المهام المكتملة")
     for t in [x for x in st.session_state.tasks if x.get("done")]: st.markdown(f'<div class="task-card"><s>{html.escape(t["title"])}</s> ✓</div>', unsafe_allow_html=True)
 
@@ -308,9 +245,9 @@ elif st.session_state.page == "اسألي ميكو":
             if q.strip():
                 st.session_state.chat_history.append({"role": "user", "text": q.strip()})
                 with st.spinner("ميكو تفكر... 🩵"): ans = ask_miku(q.strip())
-                st.session_state.chat_history.append({"role": "assistant", "text": ans}); save_data(); st.rerun()
+                st.session_state.chat_history.append({"role": "assistant", "text": ans}); st.rerun()
             else: st.warning("اكتبي سؤالك.")
-    if st.button("مسح المحادثة"): st.session_state.chat_history = []; save_data(); st.rerun()
+    if st.button("مسح المحادثة"): st.session_state.chat_history = []; st.rerun()
 
 elif st.session_state.page == "جلسة المذاكرة":
     st.markdown("# ⏰ جلسة المذاكرة")
@@ -342,13 +279,12 @@ elif st.session_state.page == "لعبة ميكو":
             st.markdown(f'<div class="glass-card" style="text-align:center"><div style="font-size:38px">{emoji}</div><h4>{name}</h4><p>{cost} XP</p></div>', unsafe_allow_html=True)
             if ident in owned:
                 if ident in equipped:
-                    if st.button("إزالة", key="rm"+ident, use_container_width=True): st.session_state.equipped.remove(ident); save_data(); st.rerun()
+                    if st.button("إزالة", key="rm"+ident, use_container_width=True): st.session_state.equipped.remove(ident); st.rerun()
                 else:
-                    if st.button("وضع في الغرفة", key="put"+ident, use_container_width=True): st.session_state.equipped.append(ident); save_data(); st.rerun()
+                    if st.button("وضع في الغرفة", key="put"+ident, use_container_width=True): st.session_state.equipped.append(ident); st.rerun()
             elif st.button(f"شراء · {cost} XP", key="buy"+ident, use_container_width=True):
-                if st.session_state.xp >= cost: st.session_state.xp -= cost; st.session_state.inventory.append(ident); st.session_state.equipped.append(ident); save_data(); st.success("تم فتح الأثاث!"); st.rerun()
+                if st.session_state.xp >= cost: st.session_state.xp -= cost; st.session_state.inventory.append(ident); st.session_state.equipped.append(ident); st.success("تم فتح الأثاث!"); st.rerun()
                 else: st.warning(f"تحتاجين {cost-st.session_state.xp} XP إضافية.")
 
-save_data()
 st.markdown("---")
 st.markdown("<div style='text-align:center;color:#8294a8;padding:12px'>୨୧ Study with Miku · خطوة صغيرة كل يوم 🩵 ୨୧</div>", unsafe_allow_html=True)
