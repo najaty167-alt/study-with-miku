@@ -203,31 +203,144 @@ else:
         st.caption("التحديث التلقائي يتطلب إصدار Streamlit حديثًا.")
 
 # ---------- Login page ----------
-if not st.session_state.auth_token:
-    st.markdown('<div class="hero-card" style="text-align:center"><div class="miku-title">୨୧ Study with Miku ୨୧</div><h3>مساحتك الدراسية الصغيرة 🩵</h3><p>سجلي دخولك حتى نحفظ مهامك ونقاطك وغرفتك.</p></div>',unsafe_allow_html=True)
-    if not SB_URL or not SB_KEY: st.error("يلزم إعداد Supabase: SUPABASE_URL وSUPABASE_ANON_KEY في Secrets.")
-    st.radio("اختاري",["تسجيل الدخول","إنشاء حساب"],horizontal=True,key="auth_mode")
-    with st.form("auth_form"):
-        email=st.text_input("البريد الإلكتروني")
-        password=st.text_input("كلمة المرور",type="password")
-        submit=st.form_submit_button("متابعة 🩵",use_container_width=True)
-        if submit:
-            try:
-                if not email.strip() or not password: st.error("أدخلي البريد وكلمة المرور.")
-                elif st.session_state.auth_mode=="إنشاء حساب":
-                    data=auth_call("signup",{"email":email.strip(),"password":password})
-                    if data.get("access_token"):
-                        st.session_state.auth_token=data["access_token"];st.session_state.user_id=data["user"]["id"];st.session_state.user_email=email.strip();load_data();st.rerun()
-                    else: st.success("تم إنشاء الحساب. إذا طُلب تأكيد البريد، أكديه ثم سجلي الدخول.")
-                else:
-                    data=auth_call("token?grant_type=password",{"email":email.strip(),"password":password})
-                    st.session_state.auth_token=data["access_token"];st.session_state.user_id=data["user"]["id"];st.session_state.user_email=email.strip();load_data();st.rerun()
-            except Exception as e: st.error("تعذر تسجيل الدخول: "+str(e))
-    st.stop()
 
-if not st.session_state.data_loaded:
-    try: load_data()
-    except Exception as e: st.error("تعذر تحميل بيانات الحساب: "+str(e))
+  # ---------- Login page ----------
+if not st.session_state.auth_token:
+    st.markdown(
+        '<div class="hero-card" style="text-align:center">'
+        '<div class="miku-title">୨୧ Study with Miku ୨୧</div>'
+        '<h3>مساحتك الدراسية الصغيرة 🩵</h3>'
+        '<p>سجلي دخولك حتى نحفظ مهامك ونقاطك وغرفتك.</p>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    if not SB_URL or not SB_KEY:
+        st.error(
+            "يلزم إعداد Supabase: SUPABASE_URL وSUPABASE_ANON_KEY في Secrets."
+        )
+
+    st.radio(
+        "اختاري",
+        ["تسجيل الدخول", "إنشاء حساب"],
+        horizontal=True,
+        key="auth_mode"
+    )
+
+    with st.form("auth_form"):
+        email = st.text_input("البريد الإلكتروني")
+        password = st.text_input("كلمة المرور", type="password")
+
+        submit = st.form_submit_button(
+            "متابعة 🩵",
+            use_container_width=True
+        )
+
+        if submit:
+            clean_email = email.strip().lower()
+
+            try:
+                if not clean_email or not password:
+                    st.error("أدخلي البريد وكلمة المرور.")
+
+                elif st.session_state.auth_mode == "إنشاء حساب":
+                    data = auth_call(
+                        "signup",
+                        {
+                            "email": clean_email,
+                            "password": password
+                        }
+                    )
+
+                    if data.get("access_token") and data.get("user"):
+                        st.session_state.auth_token = data["access_token"]
+                        st.session_state.user_id = data["user"]["id"]
+                        st.session_state.user_email = clean_email
+                        load_data()
+                        st.rerun()
+
+                    else:
+                        st.success(
+                            "تم إنشاء الحساب! أكدي بريدك الإلكتروني من الرسالة "
+                            "ثم ارجعي وسجلي الدخول."
+                        )
+
+                else:
+                    data = auth_call(
+                        "token?grant_type=password",
+                        {
+                            "email": clean_email,
+                            "password": password
+                        }
+                    )
+
+                    user = data.get("user")
+
+                    if not data.get("access_token") or not user:
+                        st.error("لم تكتمل عملية تسجيل الدخول. حاولي مرة أخرى.")
+
+                    else:
+                        st.session_state.auth_token = data["access_token"]
+                        st.session_state.user_id = user["id"]
+                        st.session_state.user_email = clean_email
+
+                        load_data()
+                        st.rerun()
+
+            except Exception as e:
+                error_message = str(e)
+
+                if "Invalid login credentials" in error_message:
+                    st.error(
+                        "البريد أو كلمة المرور غير صحيحة. "
+                        "تأكدي من استخدام نفس بيانات الحساب الذي أنشأتيه."
+                    )
+                else:
+                    st.error("تعذّر تسجيل الدخول: " + error_message)
+
+    st.markdown("---")
+
+    st.markdown("### نسيتِ كلمة المرور؟")
+
+    reset_email = st.text_input(
+        "اكتبي بريدك الإلكتروني لاستعادة كلمة المرور",
+        key="reset_email"
+    )
+
+    if st.button("إرسال رابط استعادة كلمة المرور", use_container_width=True):
+        clean_reset_email = reset_email.strip().lower()
+
+        if not clean_reset_email:
+            st.warning("اكتبي بريدك الإلكتروني أولًا.")
+
+        elif not SB_URL or not SB_KEY:
+            st.error("إعدادات Supabase غير مكتملة.")
+
+        else:
+            try:
+                response = requests.post(
+                    f"{SB_URL}/auth/v1/recover",
+                    headers={
+                        "apikey": SB_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    json={"email": clean_reset_email},
+                    timeout=25
+                )
+
+                if response.status_code in (200, 201, 204):
+                    st.success(
+                        "إذا كان البريد مسجلًا، فسيصلك رابط استعادة كلمة المرور."
+                    )
+                else:
+                    st.error(
+                        "تعذّر إرسال الرابط: " + response.text[:250]
+                    )
+
+            except requests.RequestException:
+                st.error("تعذّر الاتصال بـ Supabase. تحققي من الإنترنت.")
+
+    st.stop()
 
 # ---------- Sidebar and old pastel UI ----------
 with st.sidebar:
