@@ -1,1026 +1,668 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import requests
-import time
-import os
-import uuid
-from datetime import date, datetime
+from pathlib import Path
+import base64
 
-==========================================
-
-إعداد الصفحة
-
-==========================================
-
+# =========================
+# إعدادات التطبيق
+# =========================
 st.set_page_config(
-page_title="Study with Miku",
-page_icon="୨୧",
-layout="wide",
-initial_sidebar_state="expanded"
+    page_title="Miku World",
+    page_icon="🩵",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-==========================================
+# مجسّم ميكو، نضيفه لاحقًا داخل مجلد assets
+MODEL_PATH = Path("assets/miku.glb")
 
-تهيئة البيانات
+# =========================
+# التصميم العام
+# =========================
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Tajawal:wght@400;500;600;700;800&display=swap');
 
-==========================================
-
-DEFAULTS = {
-"tasks": [],
-"xp": 0,
-"chat_history": [],
-"page": "الرئيسية",
-"timer_mode": "مذاكرة",
-"timer_minutes": 25,
-"timer_running": False,
-"timer_end": None,
-"timer_paused_remaining": None,
-"completed_sessions": 0,
-"completed_tasks": 0,
-"api_error": ""
+:root {
+    --aqua: #68e7e9;
+    --sky: #d9f7ff;
+    --lavender: #ded4ff;
+    --pink: #ffd8ed;
+    --dark: #285477;
 }
 
-for key, value in DEFAULTS.items():
-if key not in st.session_state:
-st.session_state[key] = value
+html, body, [class*="css"] {
+    font-family: 'Tajawal', 'Baloo 2', sans-serif;
+}
 
-SUBJECTS = [
-"رياضيات متقدمة",
-"رياضيات أساسية",
-"فيزياء",
-"كيمياء",
-"أحياء",
-"علوم البيئة",
-"عربي",
-"إنجليزي",
-"فرنسي",
-"تاريخ",
-"جغرافيا",
-"دراسات",
-"إسلامية",
-"فنون",
-"موسيقى",
-"تقنية",
-"رياضة"
-]
+.stApp {
+    background:
+        radial-gradient(ellipse at 78% 15%, #d9fbff 0%, transparent 36%),
+        radial-gradient(ellipse at 12% 82%, #e8ddff 0%, transparent 42%),
+        linear-gradient(135deg, #f8fdff, #e5f8ff 55%, #f5edff);
+    color: var(--dark);
+}
 
-==========================================
+.block-container {
+    max-width: 1400px;
+    padding-top: 1.2rem;
+    padding-bottom: 2rem;
+}
 
-التصميم
+header, footer {
+    visibility: hidden;
+}
 
-==========================================
+h1, h2, h3 {
+    color: #285477 !important;
+    font-family: 'Baloo 2', 'Tajawal', sans-serif !important;
+}
 
-st.markdown("""
+.hero {
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,.94),
+        rgba(220,247,255,.78)
+    );
+    border: 2px solid rgba(255,255,255,.9);
+    border-radius: 30px;
+    padding: 26px;
+    box-shadow:
+        0 18px 40px rgba(96,168,203,.18),
+        inset 0 2px 0 white;
+}
 
-<style>  
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&display=swap');  
-  
-:root {  
-    --cyan: #b8eff7;  
-    --blue: #82d9ec;  
-    --lavender: #dcd4ff;  
-    --dark: #34445d;  
-    --muted: #73839b;  
-    --white: #ffffff;  
-}  
-  
-html, body, [class*="css"] {  
-    font-family: 'Cairo', sans-serif;  
-    color: var(--dark);  
-}  
-  
-.stApp {  
-    background:  
-        radial-gradient(circle at 10% 5%, #e1faff 0, transparent 30%),  
-        radial-gradient(circle at 90% 15%, #eee8ff 0, transparent 30%),  
-        linear-gradient(135deg, #f5fdff, #f5f3ff 60%, #f8fcff);  
-}  
-  
-header[data-testid="stHeader"] {  
-    background: transparent;  
-}  
-  
-.block-container {  
-    padding-top: 2rem;  
-    padding-bottom: 3rem;  
-    max-width: 1200px;  
-}  
-  
-section[data-testid="stSidebar"] {  
-    background: linear-gradient(180deg, #e5faff, #f0edff);  
-    border-left: 1px solid rgba(255,255,255,.8);  
-}  
-  
-section[data-testid="stSidebar"] * {  
-    direction: rtl;  
-    text-align: right;  
-}  
-  
-h1, h2, h3, p, label {  
-    color: var(--dark);  
-}  
-  
-h1 {  
-    font-weight: 800;  
-}  
-  
-div[data-testid="stMetric"] {  
-    background: rgba(255,255,255,.65);  
-    border: 1px solid rgba(255,255,255,.9);  
-    padding: 18px;  
-    border-radius: 22px;  
-    box-shadow: 0 8px 25px rgba(124, 175, 205, .10);  
-}  
-  
-div[data-testid="stMetricLabel"] {  
-    color: #71839b;  
-}  
-  
-div[data-testid="stMetricValue"] {  
-    color: #476b8c;  
-    font-weight: 800;  
-}  
-  
-div.stButton > button {  
-    border: 1px solid rgba(255,255,255,.9);  
-    border-radius: 16px;  
-    background: linear-gradient(135deg, #c8f3f9, #dcd6ff);  
-    color: #344b68;  
-    font-weight: 700;  
-    padding: 9px 20px;  
-    transition: .2s;  
-}  
-  
-div.stButton > button:hover {  
-    border-color: #9cdaed;  
-    transform: translateY(-2px);  
-    box-shadow: 0 7px 18px rgba(123, 188, 215, .2);  
-}  
-  
-div[data-testid="stTextInput"] input,  
-div[data-testid="stTextArea"] textarea,  
-div[data-testid="stSelectbox"] div,  
-div[data-testid="stDateInput"] input {  
-    border-radius: 13px;  
-}  
-  
-.glass-card {  
-    background: rgba(255,255,255,.60);  
-    border: 1px solid rgba(255,255,255,.95);  
-    border-radius: 25px;  
-    padding: 23px;  
-    margin: 12px 0;  
-    box-shadow: 0 10px 30px rgba(116, 165, 195, .11);  
-    backdrop-filter: blur(15px);  
-}  
-  
-.hero-card {  
-    background: linear-gradient(120deg,  
-        rgba(198,244,250,.82),  
-        rgba(230,222,255,.85));  
-    border: 1px solid white;  
-    border-radius: 30px;  
-    padding: 28px;  
-    box-shadow: 0 12px 35px rgba(133,173,207,.16);  
-}  
-  
-.small-note {  
-    color: #78899e;  
-    font-size: 14px;  
-}  
-  
-.miku-title {  
-    font-size: 29px;  
-    font-weight: 800;  
-    color: #456581;  
-}  
-  
-.chat-user {  
-    background: #dff7fc;  
-    border-radius: 20px 20px 5px 20px;  
-    padding: 15px;  
-    margin: 10px 0;  
-    direction: rtl;  
-    text-align: right;  
-}  
-  
-.chat-miku {  
-    background: #eeeaff;  
-    border-radius: 20px 20px 20px 5px;  
-    padding: 15px;  
-    margin: 10px 0;  
-    direction: rtl;  
-    text-align: right;  
-}  
-  
-.task-card {  
-    background: rgba(255,255,255,.78);  
-    border: 1px solid #ffffff;  
-    border-radius: 18px;  
-    padding: 16px;  
-    margin: 10px 0;  
-}  
-  
-div[data-testid="stProgress"] > div > div {  
-    background: linear-gradient(90deg, #9de5f1, #c5b9fa);  
-}  
-  
-footer {  
-    visibility: hidden;  
-}  
-  
-#MainMenu {  
-    visibility: hidden;  
-}  
-</style>  """, unsafe_allow_html=True)
+.intro {
+    color: #557b98;
+    font-size: 1.12rem;
+    line-height: 2;
+}
 
-==========================================
+div.stButton > button {
+    border: 1px solid white;
+    border-radius: 18px;
+    min-height: 3.2rem;
+    background: linear-gradient(145deg, #ffffff, #d9f8ff);
+    color: #285477;
+    font-weight: 800;
+    box-shadow:
+        0 7px 0 #b5e0ed,
+        0 12px 22px rgba(75,155,195,.15);
+    transition: all .18s ease;
+}
 
-دوال مساعدة
+div.stButton > button:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(145deg, #e7ffff, #d7eaff);
+    color: #285477;
+    box-shadow:
+        0 10px 0 #b5e0ed,
+        0 15px 25px rgba(75,155,195,.2);
+}
 
-==========================================
+div.stButton > button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 #b5e0ed;
+}
 
-def level_info(xp):
-level = xp // 100 + 1
-current = xp % 100
-return level, current
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #e3faff, #eee7ff);
+    border-right: 1px solid white;
+}
 
-def add_xp(amount):
-st.session_state.xp += amount
+[data-testid="stSidebar"] button {
+    border-radius: 15px;
+}
 
-def get_api_key():
-try:
-return st.secrets["GEMINI_API_KEY"]
-except Exception:
-return os.environ.get("GEMINI_API_KEY", "")
+.stTextInput input,
+.stSelectbox div,
+.stTextArea textarea {
+    border-radius: 15px !important;
+}
 
-def clean_chat_history(history):
-"""
-تجهيز سجل المحادثة بحيث تتناوب أدوار user و model.
-"""
-cleaned = []
+.small-note {
+    color: #7899b0;
+    text-align: center;
+    font-size: .9rem;
+    margin-top: 25px;
+}
 
-for item in history[-12:]:  
-    role = item.get("role")  
-    message = str(item.get("text", "")).strip()  
+.sparkle {
+    color: #83dfe8;
+    font-size: 1.3rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
-    if not message:  
-        continue  
 
-    if role == "assistant":  
-        role = "model"  
+# =========================
+# حفظ الصفحات
+# =========================
+if "page" not in st.session_state:
+    st.session_state.page = "welcome"
 
-    if role not in ("user", "model"):  
-        continue  
+if "tasks" not in st.session_state:
+    st.session_state.tasks = []
 
-    if cleaned and cleaned[-1]["role"] == role:  
-        cleaned[-1]["parts"][0]["text"] += "\n" + message  
-    else:  
-        cleaned.append({  
-            "role": role,  
-            "parts": [{"text": message}]  
-        })  
+if "xp" not in st.session_state:
+    st.session_state.xp = 0
 
-return cleaned
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-==========================================
 
-ذكاء ميكو الاصطناعي
+def go_to(page):
+    st.session_state.page = page
 
-==========================================
 
-def ask_miku(question):
-api_key = get_api_key()
+# =========================
+# مجسّم ميكو ثلاثي الأبعاد
+# =========================
+def show_miku_3d():
 
-if not api_key:  
-    return (  
-        "ما حصلت مفتاح Gemini API! 🩵\n\n"  
-        "أضيفي GEMINI_API_KEY في Streamlit Secrets "  
-        "حتى أقدر أجاوبك."  
-    )  
+    model_data = ""
 
-system_instruction = """
+    if MODEL_PATH.exists():
+        model_data = base64.b64encode(
+            MODEL_PATH.read_bytes()
+        ).decode("utf-8")
 
-أنتِ ميكو، مساعدة دراسية لطيفة وذكية.
-تحدثي باللغة العربية الواضحة ما لم يطلب المستخدم لغة أخرى.
-اشرحي الدروس بطريقة سهلة ومنظمة ومناسبة للطلاب.
-قسمي الحلول إلى خطوات مرقمة عند الحاجة.
-لا تختلقي معلومات، وإذا لم تعرفي شيئاً فقولي ذلك بوضوح.
-اجعلي الإجابات واضحة ومفيدة وغير طويلة بلا داعٍ.
-"""
+    html = f"""
+    <div id="miku-scene"
+         style="
+            width:100%;
+            height:500px;
+            border-radius:30px;
+            overflow:hidden;
+            background:
+              radial-gradient(ellipse at 50% 75%,
+                rgba(100,230,240,.35),
+                transparent 45%),
+              linear-gradient(145deg,#e7fbff,#e9e1ff);
+         ">
+    </div>
 
-contents = clean_chat_history(  
-    st.session_state.chat_history  
-)  
+    <script type="importmap">
+    {{
+      "imports": {{
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }}
+    }}
+    </script>
 
-# ضمان أن آخر رسالة هي رسالة المستخدم  
-if not contents or contents[-1]["role"] != "user":  
-    contents.append({  
-        "role": "user",  
-        "parts": [{"text": question}]  
-    })  
+    <script type="module">
+    import * as THREE from 'three';
+    import {{ GLTFLoader }} from 'three/addons/loaders/GLTFLoader.js';
 
-url = (  
-    "https://generativelanguage.googleapis.com/"  
-    "v1beta/models/gemini-3.8-flash:generateContent"  
-)  
+    const container = document.getElementById('miku-scene');
 
-headers = {  
-    "Content-Type": "application/json",  
-    "x-goog-api-key": api_key  
-}  
+    const scene = new THREE.Scene();
 
-payload = {  
-    "systemInstruction": {  
-        "parts": [{"text": system_instruction}]  
-    },  
-    "contents": contents,  
-    "generationConfig": {  
-        "maxOutputTokens": 900  
-    }  
-}  
+    const camera = new THREE.PerspectiveCamera(
+        35,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        100
+    );
 
-try:  
-    response = requests.post(  
-        url,  
-        headers=headers,  
-        json=payload,  
-        timeout=40  
-    )  
+    camera.position.set(0, 1.2, 5.5);
 
-    if response.status_code != 200:  
-        try:  
-            error_data = response.json()  
-            error_message = (  
-                error_data.get("error", {})  
-                .get("message", "حدث خطأ غير معروف.")  
-            )  
-        except Exception:  
-            error_message = response.text[:300]  
+    const renderer = new THREE.WebGLRenderer({{
+        alpha: true,
+        antialias: true
+    }});
 
-        return (  
-            "واجهت مشكلة في الاتصال بالذكاء الاصطناعي.\n\n"  
-            + str(error_message)  
-        )  
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
 
-    data = response.json()  
+    container.appendChild(renderer.domElement);
 
-    candidates = data.get("candidates", [])  
+    // إضاءة ناعمة
+    const hemi = new THREE.HemisphereLight(
+        0xffffff,
+        0xb7d9ff,
+        2.3
+    );
 
-    if not candidates:  
-        return "ما قدرت أجهز إجابة هذه المرة. جربي صياغة السؤال مرة ثانية."  
+    scene.add(hemi);
 
-    parts = candidates[0].get("content", {}).get("parts", [])  
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+    keyLight.position.set(3, 4, 5);
+    scene.add(keyLight);
 
-    answer = "\n".join(  
-        part.get("text", "")  
-        for part in parts  
-        if part.get("text")  
-    ).strip()  
+    const aquaLight = new THREE.PointLight(0x9afaff, 20, 12);
+    aquaLight.position.set(-3, 1, 2);
+    scene.add(aquaLight);
 
-    if not answer:  
-        return "وصلني سؤالك، لكن ما ظهر لي نص الإجابة. جربي مرة ثانية."  
+    // أرضية ضوئية
+    const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(1.5, 64),
+        new THREE.MeshBasicMaterial({
+            color: 0x8deaf1,
+            transparent: true,
+            opacity: 0.22
+        })
+    );
 
-    return answer  
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1.2;
+    scene.add(floor);
 
-except requests.Timeout:  
-    return "الاتصال أخذ وقتًا طويلًا. جربي مرة ثانية بعد قليل. 🩵"  
+    let character = null;
 
-except requests.RequestException:  
-    return "تعذر الاتصال بالإنترنت أو بخدمة ميكو. تحققي من الاتصال وجربي مجددًا."  
+    const modelBase64 = "{model_data}";
 
-except Exception as error:  
-    return f"حدث خطأ غير متوقع: {str(error)[:200]}"
+    if (modelBase64) {
 
-==========================================
+        const loader = new GLTFLoader();
 
-القائمة الجانبية
+        const binary = Uint8Array.from(
+            atob(modelBase64),
+            c => c.charCodeAt(0)
+        ).buffer;
 
-==========================================
+        loader.parse(binary, "", function(gltf) {
 
+            character = gltf.scene;
+
+            const box = new THREE.Box3().setFromObject(character);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            character.position.sub(center);
+
+            const maxSize = Math.max(size.x, size.y, size.z);
+
+            character.scale.setScalar(2.6 / maxSize);
+            character.position.y = -0.25;
+
+            scene.add(character);
+
+        }, function(error) {
+            console.log("Model loading error:", error);
+        });
+
+    } else {
+
+        // مجسّم مؤقت ثلاثي الأبعاد حتى نضيف ميكو
+        const orb = new THREE.Mesh(
+            new THREE.SphereGeometry(0.85, 48, 48),
+            new THREE.MeshPhysicalMaterial({
+                color: 0x78e7ef,
+                roughness: 0.2,
+                metalness: 0.1,
+                clearcoat: 1
+            })
+        );
+
+        orb.position.y = 0.1;
+        scene.add(orb);
+
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(1.15, 0.035, 12, 90),
+            new THREE.MeshBasicMaterial({
+                color: 0xc7aaff
+            })
+        );
+
+        ring.rotation.x = 1.15;
+        ring.position.y = 0.1;
+        scene.add(ring);
+
+        character = orb;
+    }
+
+    // حركة طفو خفيفة
+    let time = 0;
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        time += 0.012;
+
+        if (character) {
+            character.position.y += Math.sin(time) * 0.0018;
+            character.rotation.y = Math.sin(time * 0.6) * 0.14;
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // تغيير حجم المشهد مع الشاشة
+    window.addEventListener("resize", function() {
+
+        camera.aspect =
+            container.clientWidth / container.clientHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            container.clientWidth,
+            container.clientHeight
+        );
+
+    });
+
+    </script>
+    """
+
+    components.html(html, height=515, scrolling=False)
+
+
+# =========================
+# القائمة الجانبية
+# =========================
 with st.sidebar:
-st.markdown(
-"<div style='text-align:center;font-size:24px;font-weight:800;color:#54728f'>"
-"୨୧ Study with Miku ୨୧"
-"</div>",
-unsafe_allow_html=True
-)
-
-st.markdown("---")  
-
-pages = [  
-    "الرئيسية",  
-    "مهامي وواجباتي",  
-    "اسألي ميكو",  
-    "جلسة المذاكرة",  
-    "إنجازاتي"  
-]  
-
-selected_page = st.radio(  
-    "القائمة",  
-    pages,  
-    index=pages.index(st.session_state.page)  
-    if st.session_state.page in pages else 0  
-)  
-
-st.session_state.page = selected_page  
-
-st.markdown("---")  
-
-level, progress = level_info(st.session_state.xp)  
-
-st.markdown(  
-    f"""  
-    <div class="glass-card" style="text-align:center">  
-        <div style="font-size:30px">🌷</div>  
-        <b>مستواك الحالي</b>  
-        <h2 style="color:#6485aa">Level {level}</h2>  
-        <p>{st.session_state.xp} XP</p>  
-    </div>  
-    """,  
-    unsafe_allow_html=True  
-)  
-
-st.caption("ذاكري بهدوء، وكل خطوة تقربك من هدفك 🩵")
-
-==========================================
-
-الصفحة الرئيسية
-
-==========================================
-
-if st.session_state.page == "الرئيسية":
-
-st.markdown("""  
-<div class="hero-card">  
-    <div class="miku-title">أهلًا بكِ في Study with Miku ୨୧</div>  
-    <h3>رحلتك الدراسية تبدأ بخطوة صغيرة!</h3>  
-    <p>ذاكري معي، أنجزي مهامك، واجمعي النقاط يومًا بعد يوم.</p>  
-</div>  
-""", unsafe_allow_html=True)  
-
-st.write("")  
-
-col1, col2, col3 = st.columns(3)  
-
-pending = sum(  
-    1 for task in st.session_state.tasks  
-    if not task.get("done", False)  
-)  
-
-with col1:  
-    st.metric("المهام المتبقية", pending)  
-
-with col2:  
-    st.metric("النقاط المكتسبة", st.session_state.xp)  
-
-with col3:  
-    st.metric(  
-        "جلسات المذاكرة",  
-        st.session_state.completed_sessions  
-    )  
-
-st.write("")  
-
-left, right = st.columns([1.3, 1])  
-
-with left:  
-    st.markdown(  
-        '<div class="glass-card">'  
-        '<h3>✨ ابدئي إنجازاتك</h3>'  
-        '<p>رتبي واجباتك وحددي أول مهمة تريدين إنجازها.</p>'  
-        '</div>',  
-        unsafe_allow_html=True  
-    )  
-
-    if st.button("افتحي قائمة المهام", use_container_width=True):  
-        st.session_state.page = "مهامي وواجباتي"  
-        st.rerun()  
-
-    if st.button("ابدئي جلسة مذاكرة", use_container_width=True):  
-        st.session_state.page = "جلسة المذاكرة"  
-        st.rerun()  
-
-with right:  
-    st.markdown(  
-        '<div class="glass-card" style="text-align:center">'  
-        '<div style="font-size:48px">🎀</div>'  
-        '<h3>ميكو هنا لمساعدتك!</h3>'  
-        '<p>اسأليها عن أي درس أو سؤال دراسي.</p>'  
-        '</div>',  
-        unsafe_allow_html=True  
-    )  
-
-    if st.button("تحدثي مع ميكو", use_container_width=True):  
-        st.session_state.page = "اسألي ميكو"  
-        st.rerun()  
-
-st.markdown("### 📌 مهامك القادمة")  
-
-upcoming = [  
-    task for task in st.session_state.tasks  
-    if not task.get("done", False)  
-][:4]  
-
-if upcoming:  
-    for task in upcoming:  
-        st.markdown(  
-            f"""  
-            <div class="task-card">  
-                <b>{task['title']}</b>  
-                <div class="small-note">  
-                    {task['subject']} · {task['priority']}  
-                </div>  
-            </div>  
-            """,  
-            unsafe_allow_html=True  
-        )  
-else:  
-    st.info("لا توجد مهام معلقة حاليًا. أضيفي مهمة جديدة!")
-
-==========================================
-
-صفحة المهام والواجبات
-
-==========================================
-
-elif st.session_state.page == "مهامي وواجباتي":
-
-st.markdown("# 📚 مهامي وواجباتي")  
-st.caption("كل مهمة تنجزينها تمنحكِ 20 نقطة XP.")  
-
-with st.expander("＋ إضافة مهمة جديدة", expanded=True):  
-
-    with st.form("new_task_form", clear_on_submit=True):  
-
-        task_title = st.text_input(  
-            "اسم المهمة",  
-            placeholder="مثال: حل أسئلة الفيزياء"  
-        )  
-
-        task_subject = st.selectbox(  
-            "المادة",  
-            SUBJECTS  
-        )  
-
-        task_priority = st.selectbox(  
-            "الأولوية",  
-            ["عالية", "متوسطة", "منخفضة"]  
-        )  
-
-        task_date = st.date_input(  
-            "موعد التسليم",  
-            value=None  
-        )  
-
-        task_notes = st.text_area(  
-            "ملاحظات إضافية",  
-            placeholder="اكتبي أي تفاصيل..."  
-        )  
-
-        submitted = st.form_submit_button(  
-            "إضافة المهمة",  
-            use_container_width=True  
-        )  
-
-        if submitted:  
-            if task_title.strip():  
-                st.session_state.tasks.append({  
-                    "id": str(uuid.uuid4()),  
-                    "title": task_title.strip(),  
-                    "subject": task_subject,  
-                    "priority": task_priority,  
-                    "date": str(task_date) if task_date else "",  
-                    "notes": task_notes,  
-                    "done": False  
-                })  
-
-                st.success("تمت إضافة المهمة بنجاح! 🎀")  
-                st.rerun()  
-            else:  
-                st.warning("اكتبي اسم المهمة أولًا.")  
-
-st.markdown("### مهامك الحالية")  
-
-if not st.session_state.tasks:  
-    st.info("لم تضيفي أي مهمة بعد.")  
-
-for task in st.session_state.tasks:  
-
-    if task.get("done", False):  
-        continue  
-
-    with st.container():  
-        st.markdown(  
-            f"""  
-            <div class="task-card">  
-                <h4>{task['title']}</h4>  
-                <p class="small-note">  
-                    📘 {task['subject']} |  
-                    ⭐ الأولوية: {task['priority']}  
-                </p>  
-                <p class="small-note">  
-                    📅 {task.get('date') or 'لم يحدد موعد'}  
-                </p>  
-                <p>{task.get('notes', '')}</p>  
-            </div>  
-            """,  
-            unsafe_allow_html=True  
-        )  
-
-        col1, col2 = st.columns(2)  
-
-        with col1:  
-            if st.button(  
-                "✓ أنجزت المهمة +20 XP",  
-                key="done_" + task["id"],  
-                use_container_width=True  
-            ):  
-                task["done"] = True  
-                add_xp(20)  
-                st.session_state.completed_tasks += 1  
-                st.success("أحسنتِ! حصلتِ على 20 نقطة 🎉")  
-                st.rerun()  
-
-        with col2:  
-            if st.button(  
-                "حذف المهمة",  
-                key="delete_" + task["id"],  
-                use_container_width=True  
-            ):  
-                st.session_state.tasks = [  
-                    t for t in st.session_state.tasks  
-                    if t["id"] != task["id"]  
-                ]  
-                st.rerun()  
-
-st.markdown("---")  
-st.markdown("### 🌸 المهام المكتملة")  
-
-completed = [  
-    task for task in st.session_state.tasks  
-    if task.get("done", False)  
-]  
-
-if completed:  
-    for task in completed:  
-        st.markdown(  
-            f"""  
-            <div class="task-card">  
-                <s>{task['title']}</s>  
-                <span style="color:#65a99b"> ✓ مكتملة</span>  
-                <div class="small-note">{task['subject']}</div>  
-            </div>  
-            """,  
-            unsafe_allow_html=True  
-        )  
-else:  
-    st.caption("ستظهر مهامك المكتملة هنا.")
-
-==========================================
-
-صفحة المحادثة مع ميكو
-
-==========================================
-
-elif st.session_state.page == "اسألي ميكو":
-
-st.markdown("# 🎀 اسألي ميكو")  
-st.caption("مساعدتك الدراسية الذكية موجودة هنا.")  
-
-st.markdown(  
-    """  
-    <div class="hero-card">  
-        <h3>مرحبًا! أنا ميكو 🩵</h3>  
-        <p>أرسلي سؤالك، وسأساعدك على فهمه خطوة بخطوة.</p>  
-    </div>  
-    """,  
-    unsafe_allow_html=True  
-)  
-
-st.write("")  
-
-for message in st.session_state.chat_history:  
-
-    if message["role"] == "user":  
-        st.markdown(  
-            f'<div class="chat-user">🩵 <b>أنتِ</b><br>{message["text"]}</div>',  
-            unsafe_allow_html=True  
-        )  
-    elif message["role"] == "assistant":  
-        safe_text = (  
-            message["text"]  
-            .replace("&", "&amp;")  
-            .replace("<", "&lt;")  
-            .replace(">", "&gt;")  
-            .replace("\n", "<br>")  
-        )  
-
-        st.markdown(  
-            f'<div class="chat-miku">🎀 <b>ميكو</b><br>{safe_text}</div>',  
-            unsafe_allow_html=True  
-        )  
-
-with st.form("chat_form", clear_on_submit=True):  
-
-    user_question = st.text_area(  
-        "اكتبي رسالتك لميكو",  
-        placeholder="مثال: اشرحي لي قانون نيوتن الثالث...",  
-        height=100  
-    )  
-
-    send = st.form_submit_button(  
-        "إرسال إلى ميكو ✨",  
-        use_container_width=True  
-    )  
-
-    if send:  
-
-        if user_question.strip():  
-
-            question = user_question.strip()  
-
-            st.session_state.chat_history.append({  
-                "role": "user",  
-                "text": question  
-            })  
-
-            with st.spinner("ميكو تفكر في إجابتك... 🩵"):  
-                answer = ask_miku(question)  
-
-            st.session_state.chat_history.append({  
-                "role": "assistant",  
-                "text": answer  
-            })  
-
-            st.rerun()  
-
-        else:  
-            st.warning("اكتبي سؤالك أولًا.")  
-
-if st.button("مسح المحادثة"):  
-    st.session_state.chat_history = []  
-    st.rerun()
-
-==========================================
-
-المؤقت
-
-==========================================
-
-def finish_timer():
-st.session_state.timer_running = False
-st.session_state.timer_end = None
-st.session_state.timer_paused_remaining = None
-
-if st.session_state.timer_mode == "مذاكرة":  
-    st.session_state.completed_sessions += 1  
-    add_xp(10)
-
-def show_timer_panel():
-
-if st.session_state.timer_running:  
-
-    remaining = max(  
-        0,  
-        int(st.session_state.timer_end - time.time())  
-    )  
-
-    if remaining <= 0:  
-        finish_timer()  
-        st.success("انتهت الجلسة! أحسنتِ، حصلتِ على 10 نقاط XP 🎉")  
-        return  
-
-elif st.session_state.timer_paused_remaining is not None:  
-    remaining = st.session_state.timer_paused_remaining  
-
-else:  
-    remaining = st.session_state.timer_minutes * 60  
-
-minutes, seconds = divmod(remaining, 60)  
-
-st.markdown(  
-    f"""  
-    <div class="hero-card" style="text-align:center;padding:35px">  
-        <div style="font-size:35px">⏳</div>  
-        <h3>{st.session_state.timer_mode}</h3>  
-        <div style="  
-            font-size:65px;  
-            font-weight:800;  
-            color:#53799c;  
-            direction:ltr;  
-        ">{minutes:02d}:{seconds:02d}</div>  
-        <p>خذي وقتك وركزي على هدفك 🩵</p>  
-    </div>  
-    """,  
-    unsafe_allow_html=True  
-)  
-
-if st.session_state.timer_running:  
-    col1, col2 = st.columns(2)  
-
-    with col1:  
-        if st.button("إيقاف مؤقت", use_container_width=True):  
-            st.session_state.timer_paused_remaining = remaining  
-            st.session_state.timer_running = False  
-            st.session_state.timer_end = None  
-            st.rerun()  
-
-    with col2:  
-        if st.button("إنهاء الجلسة", use_container_width=True):  
-            st.session_state.timer_running = False  
-            st.session_state.timer_end = None  
-            st.session_state.timer_paused_remaining = None  
-            st.rerun()  
-
-elif st.session_state.timer_paused_remaining is not None:  
-
-    if st.button("استئناف الجلسة", use_container_width=True):  
-        st.session_state.timer_end = (  
-            time.time() + st.session_state.timer_paused_remaining  
-        )  
-        st.session_state.timer_running = True  
-        st.session_state.timer_paused_remaining = None  
-        st.rerun()  
-
-else:  
-
-    col1, col2 = st.columns(2)  
-
-    with col1:  
-        if st.button("ابدئي الآن ▶", use_container_width=True):  
-            st.session_state.timer_end = (  
-                time.time() + st.session_state.timer_minutes * 60  
-            )  
-            st.session_state.timer_running = True  
-            st.rerun()  
-
-    with col2:  
-        if st.button("إعادة ضبط", use_container_width=True):  
-            st.session_state.timer_paused_remaining = None  
+
+    st.markdown("## ୨୧ MIKU MENU 🩵")
+    st.caption("Your cute study world")
+
+    if st.button("🏠  الرئيسية", use_container_width=True):
+        go_to("home")
+
+    if st.button("📚  مهامي وواجباتي", use_container_width=True):
+        go_to("tasks")
+
+    if st.button("💬  اسألي ميكو", use_container_width=True):
+        go_to("chat")
+
+    if st.button("🏆  إنجازاتي", use_container_width=True):
+        go_to("achievements")
+
+    if st.button("🎀  تغيير شكل ميكو", use_container_width=True):
+        go_to("change_miku")
+
+    if st.button("⚙️  الإعدادات", use_container_width=True):
+        go_to("settings")
+
+    st.markdown("---")
+    st.caption("Made with ♡ in Miku World")
+
+
+# =========================
+# صفحة البداية
+# =========================
+if st.session_state.page == "welcome":
+
+    left, right = st.columns([1.05, 1.2], gap="large")
+
+    with left:
+
+        st.markdown('<div class="hero">', unsafe_allow_html=True)
+
+        st.markdown("# Welcome to Miku World ♡")
+
+        st.markdown("""
+        <p class="intro">
+        عالمك الصغير للدراسة والإنجاز والإبداع.<br>
+        كل خطوة تخطينها هنا تقرّبك من هدفك…<br>
+        وميكو معك في كل لحظة! 🩵
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Ready to begin your journey? ✦")
+
+        if st.button("✦  ENTER APP  ✦", use_container_width=True):
+            go_to("home")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🏆 Achievements", use_container_width=True):
+                go_to("achievements")
+
+        with col2:
+            if st.button("⚙️ Settings", use_container_width=True):
+                go_to("settings")
+
+        if st.button("୨୧ Change Miku", use_container_width=True):
+            go_to("change_miku")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        show_miku_3d()
+
+
+# =========================
+# الصفحة الرئيسية
+# =========================
+elif st.session_state.page == "home":
+
+    st.markdown("# أهلاً بكِ في عالم ميكو 🩵")
+
+    left, right = st.columns([1.05, 1.2], gap="large")
+
+    with left:
+
+        st.markdown("""
+        <div class="hero">
+        <h2>Ready to begin your journey? ♡</h2>
+        <p class="intro">
+        اختاري قسمك وابدئي خطوة صغيرة نحو إنجاز كبير.
+        </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        if st.button("📚 مهامي وواجباتي", use_container_width=True):
+            go_to("tasks")
+
+        if st.button("💬 اسألي ميكو", use_container_width=True):
+            go_to("chat")
+
+        if st.button("🏆 إنجازاتي", use_container_width=True):
+            go_to("achievements")
+
+    with right:
+        show_miku_3d()
+
+
+# =========================
+# المهام والواجبات
+# =========================
+elif st.session_state.page == "tasks":
+
+    st.markdown("# 📚 مهامي وواجباتي")
+
+    st.markdown("""
+    <div class="hero">
+    <h3>كل مهمة تخلصينها هي إنجاز جديد ✨</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    task_name = st.text_input("اسم المهمة")
+
+    subjects = [
+        "رياضيات متقدمة",
+        "رياضيات أساسية",
+        "فيزياء",
+        "كيمياء",
+        "أحياء",
+        "علوم بيئة",
+        "عربي",
+        "إنجليزي",
+        "فرنسي",
+        "تاريخ",
+        "جغرافيا",
+        "دراسات إسلامية",
+        "فنون",
+        "موسيقى",
+        "تقنية",
+        "رياضة"
+    ]
+
+    subject = st.selectbox("اختاري المادة", subjects)
+
+    if st.button("＋ إضافة المهمة", use_container_width=True):
+
+        if task_name.strip():
+
+            st.session_state.tasks.append({
+                "name": task_name.strip(),
+                "subject": subject,
+                "done": False
+            })
+
+            st.success("تمت إضافة المهمة 🩵")
             st.rerun()
 
-استخدام fragment لتحديث المؤقت دون إعادة تحميل التطبيق كله
+        else:
+            st.warning("اكتبي اسم المهمة أولًا.")
 
-if hasattr(st, "fragment"):
+    st.write("---")
+    st.markdown("### قائمة مهامي")
 
-@st.fragment(run_every="1s")  
-def live_timer():  
-    show_timer_panel()
+    if not st.session_state.tasks:
 
-else:
+        st.info("ما عندك مهام حاليًا، أضيفي أول مهمة!")
 
-def live_timer():  
-    show_timer_panel()  
-    st.caption(  
-        "إذا لم يتحدث المؤقت تلقائيًا، حدّثي الصفحة."  
-    )
+    else:
 
-==========================================
+        for i, task in enumerate(st.session_state.tasks):
 
-صفحة جلسة المذاكرة
+            checked = st.checkbox(
+                f"{task['subject']} — {task['name']}",
+                value=task["done"],
+                key=f"task_{i}"
+            )
 
-==========================================
+            if checked and not task["done"]:
 
-elif st.session_state.page == "جلسة المذاكرة":
+                task["done"] = True
+                st.session_state.xp += 25
+                st.success("أحسنتِ! حصلتِ على 25 XP 🩵")
 
-st.markdown("# ⏰ جلسة المذاكرة")  
-st.caption("قسمي وقتك بين التركيز والراحة.")  
+            elif not checked and task["done"]:
 
-if not st.session_state.timer_running and (  
-    st.session_state.timer_paused_remaining is None  
-):  
+                task["done"] = False
+                st.session_state.xp = max(
+                    0,
+                    st.session_state.xp - 25
+                )
 
-    mode = st.selectbox(  
-        "اختاري نوع الجلسة",  
-        ["مذاكرة", "استراحة"]  
-    )  
 
-    duration = st.selectbox(  
-        "مدة الجلسة بالدقائق",  
-        [10, 15, 20, 25, 30, 45, 50, 60, 90]  
-    )  
+# =========================
+# اسألي ميكو
+# =========================
+elif st.session_state.page == "chat":
 
-    if (  
-        mode != st.session_state.timer_mode  
-        or duration != st.session_state.timer_minutes  
-    ):  
-        st.session_state.timer_mode = mode  
-        st.session_state.timer_minutes = duration  
+    st.markdown("# 💬 اسألي ميكو")
 
-live_timer()  
+    st.markdown("""
+    <div class="hero">
+    <h3>ميكو هنا عشان تساعدك 🩵</h3>
+    <p class="intro">
+    قريبًا نربط المحادثة بالذكاء الاصطناعي،
+    عشان تسألين ميكو عن دروسك وواجباتك.
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("---")  
+    st.write("")
 
-st.markdown(  
-    f"""  
-    <div class="glass-card" style="text-align:center">  
-        <h3>🌷 إنجازات جلساتك</h3>  
-        <h2 style="color:#6789aa">  
-            {st.session_state.completed_sessions}  
-        </h2>  
-        <p>جلسة مذاكرة مكتملة</p>  
-    </div>  
-    """,  
-    unsafe_allow_html=True  
-)
+    for message in st.session_state.chat_history:
 
-==========================================
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
 
-صفحة الإنجازات
+    user_message = st.chat_input("اكتبي سؤالك لميكو...")
 
-==========================================
+    if user_message:
 
-elif st.session_state.page == "إنجازاتي":
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_message
+        })
 
-st.markdown("# 🏆 إنجازاتي")  
-st.caption("كل نقطة جمعتها دليل على تقدمك!")  
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": "وصلني سؤالك! ربط الذكاء الاصطناعي يحتاج إعداد مفتاح Gemini في Secrets."
+        })
 
-level, progress = level_info(st.session_state.xp)  
+        st.rerun()
 
-col1, col2, col3 = st.columns(3)  
 
-with col1:  
-    st.metric("مجموع XP", st.session_state.xp)  
+# =========================
+# الإنجازات
+# =========================
+elif st.session_state.page == "achievements":
 
-with col2:  
-    st.metric("المستوى", level)  
+    st.markdown("# 🏆 إنجازاتي")
 
-with col3:  
-    st.metric(  
-        "مهام مكتملة",  
-        st.session_state.completed_tasks  
-    )  
+    level = (st.session_state.xp // 100) + 1
 
-st.markdown("### تقدمك نحو المستوى التالي")  
+    st.markdown(f"""
+    <div class="hero">
+        <h2>كل إنجاز صغير يستحق الاحتفال ✨</h2>
+        <h3>⭐ Level {level}</h3>
+        <h3>🩵 XP: {st.session_state.xp}</h3>
+        <p class="intro">
+        استمري، كل مهمة تخلصينها تقرّبك من المستوى القادم!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.progress(progress / 100)  
+    st.progress((st.session_state.xp % 100) / 100)
 
-st.caption(f"{progress} / 100 XP")  
 
-st.markdown("---")  
-st.markdown("### 🎀 أوسمتك")  
+# =========================
+# تغيير شكل ميكو
+# =========================
+elif st.session_state.page == "change_miku":
 
-achievements = [  
-    (  
-        "🌱",  
-        "البداية الجميلة",  
-        st.session_state.xp >= 10  
-    ),  
-    (  
-        "📚",  
-        "أول إنجاز",  
-        st.session_state.completed_tasks >= 1  
-    ),  
-    (  
-        "⭐",  
-        "عشر مهام",  
-        st.session_state.completed_tasks >= 10  
-    ),  
-    (  
-        "⏰",  
-        "أول جلسة مذاكرة",  
-        st.session_state.completed_sessions >= 1  
-    ),  
-    (  
-        "💎",  
-        "مئة نقطة",  
-        st.session_state.xp >= 100  
-    ),  
-    (  
-        "👑",  
-        "خمسمئة نقطة",  
-        st.session_state.xp >= 500  
-    )  
-]  
+    st.markdown("# 🎀 تغيير شكل ميكو")
 
-for emoji, title, unlocked in achievements:  
+    st.markdown("""
+    <div class="hero">
+    <h2>اختاري الستايل اللي تحبينه ♡</h2>
+    <p class="intro">
+    سنضيف خيارات تغيير شكل ميكو بعد تجهيز ملفات الشخصيات.
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    if unlocked:  
-        st.success(f"{emoji} {title} — تم فتح الوسام!")  
-    else:  
-        st.markdown(  
-            f'<div class="task-card" style="opacity:.55">'  
-            f'{emoji} {title} — لم يفتح بعد'  
-            f'</div>',  
-            unsafe_allow_html=True  
-        )
+    show_miku_3d()
 
-==========================================
 
-التذييل
+# =========================
+# الإعدادات
+# =========================
+elif st.session_state.page == "settings":
 
-==========================================
+    st.markdown("# ⚙️ الإعدادات")
 
-st.markdown("---")
+    st.markdown("""
+    <div class="hero">
+    <h2>إعدادات Miku World 🩵</h2>
+    <p class="intro">
+    هنا نقدر نضيف إعدادات الحساب، الألوان،
+    وتخصيص واجهة التطبيق.
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown(
-"""
-<div style="text-align:center;color:#8294a8;padding:15px">
-୨୧ Made with love for your study journey ୨୧
-<br>
-Study with Miku 🩵
-</div>
-""",
-unsafe_allow_html=True
-)
+    st.write("")
+
+    if st.button("⬅ العودة إلى البداية", use_container_width=True):
+        go_to("welcome")
+
+
+# =========================
+# تذييل
+# =========================
+st.markdown("""
+<p class="small-note">
+୨୧ Miku World · Study with sparkle ♡
+</p>
+""", unsafe_allow_html=True)
