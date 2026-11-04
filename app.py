@@ -1,430 +1,655 @@
 
-import pygame
-import math
-import sys
+import streamlit as st
+from datetime import date
 
-# ==================================================
-# MIKU WORLD - PURE PYTHON / PYGAME
-# ==================================================
+# =========================================================
+# MIKU WORLD — PYTHON + STREAMLIT
+# =========================================================
 
-pygame.init()
+st.set_page_config(
+    page_title="Miku World",
+    page_icon="🩵",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-WIDTH, HEIGHT = 1100, 720
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Miku World")
+# =========================================================
+# SESSION DATA
+# =========================================================
 
-clock = pygame.time.Clock()
+defaults = {
+    "page": "welcome",
+    "tasks": [],
+    "xp": 0,
+    "chat_history": [],
+    "miku_style": "Original",
+    "sound": True,
+    "language": "العربية",
+    "theme": "Sky Blue",
+}
 
-# Fonts
-font = pygame.font.Font(None, 32)
-small_font = pygame.font.Font(None, 24)
-title_font = pygame.font.Font(None, 76)
-subtitle_font = pygame.font.Font(None, 30)
-
-# Colors
-WHITE = (255, 255, 255)
-AQUA = (20, 198, 216)
-DARK_AQUA = (0, 155, 180)
-LIGHT_AQUA = (125, 241, 245)
-LAVENDER = (210, 190, 255)
-PINK = (255, 150, 210)
-RED = (255, 105, 130)
-DARK_BLUE = (50, 95, 125)
-GRAY = (115, 135, 150)
-DARK_GRAY = (90, 110, 125)
-
-current_page = "welcome"
-
-# ==================================================
-# HELPERS
-# ==================================================
-
-def draw_text(text, font_obj, color, x, y, center=True):
-    image = font_obj.render(text, True, color)
-    rect = image.get_rect()
-
-    if center:
-        rect.center = (x, y)
-    else:
-        rect.topleft = (x, y)
-
-    screen.blit(image, rect)
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 
-def draw_background():
-    screen.fill(AQUA)
+def go(page):
+    st.session_state.page = page
 
-    # Diagonal stripes
-    for offset in range(-HEIGHT, WIDTH, 75):
-        pygame.draw.polygon(
-            screen,
-            DARK_AQUA,
-            [
-                (offset, 0),
-                (offset + 30, 0),
-                (offset + HEIGHT + 30, HEIGHT),
-                (offset + HEIGHT, HEIGHT)
-            ]
+
+# =========================================================
+# COLORS + STYLE
+# =========================================================
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
+
+.stApp {
+    background:
+        radial-gradient(ellipse at 80% 10%, #a4f4f5 0%, transparent 30%),
+        radial-gradient(ellipse at 10% 90%, #e8bfff 0%, transparent 35%),
+        repeating-linear-gradient(
+            135deg,
+            #18c5d6 0px,
+            #18c5d6 38px,
+            #0fb5ca 38px,
+            #0fb5ca 76px
+        );
+    font-family: 'Tajawal', sans-serif;
+}
+
+.block-container {
+    max-width: 1450px;
+    padding-top: 1.2rem;
+    padding-bottom: 2rem;
+}
+
+header, footer {
+    visibility: hidden;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Baloo 2', 'Tajawal', sans-serif !important;
+    color: #54728b !important;
+}
+
+p {
+    line-height: 1.8;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #e8fbff, #f4e5ff);
+    border-right: 3px solid #ffffff;
+}
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2 {
+    color: #54728b !important;
+}
+
+/* All buttons */
+div.stButton > button {
+    width: 100%;
+    min-height: 68px;
+
+    background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f8fdff 50%,
+        #e8f7fb 100%
+    );
+
+    color: #7c8995;
+    border: 3px solid #ffffff;
+    border-radius: 4px;
+
+    font-family: 'Baloo 2', 'Tajawal', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+
+    box-shadow:
+        0 7px 0 #91a9b7,
+        0 12px 22px rgba(30, 90, 120, .16),
+        inset 0 2px 0 #ffffff;
+
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
+
+    clip-path: polygon(
+        0 0,
+        93% 0,
+        100% 50%,
+        93% 100%,
+        0 100%,
+        3% 50%
+    );
+}
+
+/* Hover */
+div.stButton > button:hover {
+    transform: scale(1.035);
+
+    background: linear-gradient(
+        180deg,
+        #65f3f2,
+        #0acbd9
+    );
+
+    color: #ffffff;
+
+    border: 3px solid #ffffff;
+
+    box-shadow:
+        0 0 14px rgba(225, 255, 255, .9),
+        0 8px 0 #078a9b,
+        0 15px 25px rgba(0, 90, 120, .25);
+}
+
+/* Click */
+div.stButton > button:active {
+    transform: scale(.985) translateY(3px);
+}
+
+/* Cards */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,.96),
+        rgba(237,250,255,.90)
+    );
+
+    border: 2px solid #ffffff !important;
+    border-radius: 22px !important;
+
+    box-shadow:
+        0 8px 0 rgba(110, 175, 195, .45),
+        0 15px 30px rgba(30, 90, 120, .12);
+}
+
+/* Inputs */
+.stTextInput input,
+.stTextArea textarea,
+.stSelectbox div,
+.stDateInput input {
+    border-radius: 13px !important;
+}
+
+/* Chat messages */
+[data-testid="stChatMessage"] {
+    background: rgba(255,255,255,.90);
+    border: 2px solid #ffffff;
+    border-radius: 18px;
+}
+
+/* Progress */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #6ce9ef, #d4aaff);
+}
+
+/* Checkbox */
+.stCheckbox label {
+    color: #54728b !important;
+    font-weight: 700;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# =========================================================
+# COMMON HELPERS
+# =========================================================
+
+SUBJECTS = [
+    "رياضيات متقدمة",
+    "رياضيات أساسية",
+    "فيزياء",
+    "كيمياء",
+    "أحياء",
+    "علوم بيئة",
+    "عربي",
+    "إنجليزي",
+    "فرنسي",
+    "تاريخ",
+    "جغرافيا",
+    "دراسات إسلامية",
+    "فنون",
+    "موسيقى",
+    "تقنية",
+    "رياضة"
+]
+
+
+def title(text):
+    st.markdown(f"## ✦ {text} ✦")
+
+
+def footer():
+    st.markdown(
+        "୨୧ **MIKU WORLD ♡ STUDY WITH SPARKLE ✦**",
+        text_alignment="center"
+    )
+
+
+def back_button():
+    if st.button("◀  BACK TO MENU", use_container_width=True):
+        go("home")
+
+
+def empty_miku():
+    st.markdown("### ✧ MIKU'S SPACE ✧")
+
+    # مكان ميكو يبقى فارغًا حتى نضيف المجسم
+    st.container(border=True)
+
+
+def level():
+    return (st.session_state.xp // 100) + 1
+
+
+# =========================================================
+# SIDEBAR
+# =========================================================
+
+with st.sidebar:
+
+    st.markdown("# ୨୧ MIKU WORLD")
+    st.caption("Your little study universe 🩵")
+
+    st.divider()
+
+    if st.button("🏠  الرئيسية", use_container_width=True):
+        go("home")
+
+    if st.button("📚  مهامي وواجباتي", use_container_width=True):
+        go("tasks")
+
+    if st.button("💬  اسألي ميكو", use_container_width=True):
+        go("chat")
+
+    if st.button("🏆  إنجازاتي", use_container_width=True):
+        go("achievements")
+
+    if st.button("🎀  تغيير شكل ميكو", use_container_width=True):
+        go("customization")
+
+    if st.button("⚙️  الإعدادات", use_container_width=True):
+        go("settings")
+
+    st.divider()
+
+    st.markdown(f"### ⭐ Level {level()}")
+    st.markdown(f"### 🩵 {st.session_state.xp} XP")
+
+
+# =========================================================
+# WELCOME
+# =========================================================
+
+if st.session_state.page == "welcome":
+
+    left, right = st.columns([1.1, 1], gap="large")
+
+    with left:
+
+        st.markdown("# ✦ MIKU WORLD ✦")
+        st.markdown("### Your magical study adventure ♡")
+
+        with st.container(border=True):
+
+            st.markdown("## Welcome to Miku World ♡")
+
+            st.markdown("""
+            عالمك الصغير للدراسة والإنجاز والإبداع.
+
+            كل خطوة تخطينها هنا تقرّبك من هدفك،
+            وميكو معك في رحلتك! 🩵
+            """)
+
+            st.markdown("### Ready to begin your journey?")
+
+        st.write("")
+
+        if st.button("✦  ENTER APP  ✦", use_container_width=True):
+            go("home")
+
+        st.write("")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🏆 ACHIEVEMENTS", use_container_width=True):
+                go("achievements")
+
+        with col2:
+            if st.button("⚙️ SETTINGS", use_container_width=True):
+                go("settings")
+
+        if st.button("🎀 CHANGE MIKU", use_container_width=True):
+            go("customization")
+
+    with right:
+
+        empty_miku()
+
+    footer()
+
+
+# =========================================================
+# HOME
+# =========================================================
+
+elif st.session_state.page == "home":
+
+    left, right = st.columns([1.1, 1], gap="large")
+
+    with left:
+
+        st.markdown("# HELLO, STUDY STAR! ♡")
+        st.markdown("### ✦ Let's make today magical ✦")
+
+        with st.container(border=True):
+
+            st.markdown("## أهلًا بكِ في عالم ميكو 🩵")
+
+            st.write("""
+            اختاري القسم الذي تريدين الدخول إليه،
+            وابدئي رحلة جديدة من الإنجازات.
+            """)
+
+        st.write("")
+
+        if st.button("📚  MY TASKS  ➜", use_container_width=True):
+            go("tasks")
+
+        if st.button("💬  ASK MIKU  ➜", use_container_width=True):
+            go("chat")
+
+        if st.button("🏆  ACHIEVEMENTS  ➜", use_container_width=True):
+            go("achievements")
+
+        if st.button("🎀  CUSTOMIZATION  ➜", use_container_width=True):
+            go("customization")
+
+    with right:
+
+        empty_miku()
+
+    footer()
+
+
+# =========================================================
+# TASKS
+# =========================================================
+
+elif st.session_state.page == "tasks":
+
+    title("مهامي وواجباتي")
+
+    with st.container(border=True):
+
+        st.markdown("### ✨ كل مهمة تخلصينها هي إنجاز جديد!")
+
+        st.write("أضيفي واجباتك واختاري المادة وموعد التسليم.")
+
+    st.write("")
+
+    with st.form("task_form", clear_on_submit=True):
+
+        task_name = st.text_input("اسم المهمة")
+
+        subject = st.selectbox(
+            "المادة",
+            SUBJECTS
         )
 
-    # Soft decorative circles
-    pygame.draw.circle(screen, LIGHT_AQUA, (950, 100), 100, 3)
-    pygame.draw.circle(screen, LAVENDER, (100, 610), 85, 3)
-    pygame.draw.circle(screen, PINK, (990, 610), 50, 3)
-
-    # Sparkles
-    for x, y in [(180, 90), (900, 300), (800, 620), (300, 560)]:
-        pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 3)
-        pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 3)
-
-
-def draw_button(text, rect, mouse_pos, accent=AQUA):
-    hovered = rect.collidepoint(mouse_pos)
-
-    # Hover enlargement
-    if hovered:
-        scale = 1.035
-        draw_rect = pygame.Rect(
-            rect.centerx - int(rect.width * scale / 2),
-            rect.centery - int(rect.height * scale / 2),
-            int(rect.width * scale),
-            int(rect.height * scale)
+        due_date = st.date_input(
+            "موعد التسليم",
+            value=date.today()
         )
-    else:
-        draw_rect = rect.copy()
 
-    # Button shadow
-    shadow = draw_rect.move(0, 9)
-    pygame.draw.polygon(
-        screen,
-        (65, 130, 150),
-        [
-            (shadow.left, shadow.top),
-            (shadow.right - 28, shadow.top),
-            (shadow.right, shadow.centery),
-            (shadow.right - 28, shadow.bottom),
-            (shadow.left, shadow.bottom),
-            (shadow.left + 12, shadow.centery)
-        ]
-    )
+        submitted = st.form_submit_button(
+            "＋ إضافة المهمة 🩵",
+            use_container_width=True
+        )
 
-    # Button face
-    if hovered:
-        face_color = accent
-        text_color = WHITE
-    else:
-        face_color = (247, 253, 255)
-        text_color = GRAY
+        if submitted:
 
-    pygame.draw.polygon(
-        screen,
-        face_color,
-        [
-            (draw_rect.left, draw_rect.top),
-            (draw_rect.right - 28, draw_rect.top),
-            (draw_rect.right, draw_rect.centery),
-            (draw_rect.right - 28, draw_rect.bottom),
-            (draw_rect.left, draw_rect.bottom),
-            (draw_rect.left + 12, draw_rect.centery)
-        ]
-    )
+            if task_name.strip():
 
-    # White border
-    pygame.draw.polygon(
-        screen,
-        WHITE,
-        [
-            (draw_rect.left, draw_rect.top),
-            (draw_rect.right - 28, draw_rect.top),
-            (draw_rect.right, draw_rect.centery),
-            (draw_rect.right - 28, draw_rect.bottom),
-            (draw_rect.left, draw_rect.bottom),
-            (draw_rect.left + 12, draw_rect.centery)
-        ],
-        3
-    )
+                st.session_state.tasks.append({
+                    "name": task_name.strip(),
+                    "subject": subject,
+                    "due": str(due_date),
+                    "done": False
+                })
 
-    # Arrow in its own separate area
-    arrow_x = draw_rect.right - 42
-    arrow_y = draw_rect.centery
+                st.success("تمت إضافة المهمة! 🩵")
+                st.rerun()
 
-    pygame.draw.polygon(
-        screen,
-        text_color,
-        [
-            (arrow_x - 7, arrow_y - 12),
-            (arrow_x + 7, arrow_y),
-            (arrow_x - 7, arrow_y + 12)
-        ]
-    )
+            else:
 
-    # Button text
-    text_image = font.render(text, True, text_color)
-    text_rect = text_image.get_rect(
-        center=(draw_rect.centerx - 10, draw_rect.centery)
-    )
+                st.warning("اكتبي اسم المهمة أولًا.")
 
-    screen.blit(text_image, text_rect)
+    st.divider()
 
-    return hovered
+    title("قائمة المهام")
 
+    if not st.session_state.tasks:
 
-def draw_empty_miku_area():
-    # Empty stage for Miku's future model
-    stage = pygame.Rect(690, 100, 350, 500)
-
-    pygame.draw.rect(
-        screen,
-        (80, 220, 235),
-        stage,
-        border_radius=35
-    )
-
-    pygame.draw.rect(
-        screen,
-        WHITE,
-        stage,
-        width=3,
-        border_radius=35
-    )
-
-    # Decorative stars only - no character
-    for x, y in [(760, 170), (950, 220), (850, 500)]:
-        pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 3)
-        pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 3)
-
-
-def draw_footer():
-    draw_text(
-        "MIKU WORLD  -  STUDY WITH SPARKLE",
-        small_font,
-        WHITE,
-        WIDTH // 2,
-        HEIGHT - 28
-    )
-
-
-def draw_page_title(title):
-    draw_text(title, title_font, WHITE, WIDTH // 2, 90)
-
-
-def draw_back_button(mouse_pos):
-    rect = pygame.Rect(35, HEIGHT - 90, 240, 55)
-
-    draw_button("BACK TO MENU", rect, mouse_pos, PINK)
-
-    return rect
-
-
-# ==================================================
-# WELCOME PAGE
-# ==================================================
-
-def draw_welcome(mouse_pos):
-    draw_background()
-
-    draw_text("MIKU WORLD", title_font, WHITE, 350, 105)
-    draw_text(
-        "YOUR MAGICAL STUDY ADVENTURE",
-        subtitle_font,
-        WHITE,
-        350,
-        165
-    )
-
-    # Welcome panel
-    panel = pygame.Rect(100, 205, 510, 125)
-
-    pygame.draw.rect(
-        screen,
-        (245, 253, 255),
-        panel,
-        border_radius=22
-    )
-
-    pygame.draw.rect(
-        screen,
-        WHITE,
-        panel,
-        width=3,
-        border_radius=22
-    )
-
-    draw_text(
-        "Welcome to Miku World!",
-        font,
-        DARK_BLUE,
-        panel.centerx,
-        panel.y + 35
-    )
-
-    draw_text(
-        "Ready to begin your journey?",
-        small_font,
-        GRAY,
-        panel.centerx,
-        panel.y + 82
-    )
-
-    # Menu buttons - separate buttons, separate arrows
-    buttons = [
-        ("ENTER APP", pygame.Rect(100, 365, 510, 75), AQUA),
-        ("ACHIEVEMENTS", pygame.Rect(100, 465, 245, 70), PINK),
-        ("SETTINGS", pygame.Rect(365, 465, 245, 70), LAVENDER),
-        ("CHANGE MIKU", pygame.Rect(100, 555, 510, 70), RED),
-    ]
-
-    for text, rect, color in buttons:
-        draw_button(text, rect, mouse_pos, color)
-
-    draw_empty_miku_area()
-    draw_footer()
-
-    return buttons
-
-
-# ==================================================
-# HOME PAGE
-# ==================================================
-
-def draw_home(mouse_pos):
-    draw_background()
-
-    draw_text("HELLO, STUDY STAR!", title_font, WHITE, WIDTH // 2, 100)
-    draw_text(
-        "Choose your next adventure",
-        subtitle_font,
-        WHITE,
-        WIDTH // 2,
-        155
-    )
-
-    buttons = [
-        ("MY TASKS", pygame.Rect(100, 240, 400, 70), AQUA),
-        ("ASK MIKU", pygame.Rect(100, 330, 400, 70), PINK),
-        ("ACHIEVEMENTS", pygame.Rect(100, 420, 400, 70), LAVENDER),
-        ("CUSTOMIZATION", pygame.Rect(100, 510, 400, 70), RED),
-    ]
-
-    for text, rect, color in buttons:
-        draw_button(text, rect, mouse_pos, color)
-
-    draw_empty_miku_area()
-    draw_footer()
-
-    return buttons
-
-
-# ==================================================
-# SIMPLE CONTENT PAGES
-# ==================================================
-
-def draw_content_page(page_name, mouse_pos):
-    draw_background()
-    draw_page_title(page_name)
-
-    panel = pygame.Rect(170, 200, 760, 300)
-
-    pygame.draw.rect(
-        screen,
-        (245, 253, 255),
-        panel,
-        border_radius=30
-    )
-
-    pygame.draw.rect(
-        screen,
-        WHITE,
-        panel,
-        width=3,
-        border_radius=30
-    )
-
-    draw_text(
-        page_name,
-        title_font,
-        DARK_BLUE,
-        panel.centerx,
-        panel.y + 85
-    )
-
-    draw_text(
-        "This section is ready for your content!",
-        small_font,
-        GRAY,
-        panel.centerx,
-        panel.y + 165
-    )
-
-    back_rect = draw_back_button(mouse_pos)
-    draw_footer()
-
-    return [("BACK", back_rect, PINK)]
-
-
-# ==================================================
-# MAIN LOOP
-# ==================================================
-
-running = True
-
-while running:
-
-    mouse_pos = pygame.mouse.get_pos()
-    clicked = False
-
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                clicked = True
-
-    # Draw current page
-    if current_page == "welcome":
-        buttons = draw_welcome(mouse_pos)
-
-    elif current_page == "home":
-        buttons = draw_home(mouse_pos)
+        st.info("ما عندك مهام حاليًا. أضيفي أول مهمة!")
 
     else:
-        buttons = draw_content_page(current_page, mouse_pos)
 
-    # Handle clicks
-    if clicked:
+        for i, task in enumerate(st.session_state.tasks):
 
-        for text, rect, color in buttons:
+            with st.container(border=True):
 
-            if rect.collidepoint(mouse_pos):
+                st.markdown(f"### 📘 {task['subject']}")
+                st.write(task["name"])
+                st.caption(f"📅 موعد التسليم: {task['due']}")
 
-                if text == "ENTER APP":
-                    current_page = "home"
+                checked = st.checkbox(
+                    "تم الإنجاز ✨",
+                    value=task["done"],
+                    key=f"task_done_{i}"
+                )
 
-                elif text == "ACHIEVEMENTS":
-                    current_page = "ACHIEVEMENTS"
+                if checked and not task["done"]:
 
-                elif text == "SETTINGS":
-                    current_page = "SETTINGS"
+                    task["done"] = True
+                    st.session_state.xp += 25
 
-                elif text == "CHANGE MIKU":
-                    current_page = "CHANGE MIKU"
+                    st.success("أحسنتِ! حصلتِ على 25 XP 🩵")
+                    st.rerun()
 
-                elif text == "MY TASKS":
-                    current_page = "MY TASKS"
+                elif not checked and task["done"]:
 
-                elif text == "ASK MIKU":
-                    current_page = "ASK MIKU"
+                    task["done"] = False
+                    st.session_state.xp = max(
+                        0,
+                        st.session_state.xp - 25
+                    )
 
-                elif text == "CUSTOMIZATION":
-                    current_page = "CUSTOMIZATION"
+                    st.rerun()
 
-                elif text == "BACK":
-                    current_page = "home"
+                if st.button("🗑 حذف المهمة", key=f"delete_{i}"):
 
-    pygame.display.flip()
-    clock.tick(60)
+                    if task["done"]:
+                        st.session_state.xp = max(
+                            0,
+                            st.session_state.xp - 25
+                        )
 
-pygame.quit()
-sys.exit()
+                    st.session_state.tasks.pop(i)
+                    st.rerun()
+
+    back_button()
+    footer()
+
+
+# =========================================================
+# ASK MIKU
+# =========================================================
+
+elif st.session_state.page == "chat":
+
+    title("اسألي ميكو")
+
+    with st.container(border=True):
+
+        st.markdown("## ميكو هنا لمساعدتك! 🩵")
+
+        st.write("""
+        اكتبي سؤالك الدراسي أو ما تريدين فهمه.
+        """)
+
+    st.write("")
+
+    for message in st.session_state.chat_history:
+
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
+
+    user_message = st.chat_input("اكتبي رسالتك إلى ميكو...")
+
+    if user_message:
+
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_message
+        })
+
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": (
+                "وصلني سؤالك! 🩵 "
+                "سنربط ميكو بالذكاء الاصطناعي في الخطوة التالية."
+            )
+        })
+
+        st.rerun()
+
+    if st.button("🗑 مسح المحادثة"):
+
+        st.session_state.chat_history = []
+        st.rerun()
+
+    back_button()
+    footer()
+
+
+# =========================================================
+# ACHIEVEMENTS
+# =========================================================
+
+elif st.session_state.page == "achievements":
+
+    title("إنجازاتي")
+
+    with st.container(border=True):
+
+        st.markdown("## You're doing amazing! ♡")
+
+        st.markdown(f"# ⭐ LEVEL {level()}")
+
+        st.markdown(f"## 🩵 {st.session_state.xp} XP")
+
+        st.write("استمري، كل خطوة صغيرة تصنع فرقًا كبيرًا.")
+
+    st.write("")
+
+    progress = (st.session_state.xp % 100) / 100
+
+    st.progress(progress)
+
+    st.caption(
+        f"باقي {100 - (st.session_state.xp % 100)} XP للمستوى القادم!"
+    )
+
+    completed = sum(
+        1 for task in st.session_state.tasks
+        if task["done"]
+    )
+
+    total = len(st.session_state.tasks)
+
+    with st.container(border=True):
+
+        st.markdown("### 📚 المهام المكتملة")
+
+        st.markdown(f"# {completed} / {total}")
+
+    back_button()
+    footer()
+
+
+# =========================================================
+# CUSTOMIZATION
+# =========================================================
+
+elif st.session_state.page == "customization":
+
+    title("تغيير شكل ميكو")
+
+    with st.container(border=True):
+
+        st.markdown("## اختاري الستايل الذي تحبينه ♡")
+
+        st.write("""
+        مساحة ميكو جاهزة لإضافة المجسم ثلاثي الأبعاد لاحقًا.
+        """)
+
+    st.selectbox(
+        "Miku Style",
+        ["Original", "Cute", "Crystal", "Baby Pink"],
+        key="miku_style"
+    )
+
+    empty_miku()
+
+    back_button()
+    footer()
+
+
+# =========================================================
+# SETTINGS
+# =========================================================
+
+elif st.session_state.page == "settings":
+
+    title("الإعدادات")
+
+    with st.container(border=True):
+
+        st.markdown("## Customize your world ♡")
+
+        st.write("خصّصي تجربتك في عالم ميكو.")
+
+    st.checkbox(
+        "تفعيل المؤثرات الصوتية",
+        key="sound"
+    )
+
+    st.selectbox(
+        "لغة التطبيق",
+        ["العربية", "English"],
+        key="language"
+    )
+
+    st.selectbox(
+        "لون الواجهة",
+        ["Sky Blue", "Lavender", "Baby Pink"],
+        key="theme"
+    )
+
+    if st.button("↩ العودة إلى صفحة البداية",
+                 use_container_width=True):
+
+        go("welcome")
+
+    footer()
