@@ -1,11 +1,12 @@
-import streamlit as st
-import streamlit.components.v1 as components
-from pathlib import Path
-import base64
 
-# =========================
-# إعدادات التطبيق
-# =========================
+import streamlit as st
+from datetime import datetime
+
+# ==========================================================
+# MIKU WORLD | Study with Miku
+# A cute anime-style study dashboard
+# ==========================================================
+
 st.set_page_config(
     page_title="Miku World",
     page_icon="🩵",
@@ -13,22 +14,43 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# مجسّم ميكو، نضيفه لاحقًا داخل مجلد assets
-MODEL_PATH = Path("assets/miku.glb")
+# ==========================================================
+# SESSION STATE
+# ==========================================================
 
-# =========================
-# التصميم العام
-# =========================
+defaults = {
+    "page": "welcome",
+    "tasks": [],
+    "xp": 0,
+    "chat_history": [],
+    "miku_style": "Original",
+    "sound": True,
+}
+
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+
+def navigate(page):
+    st.session_state.page = page
+
+
+# ==========================================================
+# CSS DESIGN
+# ==========================================================
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Tajawal:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --aqua: #68e7e9;
-    --sky: #d9f7ff;
-    --lavender: #ded4ff;
-    --pink: #ffd8ed;
-    --dark: #285477;
+    --aqua: #11d5df;
+    --deep-aqua: #00b6c9;
+    --white: #ffffff;
+    --soft-blue: #e8fbff;
+    --lavender: #e8dcff;
+    --dark: #45677e;
 }
 
 html, body, [class*="css"] {
@@ -37,15 +59,23 @@ html, body, [class*="css"] {
 
 .stApp {
     background:
-        radial-gradient(ellipse at 78% 15%, #d9fbff 0%, transparent 36%),
-        radial-gradient(ellipse at 12% 82%, #e8ddff 0%, transparent 42%),
-        linear-gradient(135deg, #f8fdff, #e5f8ff 55%, #f5edff);
+        radial-gradient(ellipse at 80% 15%,
+            rgba(220,255,255,.55), transparent 35%),
+        radial-gradient(ellipse at 15% 80%,
+            rgba(225,210,255,.35), transparent 40%),
+        repeating-linear-gradient(
+            135deg,
+            #16c5d6 0px,
+            #16c5d6 42px,
+            #10b8cd 42px,
+            #10b8cd 84px
+        );
     color: var(--dark);
 }
 
 .block-container {
-    max-width: 1400px;
-    padding-top: 1.2rem;
+    max-width: 1450px;
+    padding-top: 1.1rem;
     padding-bottom: 2rem;
 }
 
@@ -53,475 +83,553 @@ header, footer {
     visibility: hidden;
 }
 
-h1, h2, h3 {
-    color: #285477 !important;
+h1, h2, h3, h4 {
     font-family: 'Baloo 2', 'Tajawal', sans-serif !important;
+    color: #45677e !important;
 }
 
-.hero {
-    background: linear-gradient(
-        145deg,
-        rgba(255,255,255,.94),
-        rgba(220,247,255,.78)
-    );
-    border: 2px solid rgba(255,255,255,.9);
-    border-radius: 30px;
-    padding: 26px;
-    box-shadow:
-        0 18px 40px rgba(96,168,203,.18),
-        inset 0 2px 0 white;
-}
-
-.intro {
-    color: #557b98;
-    font-size: 1.12rem;
-    line-height: 2;
-}
-
-div.stButton > button {
-    border: 1px solid white;
-    border-radius: 18px;
-    min-height: 3.2rem;
-    background: linear-gradient(145deg, #ffffff, #d9f8ff);
-    color: #285477;
-    font-weight: 800;
-    box-shadow:
-        0 7px 0 #b5e0ed,
-        0 12px 22px rgba(75,155,195,.15);
-    transition: all .18s ease;
-}
-
-div.stButton > button:hover {
-    transform: translateY(-3px);
-    background: linear-gradient(145deg, #e7ffff, #d7eaff);
-    color: #285477;
-    box-shadow:
-        0 10px 0 #b5e0ed,
-        0 15px 25px rgba(75,155,195,.2);
-}
-
-div.stButton > button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px 0 #b5e0ed;
+p {
+    line-height: 1.8;
 }
 
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #e3faff, #eee7ff);
-    border-right: 1px solid white;
+    background: linear-gradient(180deg, #e8fbff, #e8ddff);
+    border-right: 3px solid rgba(255,255,255,.7);
 }
 
-[data-testid="stSidebar"] button {
-    border-radius: 15px;
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2 {
+    color: #50728c !important;
 }
 
-.stTextInput input,
-.stSelectbox div,
-.stTextArea textarea {
-    border-radius: 15px !important;
+/* ===================== */
+/* GAME MENU BUTTONS     */
+/* ===================== */
+
+div.stButton > button {
+    width: 100%;
+    min-height: 70px;
+
+    background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f6fcff 48%,
+        #e5f5fa 100%
+    );
+
+    color: #7a8794;
+    border: 3px solid #ffffff;
+    border-radius: 5px;
+
+    font-family: 'Baloo 2', 'Tajawal', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+
+    box-shadow:
+        0 7px 0 #9aabb7,
+        0 12px 20px rgba(30,90,120,.16),
+        inset 0 2px 0 #ffffff;
+
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
+
+    clip-path: polygon(
+        0 0,
+        94% 0,
+        100% 50%,
+        94% 100%,
+        0 100%,
+        3% 50%
+    );
 }
 
-.small-note {
-    color: #7899b0;
-    text-align: center;
-    font-size: .9rem;
+/* Hover animation */
+div.stButton > button:hover {
+    transform: scale(1.035);
+
+    background: linear-gradient(
+        180deg,
+        #62f4f2,
+        #08cbd8
+    );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 0 12px rgba(220,255,255,.9),
+        0 8px 0 #07899b,
+        0 15px 25px rgba(0,90,120,.25);
+
+    border-color: #ffffff;
+}
+
+/* Button press */
+div.stButton > button:active {
+    transform: scale(.985) translateY(3px);
+
+    box-shadow:
+        0 3px 0 #07899b,
+        0 5px 12px rgba(0,90,120,.2);
+}
+
+/* General cards */
+.glass-card {
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,.96),
+        rgba(235,250,255,.88)
+    );
+
+    border: 3px solid rgba(255,255,255,.95);
+    border-radius: 24px;
+
+    padding: 25px;
+
+    box-shadow:
+        0 12px 0 rgba(105,174,197,.45),
+        0 20px 35px rgba(35,100,130,.15),
+        inset 0 2px 0 #ffffff;
+}
+
+/* Main title */
+.game-title {
+    color: #ffffff;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+
+    text-shadow:
+        0 4px 0 #0a98b5,
+        0 8px 15px rgba(0,75,100,.25);
+}
+
+/* Subtitle */
+.game-subtitle {
+    color: #eaffff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,90,120,.2);
+}
+
+/* Empty character stage */
+.miku-stage {
+    height: 560px;
+    width: 100%;
+
+    position: relative;
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background:
+        radial-gradient(
+            circle at 50% 55%,
+            rgba(255,255,255,.35),
+            transparent 55%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(235,255,255,.22),
+            rgba(230,220,255,.18)
+        );
+
+    border: 3px solid rgba(255,255,255,.4);
+
+    box-shadow:
+        inset 0 0 35px rgba(255,255,255,.15),
+        0 15px 35px rgba(0,90,120,.12);
+}
+
+/* Soft decorative stars */
+.star-decoration {
+    color: #ffffff;
+    font-size: 2rem;
+    opacity: .75;
+}
+
+/* Section header */
+.section-heading {
+    background: linear-gradient(180deg, #ffffff, #e7f8ff);
+    border: 3px solid #ffffff;
+    border-radius: 16px;
+
+    padding: 15px 22px;
+
+    color: #638097;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1.65rem;
+
+    box-shadow:
+        0 6px 0 #9aabb7,
+        0 10px 20px rgba(0,80,120,.12);
+}
+
+/* Small footer */
+.miku-footer {
     margin-top: 25px;
+    padding: 12px;
+
+    text-align: center;
+
+    color: #ffffff;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+
+    text-shadow: 0 2px 5px rgba(0,80,120,.2);
 }
 
-.sparkle {
-    color: #83dfe8;
-    font-size: 1.3rem;
+/* Inputs */
+.stTextInput input,
+.stTextArea textarea,
+.stSelectbox div,
+.stNumberInput input {
+    border-radius: 14px !important;
+}
+
+/* Chat messages */
+[data-testid="stChatMessage"] {
+    background: rgba(255,255,255,.88);
+    border: 2px solid white;
+    border-radius: 20px;
+}
+
+/* Progress bar */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #76e9ee, #c7aaff);
+}
+
+/* Hide Streamlit branding */
+#MainMenu {
+    visibility: hidden;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
-# =========================
-# حفظ الصفحات
-# =========================
-if "page" not in st.session_state:
-    st.session_state.page = "welcome"
+# ==========================================================
+# SUBJECTS
+# ==========================================================
 
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
+SUBJECTS = [
+    "رياضيات متقدمة",
+    "رياضيات أساسية",
+    "فيزياء",
+    "كيمياء",
+    "أحياء",
+    "علوم بيئة",
+    "عربي",
+    "إنجليزي",
+    "فرنسي",
+    "تاريخ",
+    "جغرافيا",
+    "دراسات إسلامية",
+    "فنون",
+    "موسيقى",
+    "تقنية",
+    "رياضة"
+]
 
-if "xp" not in st.session_state:
-    st.session_state.xp = 0
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# ==========================================================
+# COMMON COMPONENTS
+# ==========================================================
 
-
-def go_to(page):
-    st.session_state.page = page
-
-
-# =========================
-# مجسّم ميكو ثلاثي الأبعاد
-# =========================
-def show_miku_3d():
-
-    model_data = ""
-
-    if MODEL_PATH.exists():
-        model_data = base64.b64encode(
-            MODEL_PATH.read_bytes()
-        ).decode("utf-8")
-
-    html = f"""
-    <div id="miku-scene"
-         style="
-            width:100%;
-            height:500px;
-            border-radius:30px;
-            overflow:hidden;
-            background:
-              radial-gradient(ellipse at 50% 75%,
-                rgba(100,230,240,.35),
-                transparent 45%),
-              linear-gradient(145deg,#e7fbff,#e9e1ff);
-         ">
-    </div>
-
-    <script type="importmap">
-    {{
-      "imports": {{
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }}
-    }}
-    </script>
-
-    <script type="module">
-    import * as THREE from 'three';
-    import {{ GLTFLoader }} from 'three/addons/loaders/GLTFLoader.js';
-
-    const container = document.getElementById('miku-scene');
-
-    const scene = new THREE.Scene();
-
-    const camera = new THREE.PerspectiveCamera(
-        35,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        100
-    );
-
-    camera.position.set(0, 1.2, 5.5);
-
-    const renderer = new THREE.WebGLRenderer({{
-        alpha: true,
-        antialias: true
-    }});
-
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-
-    container.appendChild(renderer.domElement);
-
-    // إضاءة ناعمة
-    const hemi = new THREE.HemisphereLight(
-        0xffffff,
-        0xb7d9ff,
-        2.3
-    );
-
-    scene.add(hemi);
-
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3);
-    keyLight.position.set(3, 4, 5);
-    scene.add(keyLight);
-
-    const aquaLight = new THREE.PointLight(0x9afaff, 20, 12);
-    aquaLight.position.set(-3, 1, 2);
-    scene.add(aquaLight);
-
-    // أرضية ضوئية
-    const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(1.5, 64),
-        new THREE.MeshBasicMaterial({
-            color: 0x8deaf1,
-            transparent: true,
-            opacity: 0.22
-        })
-    );
-
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -1.2;
-    scene.add(floor);
-
-    let character = null;
-
-    const modelBase64 = "{model_data}";
-
-    if (modelBase64) {
-
-        const loader = new GLTFLoader();
-
-        const binary = Uint8Array.from(
-            atob(modelBase64),
-            c => c.charCodeAt(0)
-        ).buffer;
-
-        loader.parse(binary, "", function(gltf) {
-
-            character = gltf.scene;
-
-            const box = new THREE.Box3().setFromObject(character);
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-
-            character.position.sub(center);
-
-            const maxSize = Math.max(size.x, size.y, size.z);
-
-            character.scale.setScalar(2.6 / maxSize);
-            character.position.y = -0.25;
-
-            scene.add(character);
-
-        }, function(error) {
-            console.log("Model loading error:", error);
-        });
-
-    } else {
-
-        // مجسّم مؤقت ثلاثي الأبعاد حتى نضيف ميكو
-        const orb = new THREE.Mesh(
-            new THREE.SphereGeometry(0.85, 48, 48),
-            new THREE.MeshPhysicalMaterial({
-                color: 0x78e7ef,
-                roughness: 0.2,
-                metalness: 0.1,
-                clearcoat: 1
-            })
-        );
-
-        orb.position.y = 0.1;
-        scene.add(orb);
-
-        const ring = new THREE.Mesh(
-            new THREE.TorusGeometry(1.15, 0.035, 12, 90),
-            new THREE.MeshBasicMaterial({
-                color: 0xc7aaff
-            })
-        );
-
-        ring.rotation.x = 1.15;
-        ring.position.y = 0.1;
-        scene.add(ring);
-
-        character = orb;
-    }
-
-    // حركة طفو خفيفة
-    let time = 0;
-
-    function animate() {
-
-        requestAnimationFrame(animate);
-
-        time += 0.012;
-
-        if (character) {
-            character.position.y += Math.sin(time) * 0.0018;
-            character.rotation.y = Math.sin(time * 0.6) * 0.14;
-        }
-
-        renderer.render(scene, camera);
-    }
-
-    animate();
-
-    // تغيير حجم المشهد مع الشاشة
-    window.addEventListener("resize", function() {
-
-        camera.aspect =
-            container.clientWidth / container.clientHeight;
-
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(
-            container.clientWidth,
-            container.clientHeight
-        );
-
-    });
-
-    </script>
+def show_empty_miku():
+    """
+    Empty character area.
+    Miku's 3D model can be added here later.
     """
 
-    components.html(html, height=515, scrolling=False)
+    st.markdown("""
+    <div class="miku-stage">
+        <div style="
+            position:absolute;
+            top:25px;
+            left:35px;
+            color:white;
+            font-size:28px;
+            opacity:.7;">
+            ✦
+        </div>
+
+        <div style="
+            position:absolute;
+            bottom:35px;
+            right:35px;
+            color:white;
+            font-size:32px;
+            opacity:.7;">
+            ♡
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# =========================
-# القائمة الجانبية
-# =========================
+def show_footer():
+    st.markdown("""
+    <div class="miku-footer">
+        ୨୧ MIKU WORLD ♡ STUDY WITH SPARKLE ✦
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def show_back_button():
+    if st.button("⬅ العودة إلى القائمة الرئيسية",
+                 use_container_width=True):
+        navigate("home")
+
+
+# ==========================================================
+# SIDEBAR NAVIGATION
+# ==========================================================
+
 with st.sidebar:
 
-    st.markdown("## ୨୧ MIKU MENU 🩵")
-    st.caption("Your cute study world")
-
-    if st.button("🏠  الرئيسية", use_container_width=True):
-        go_to("home")
-
-    if st.button("📚  مهامي وواجباتي", use_container_width=True):
-        go_to("tasks")
-
-    if st.button("💬  اسألي ميكو", use_container_width=True):
-        go_to("chat")
-
-    if st.button("🏆  إنجازاتي", use_container_width=True):
-        go_to("achievements")
-
-    if st.button("🎀  تغيير شكل ميكو", use_container_width=True):
-        go_to("change_miku")
-
-    if st.button("⚙️  الإعدادات", use_container_width=True):
-        go_to("settings")
+    st.markdown("""
+    <div style="text-align:center;">
+        <h1>୨୧ MIKU WORLD</h1>
+        <p style="color:#7898b1;">
+            Your little study universe 🩵
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.caption("Made with ♡ in Miku World")
+
+    if st.button("🏠  الرئيسية", use_container_width=True):
+        navigate("home")
+
+    if st.button("📚  مهامي وواجباتي", use_container_width=True):
+        navigate("tasks")
+
+    if st.button("💬  اسألي ميكو", use_container_width=True):
+        navigate("chat")
+
+    if st.button("🏆  إنجازاتي", use_container_width=True):
+        navigate("achievements")
+
+    if st.button("🎀  تغيير شكل ميكو", use_container_width=True):
+        navigate("change_miku")
+
+    if st.button("⚙️  الإعدادات", use_container_width=True):
+        navigate("settings")
+
+    st.markdown("---")
+
+    level = (st.session_state.xp // 100) + 1
+
+    st.markdown(f"""
+    <div style="
+        background:rgba(255,255,255,.75);
+        padding:15px;
+        border-radius:18px;
+        text-align:center;
+        border:2px solid white;">
+        <h3>⭐ Level {level}</h3>
+        <p>🩵 {st.session_state.xp} XP</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# =========================
-# صفحة البداية
-# =========================
+# ==========================================================
+# WELCOME PAGE
+# ==========================================================
+
 if st.session_state.page == "welcome":
 
-    left, right = st.columns([1.05, 1.2], gap="large")
-
-    with left:
-
-        st.markdown('<div class="hero">', unsafe_allow_html=True)
-
-        st.markdown("# Welcome to Miku World ♡")
-
-        st.markdown("""
-        <p class="intro">
-        عالمك الصغير للدراسة والإنجاز والإبداع.<br>
-        كل خطوة تخطينها هنا تقرّبك من هدفك…<br>
-        وميكو معك في كل لحظة! 🩵
-        </p>
-        """, unsafe_allow_html=True)
-
-        st.markdown("### Ready to begin your journey? ✦")
-
-        if st.button("✦  ENTER APP  ✦", use_container_width=True):
-            go_to("home")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("🏆 Achievements", use_container_width=True):
-                go_to("achievements")
-
-        with col2:
-            if st.button("⚙️ Settings", use_container_width=True):
-                go_to("settings")
-
-        if st.button("୨୧ Change Miku", use_container_width=True):
-            go_to("change_miku")
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with right:
-        show_miku_3d()
-
-
-# =========================
-# الصفحة الرئيسية
-# =========================
-elif st.session_state.page == "home":
-
-    st.markdown("# أهلاً بكِ في عالم ميكو 🩵")
-
-    left, right = st.columns([1.05, 1.2], gap="large")
+    left, right = st.columns([1.1, 1], gap="large")
 
     with left:
 
         st.markdown("""
-        <div class="hero">
-        <h2>Ready to begin your journey? ♡</h2>
-        <p class="intro">
-        اختاري قسمك وابدئي خطوة صغيرة نحو إنجاز كبير.
-        </p>
+        <div style="padding:25px 10px 20px 10px;">
+
+            <div class="game-title">
+                MIKU<br>WORLD
+            </div>
+
+            <div class="game-subtitle">
+                ✦ Your magical study adventure ✦
+            </div>
+
+            <br>
+
+            <div class="glass-card">
+
+                <h2>Welcome to Miku World ♡</h2>
+
+                <p style="
+                    color:#718ba0;
+                    font-size:1.15rem;
+                    line-height:2;">
+                    عالمك الصغير للدراسة والإنجاز والإبداع.<br>
+                    كل خطوة تخطينها هنا تقرّبك من هدفك…<br>
+                    وميكو معك في كل لحظة! 🩵
+                </p>
+
+                <h3>Ready to begin your journey?</h3>
+
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.write("")
 
-        if st.button("📚 مهامي وواجباتي", use_container_width=True):
-            go_to("tasks")
+        if st.button("✦  ENTER APP  ✦",
+                     use_container_width=True):
+            navigate("home")
 
-        if st.button("💬 اسألي ميكو", use_container_width=True):
-            go_to("chat")
+        st.write("")
 
-        if st.button("🏆 إنجازاتي", use_container_width=True):
-            go_to("achievements")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🏆 ACHIEVEMENTS",
+                         use_container_width=True):
+                navigate("achievements")
+
+        with col2:
+            if st.button("⚙️ SETTINGS",
+                         use_container_width=True):
+                navigate("settings")
+
+        if st.button("🎀 CHANGE MIKU",
+                     use_container_width=True):
+            navigate("change_miku")
 
     with right:
-        show_miku_3d()
+
+        show_empty_miku()
+
+    show_footer()
 
 
-# =========================
-# المهام والواجبات
-# =========================
+# ==========================================================
+# HOME PAGE
+# ==========================================================
+
+elif st.session_state.page == "home":
+
+    left, right = st.columns([1.1, 1], gap="large")
+
+    with left:
+
+        st.markdown("""
+        <div style="padding:15px 5px;">
+
+            <div class="game-title">
+                HELLO,<br>STUDY STAR! ♡
+            </div>
+
+            <div class="game-subtitle">
+                ✦ Let's make today magical ✦
+            </div>
+
+            <br>
+
+            <div class="glass-card">
+                <h2>أهلًا بكِ في عالم ميكو 🩵</h2>
+
+                <p style="color:#718ba0;font-size:1.1rem;">
+                    اختاري القسم الذي تريدين الدخول إليه،
+                    وابدئي رحلة جديدة من الإنجازات.
+                </p>
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        if st.button("📚  MY TASKS", use_container_width=True):
+            navigate("tasks")
+
+        if st.button("💬  ASK MIKU", use_container_width=True):
+            navigate("chat")
+
+        if st.button("🏆  ACHIEVEMENTS", use_container_width=True):
+            navigate("achievements")
+
+        if st.button("🎀  CUSTOMIZATION", use_container_width=True):
+            navigate("change_miku")
+
+    with right:
+
+        show_empty_miku()
+
+    show_footer()
+
+
+# ==========================================================
+# TASKS PAGE
+# ==========================================================
+
 elif st.session_state.page == "tasks":
 
-    st.markdown("# 📚 مهامي وواجباتي")
-
     st.markdown("""
-    <div class="hero">
-    <h3>كل مهمة تخلصينها هي إنجاز جديد ✨</h3>
+    <div class="section-heading">
+        📚 مهامي وواجباتي
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
 
-    task_name = st.text_input("اسم المهمة")
+    st.markdown("""
+    <div class="glass-card">
+        <h3>كل مهمة تخلصينها هي إنجاز جديد! ✨</h3>
+        <p style="color:#718ba0;">
+            أضيفي واجباتك، واختاري المادة، ثم تابعي إنجازاتك.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    subjects = [
-        "رياضيات متقدمة",
-        "رياضيات أساسية",
-        "فيزياء",
-        "كيمياء",
-        "أحياء",
-        "علوم بيئة",
-        "عربي",
-        "إنجليزي",
-        "فرنسي",
-        "تاريخ",
-        "جغرافيا",
-        "دراسات إسلامية",
-        "فنون",
-        "موسيقى",
-        "تقنية",
-        "رياضة"
-    ]
+    st.write("")
 
-    subject = st.selectbox("اختاري المادة", subjects)
+    with st.form("add_task_form", clear_on_submit=True):
 
-    if st.button("＋ إضافة المهمة", use_container_width=True):
+        task_name = st.text_input("اسم المهمة")
 
-        if task_name.strip():
+        subject = st.selectbox(
+            "المادة",
+            SUBJECTS
+        )
 
-            st.session_state.tasks.append({
-                "name": task_name.strip(),
-                "subject": subject,
-                "done": False
-            })
+        due_date = st.date_input(
+            "موعد التسليم",
+            value=datetime.today()
+        )
 
-            st.success("تمت إضافة المهمة 🩵")
-            st.rerun()
+        submitted = st.form_submit_button(
+            "＋ إضافة المهمة 🩵",
+            use_container_width=True
+        )
 
-        else:
-            st.warning("اكتبي اسم المهمة أولًا.")
+        if submitted:
+
+            if task_name.strip():
+
+                st.session_state.tasks.append({
+                    "name": task_name.strip(),
+                    "subject": subject,
+                    "due": str(due_date),
+                    "done": False
+                })
+
+                st.success("تمت إضافة المهمة بنجاح! 🩵")
+                st.rerun()
+
+            else:
+
+                st.warning("اكتبي اسم المهمة أولًا.")
 
     st.write("---")
-    st.markdown("### قائمة مهامي")
+    st.markdown("### ✦ قائمة المهام")
 
     if not st.session_state.tasks:
 
@@ -531,41 +639,77 @@ elif st.session_state.page == "tasks":
 
         for i, task in enumerate(st.session_state.tasks):
 
+            st.markdown(f"""
+            <div class="glass-card" style="padding:15px;margin-bottom:10px;">
+                <h4>{task['subject']}</h4>
+                <p>{task['name']}</p>
+                <small>📅 {task['due']}</small>
+            </div>
+            """, unsafe_allow_html=True)
+
             checked = st.checkbox(
-                f"{task['subject']} — {task['name']}",
+                "تم الإنجاز ✨",
                 value=task["done"],
-                key=f"task_{i}"
+                key=f"task_done_{i}"
             )
 
             if checked and not task["done"]:
 
                 task["done"] = True
                 st.session_state.xp += 25
+
                 st.success("أحسنتِ! حصلتِ على 25 XP 🩵")
+                st.rerun()
 
             elif not checked and task["done"]:
 
                 task["done"] = False
+
                 st.session_state.xp = max(
                     0,
                     st.session_state.xp - 25
                 )
 
+                st.rerun()
 
-# =========================
-# اسألي ميكو
-# =========================
+            if st.button(
+                "🗑 حذف المهمة",
+                key=f"delete_task_{i}"
+            ):
+
+                if task["done"]:
+                    st.session_state.xp = max(
+                        0,
+                        st.session_state.xp - 25
+                    )
+
+                st.session_state.tasks.pop(i)
+                st.rerun()
+
+    show_back_button()
+    show_footer()
+
+
+# ==========================================================
+# CHAT PAGE
+# ==========================================================
+
 elif st.session_state.page == "chat":
 
-    st.markdown("# 💬 اسألي ميكو")
+    st.markdown("""
+    <div class="section-heading">
+        💬 اسألي ميكو
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
 
     st.markdown("""
-    <div class="hero">
-    <h3>ميكو هنا عشان تساعدك 🩵</h3>
-    <p class="intro">
-    قريبًا نربط المحادثة بالذكاء الاصطناعي،
-    عشان تسألين ميكو عن دروسك وواجباتك.
-    </p>
+    <div class="glass-card">
+        <h2>ميكو هنا لمساعدتك! 🩵</h2>
+        <p style="color:#718ba0;">
+            اسألي عن دروسك أو اكتبي ما تريدين فهمه.
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -576,7 +720,7 @@ elif st.session_state.page == "chat":
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-    user_message = st.chat_input("اكتبي سؤالك لميكو...")
+    user_message = st.chat_input("اكتبي رسالتك إلى ميكو...")
 
     if user_message:
 
@@ -587,82 +731,189 @@ elif st.session_state.page == "chat":
 
         st.session_state.chat_history.append({
             "role": "assistant",
-            "content": "وصلني سؤالك! ربط الذكاء الاصطناعي يحتاج إعداد مفتاح Gemini في Secrets."
+            "content": (
+                "وصلني سؤالك! 🩵 "
+                "ربط الذكاء الاصطناعي يحتاج إعداد مفتاح Gemini."
+            )
         })
 
         st.rerun()
 
+    if st.button("🗑 مسح المحادثة"):
+        st.session_state.chat_history = []
+        st.rerun()
 
-# =========================
-# الإنجازات
-# =========================
+    show_back_button()
+    show_footer()
+
+
+# ==========================================================
+# ACHIEVEMENTS PAGE
+# ==========================================================
+
 elif st.session_state.page == "achievements":
 
-    st.markdown("# 🏆 إنجازاتي")
-
-    level = (st.session_state.xp // 100) + 1
-
-    st.markdown(f"""
-    <div class="hero">
-        <h2>كل إنجاز صغير يستحق الاحتفال ✨</h2>
-        <h3>⭐ Level {level}</h3>
-        <h3>🩵 XP: {st.session_state.xp}</h3>
-        <p class="intro">
-        استمري، كل مهمة تخلصينها تقرّبك من المستوى القادم!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.progress((st.session_state.xp % 100) / 100)
-
-
-# =========================
-# تغيير شكل ميكو
-# =========================
-elif st.session_state.page == "change_miku":
-
-    st.markdown("# 🎀 تغيير شكل ميكو")
-
     st.markdown("""
-    <div class="hero">
-    <h2>اختاري الستايل اللي تحبينه ♡</h2>
-    <p class="intro">
-    سنضيف خيارات تغيير شكل ميكو بعد تجهيز ملفات الشخصيات.
-    </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    show_miku_3d()
-
-
-# =========================
-# الإعدادات
-# =========================
-elif st.session_state.page == "settings":
-
-    st.markdown("# ⚙️ الإعدادات")
-
-    st.markdown("""
-    <div class="hero">
-    <h2>إعدادات Miku World 🩵</h2>
-    <p class="intro">
-    هنا نقدر نضيف إعدادات الحساب، الألوان،
-    وتخصيص واجهة التطبيق.
-    </p>
+    <div class="section-heading">
+        🏆 إنجازاتي
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
 
-    if st.button("⬅ العودة إلى البداية", use_container_width=True):
-        go_to("welcome")
+    level = (st.session_state.xp // 100) + 1
+    progress = (st.session_state.xp % 100) / 100
+
+    st.markdown(f"""
+    <div class="glass-card">
+        <h2>You're doing amazing! ♡</h2>
+
+        <h1 style="font-size:3rem;">
+            ⭐ LEVEL {level}
+        </h1>
+
+        <h2>
+            🩵 {st.session_state.xp} XP
+        </h2>
+
+        <p style="color:#718ba0;">
+            استمري، كل خطوة صغيرة تصنع فرقًا كبيرًا.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    st.progress(progress)
+
+    st.caption(
+        f"باقي {100 - (st.session_state.xp % 100)} XP للمستوى القادم!"
+    )
+
+    st.write("")
+
+    completed = sum(
+        1 for task in st.session_state.tasks
+        if task["done"]
+    )
+
+    total = len(st.session_state.tasks)
+
+    st.markdown(f"""
+    <div class="glass-card">
+        <h3>📚 المهام المكتملة</h3>
+        <h1>{completed} / {total}</h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+    show_back_button()
+    show_footer()
 
 
-# =========================
-# تذييل
-# =========================
-st.markdown("""
-<p class="small-note">
-୨୧ Miku World · Study with sparkle ♡
-</p>
-""", unsafe_allow_html=True)
+# ==========================================================
+# CHANGE MIKU PAGE
+# ==========================================================
+
+elif st.session_state.page == "change_miku":
+
+    st.markdown("""
+    <div class="section-heading">
+        🎀 تغيير شكل ميكو
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    st.markdown("""
+    <div class="glass-card">
+        <h2>اختاري الستايل الذي تحبينه ♡</h2>
+        <p style="color:#718ba0;">
+            مساحة ميكو جاهزة لإضافة المجسّم ثلاثي الأبعاد لاحقًا.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    st.selectbox(
+        "Miku Style",
+        ["Original", "Cute", "Crystal", "Baby Pink"],
+        key="miku_style"
+    )
+
+    show_empty_miku()
+
+    show_back_button()
+    show_footer()
+
+
+# ==========================================================
+# SETTINGS PAGE
+# ==========================================================
+
+elif st.session_state.page == "settings":
+
+    st.markdown("""
+    <div class="section-heading">
+        ⚙️ الإعدادات
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    st.markdown("""
+    <div class="glass-card">
+        <h2>Customize your world ♡</h2>
+        <p style="color:#718ba0;">
+            خصّصي تجربتك في عالم ميكو.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    st.checkbox(
+        "تفعيل المؤثرات الصوتية",
+        key="sound"
+    )
+
+    st.selectbox(
+        "لغة التطبيق",
+        ["العربية", "English"]
+    )
+
+    st.selectbox(
+        "لون الواجهة",
+        ["Sky Blue", "Lavender", "Baby Pink"]
+    )
+
+    if st.button("↩ العودة إلى صفحة البداية",
+                 use_container_width=True):
+        navigate("welcome")
+
+    show_footer()
+
+
+# ==========================================================
+# OTHER MENU ITEMS
+# ==========================================================
+
+else:
+
+    st.markdown("""
+    <div class="section-heading">
+        🩵 Miku World
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="glass-card">
+        <h2>هذه الصفحة جاهزة للتطوير ✨</h2>
+        <p style="color:#718ba0;">
+            سنضيف محتواها لاحقًا.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    show_back_button()
+    show_footer()
